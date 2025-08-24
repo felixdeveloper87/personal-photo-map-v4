@@ -1,4 +1,4 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 
 /**
  * AuthContext
@@ -47,6 +47,96 @@ export const AuthProvider = ({ children }) => {
   const [isPremium, setIsPremium] = useState(() => {
     return localStorage.getItem('premium') === 'true';
   });
+
+  /**
+   * Validates the stored token by making a test API call
+   * @returns {Promise<boolean>} true if token is valid, false otherwise
+   */
+  const validateToken = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return false;
+
+    try {
+      const url = import.meta.env.VITE_BACKEND_URL 
+        ? `${import.meta.env.VITE_BACKEND_URL}/api/auth/validate`
+        : '/api/auth/validate';
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        return true;
+      } else if (response.status === 401) {
+        // Token is invalid, logout user
+        logout();
+        return false;
+      }
+      return false;
+    } catch (error) {
+      console.error('Token validation error:', error);
+      // On network error, assume token is invalid and logout
+      logout();
+      return false;
+    }
+  };
+
+  /**
+   * Checks token validity on component mount and sets up periodic validation
+   */
+  useEffect(() => {
+    if (isLoggedIn) {
+      // Validate token immediately
+      validateToken();
+      
+      // Set up periodic validation every 5 minutes
+      const interval = setInterval(validateToken, 5 * 60 * 1000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [isLoggedIn]);
+
+  /**
+   * Sets up a global fetch interceptor to handle authentication failures
+   */
+  useEffect(() => {
+    // Store the original fetch function
+    const originalFetch = window.fetch;
+    
+    // Override fetch to intercept responses
+    window.fetch = async (...args) => {
+      const response = await originalFetch(...args);
+      
+      // Check for authentication failures
+      if (response.status === 401 && isLoggedIn) {
+        console.warn('🔐 Global fetch interceptor: Authentication failed');
+        
+        // Clear invalid token
+        logout();
+        
+        // Show notification if possible
+        if (typeof window !== 'undefined' && window.showToast) {
+          window.showToast({
+            title: "Session Expired",
+            description: "Your login session has expired. Please log in again.",
+            status: "warning",
+            duration: 5000,
+            isClosable: true,
+          });
+        }
+      }
+      
+      return response;
+    };
+    
+    // Cleanup function to restore original fetch
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, [isLoggedIn, logout]);
 
   /**
    * login

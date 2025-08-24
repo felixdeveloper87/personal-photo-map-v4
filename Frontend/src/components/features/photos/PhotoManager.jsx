@@ -46,7 +46,49 @@ import {
  */
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
+  
+  // Debug logging
+  if (token) {
+    console.log('🔑 Token found in localStorage, length:', token.length);
+    console.log('🔑 Token preview:', token.substring(0, 20) + '...');
+  } else {
+    console.warn('⚠️ No token found in localStorage');
+  }
+  
   return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
+/**
+ * Handles authentication errors by checking if the token is invalid/expired
+ * and automatically logging out the user if needed.
+ */
+const handleAuthError = (response, error) => {
+  if (response.status === 401) {
+    console.warn('🔐 Authentication failed - token may be expired or invalid');
+    
+    // Show user-friendly error message
+    toast({
+      title: "Session Expired",
+      description: "Your login session has expired. Please log in again.",
+      status: "warning",
+      duration: 5000,
+      isClosable: true,
+    });
+    
+    // Clear invalid token and redirect to login
+    localStorage.removeItem('token');
+    localStorage.removeItem('fullname');
+    localStorage.removeItem('email');
+    localStorage.removeItem('premium');
+    
+    // Redirect to home/login page after a short delay
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 2000);
+    
+    return true; // Indicates auth error was handled
+  }
+  return false; // Auth error was not handled
 };
 
 /* ---------------- Fetchers (GET) ---------------- */
@@ -62,6 +104,7 @@ async function fetchYears(countryId) {
     { headers: getAuthHeaders() }
   );
   if (!response.ok) {
+    if (handleAuthError(response)) return [];
     throw new Error(`Error fetching years: ${response.status}`);
   }
   return response.json();
@@ -78,6 +121,7 @@ async function fetchAlbums(countryId) {
     { headers: getAuthHeaders() }
   );
   if (!response.ok) {
+    if (handleAuthError(response)) return [];
     throw new Error(`Error fetching albums: ${response.status}`);
   }
   return response.json();
@@ -101,6 +145,7 @@ async function fetchImages(countryId, year, albumId, showAllSelected) {
 
   const response = await fetch(url, { headers: getAuthHeaders() });
   if (!response.ok) {
+    if (handleAuthError(response)) return [];
     throw new Error(`Error fetching images: ${response.status}`);
   }
   return response.json();
