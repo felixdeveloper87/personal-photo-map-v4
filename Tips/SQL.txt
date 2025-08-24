@@ -1,0 +1,14 @@
+ver todas as tabelas:
+SELECT table_schema, table_name
+FROM information_schema.tables
+WHERE table_type = 'BASE TABLE'
+AND table_catalog = 'photo_map'
+AND table_schema NOT IN ('information_schema', 'pg_catalog')
+ORDER BY table_schema, table_name;
+
+ver todos os usuarios:
+SELECT * FROM users;
+
+selecionar todos os username, email, role dos usuarios
+SELECT username, email, role FROM users;
+

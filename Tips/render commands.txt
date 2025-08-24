@@ -1,0 +1,22 @@
+value: olFXPrFw3jFnOVyLM74Tf2kNli4cIDZh senha do db
+
+git add render.yaml
+git commit -m "Fix render.yaml paths"
+git push origin main
+
+docker build -t backend-test -f Backend/photo-map/Dockerfile .
+
+git add .
+git commit -m "Deploy para o Render"
+git push origin main
+git push
+
+netstat -ano | findstr :8093
+git clone --bare
+
+git status
+
+https://personal-photomap-backend.onrender.com/api/auth/users
+https://frontend-z8me.onrender.com/
+
+

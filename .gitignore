@@ -1,0 +1,57 @@
+# Ignore sensitive configuration files
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.*  # Ignore any variation of .env
+
+# Ignore Node.js dependencies (Frontend)
+Frontend/node_modules/
+Frontend/.vite/
+Frontend/dist/
+
+# Ignore Maven dependencies (Backend)
+Backend/target/
+**/target/
+
+# Ignore Python files (if using Jupyter Notebooks)
+*.ipynb_checkpoints
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore log files
+*.log
+logs/
+debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignore cache and temporary files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Ignore Docker-related files
+docker-compose.override.yml
+docker-compose.yml~
+.dockerignore
+Dockerfile.dev
+Dockerfile.prod
+
+# Ignore IDE/Editor settings
+.vscode/
+.idea/
+*.iml
+*.sublime-workspace
+*.sublime-project
+
+# Ignore generated system packages and build artifacts
+node_modules/
+dist/
+build/
+coverage/

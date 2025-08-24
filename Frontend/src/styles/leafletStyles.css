@@ -1,0 +1,251 @@
+/* Tooltip vintage elegante - combinando com header e oceano */
+.tooltip,
+.leaflet-tooltip,
+.country-tooltip {
+  position: absolute;
+  background: linear-gradient(135deg,
+      rgba(240, 248, 246, 0.98) 0%,
+      rgba(235, 245, 242, 0.98) 25%,
+      rgba(230, 242, 238, 0.98) 50%,
+      rgba(224, 239, 234, 0.98) 75%,
+      rgba(218, 232, 227, 0.98) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 6px 10px;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif !important;
+  letter-spacing: 0.03em !important;
+  color: rgba(44, 82, 77, 0.98) !important;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 12px rgba(44, 82, 77, 0.1);
+  pointer-events: none;
+  z-index: 1000;
+  white-space: nowrap;
+  transform: translateY(-8px);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.tooltip.show {
+  opacity: 1;
+  transform: translateY(-8px);
+}
+
+.tooltip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg,
+      rgba(154, 206, 181, 0.15) 0%,
+      rgba(164, 218, 211, 0.1) 25%,
+      transparent 50%,
+      rgba(174, 230, 216, 0.1) 75%,
+      rgba(154, 206, 181, 0.15) 100%);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid rgba(230, 242, 238, 0.95);
+  filter: drop-shadow(0 2px 4px rgba(44, 82, 77, 0.1));
+}
+
+/* Oceano otimizado para modo claro - cores recomendadas por UI/UX */
+.leaflet-container {
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(14, 165, 233, 0.12) 0%, transparent 50%),
+    linear-gradient(45deg, 
+      #BAE6FD 0%, 
+      #7DD3FC 25%, 
+      #38BDF8 50%, 
+      #7DD3FC 75%, 
+      #BAE6FD 100%),
+    radial-gradient(circle at 80% 20%, rgba(56, 189, 248, 0.1) 0%, transparent 50%);
+  background-size: 200% 200%, 300% 300%, 150% 150%;
+  background-position: 0% 0%, 0% 0%, 100% 100%;
+  animation: none !important;
+  will-change: auto !important;
+  border: 3px solid;
+  border-image: linear-gradient(135deg, 
+    rgba(14, 165, 233, 0.7) 0%, 
+    rgba(56, 189, 248, 0.5) 25%, 
+    rgba(14, 165, 233, 0.7) 50%, 
+    rgba(56, 189, 248, 0.5) 75%, 
+    rgba(14, 165, 233, 0.7) 100%) 1;
+  border-radius: 12px;
+  box-shadow: 
+    0 0 0 1px rgba(14, 165, 233, 0.25),
+    0 8px 32px rgba(14, 165, 233, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Tema escuro - Padrão Big Tech */
+[data-theme="dark"] .leaflet-container {
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+    linear-gradient(45deg, 
+      #111827 0%, 
+      #1F2937 25%, 
+      #374151 50%, 
+      #4B5563 75%, 
+      #6B7280 100%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.02) 0%, transparent 50%);
+  background-size: 200% 200%, 300% 300%, 150% 150%;
+  background-position: 0% 0%, 0% 0%, 100% 100%;
+  animation: none !important;
+  will-change: auto !important;
+  border: 3px solid;
+  border-image: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.6) 0%, 
+    rgba(99, 102, 241, 0.4) 25%, 
+    rgba(139, 92, 246, 0.6) 50%, 
+    rgba(99, 102, 241, 0.4) 75%, 
+    rgba(59, 130, 246, 0.6) 100%) 1;
+  border-radius: 12px;
+  box-shadow: 
+    0 0 0 1px rgba(59, 130, 246, 0.3),
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .tooltip {
+  background: linear-gradient(135deg,
+      rgba(30, 41, 59, 0.95) 0%,
+      rgba(51, 65, 85, 0.98) 50%,
+      rgba(71, 85, 105, 0.95) 100%);
+  color: #f1f5f9;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Redução de movimento */
+@media (prefers-reduced-motion: reduce) {
+  .leaflet-container {
+    animation: none;
+  }
+
+  .tooltip {
+    transition: opacity 0.2s ease;
+  }
+}
+
+/* Estilos dos países */
+.leaflet-interactive {
+  stroke-width: 0.8;
+  stroke-opacity: 0.6;
+  stroke: #1e3a8a;
+  fill-opacity: 0.7;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: fill, stroke, filter;
+}
+
+.leaflet-interactive:hover {
+  stroke-width: 1.5;
+  stroke-opacity: 0.9;
+  stroke: #1e40af;
+  fill-opacity: 0.8;
+  filter: brightness(1.02) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.leaflet-interactive:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Países com fotos */
+.country-with-photos {
+  stroke: #059669 !important;
+  stroke-width: 1.2 !important;
+  filter: brightness(1.05) saturate(1.1);
+}
+
+.country-with-photos:hover {
+  stroke: #047857 !important;
+  stroke-width: 2 !important;
+  filter: brightness(1.03) saturate(1.05) drop-shadow(0 3px 6px rgba(5, 150, 105, 0.2));
+}
+
+/* Tooltip simples */
+.tooltip.show {
+  opacity: 1;
+  transform: translateY(-8px);
+}
+
+/* Responsividade mobile */
+@media (max-width: 768px) {
+  .tooltip {
+    font-size: 14px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    transform: translateY(-10px) scale(0.95);
+    backdrop-filter: blur(12px);
+  }
+
+  .tooltip.show {
+    transform: translateY(-14px) scale(1);
+  }
+
+  .tooltip::after {
+    bottom: -6px;
+    border-left-width: 6px;
+    border-right-width: 6px;
+    border-top-width: 6px;
+  }
+
+  .leaflet-interactive {
+    stroke-width: 1;
+  }
+
+  .leaflet-interactive:hover {
+    stroke-width: 1.8;
+  }
+
+  .leaflet-container {
+    border-width: 2px;
+    border-radius: 8px;
+    box-shadow: 
+      0 0 0 1px rgba(154, 206, 181, 0.3),
+      0 4px 16px rgba(44, 82, 77, 0.12);
+  }
+
+  [data-theme="dark"] .leaflet-container {
+    border-width: 2px;
+    border-radius: 8px;
+    box-shadow: 
+      0 0 0 1px rgba(59, 130, 246, 0.3),
+      0 4px 16px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Otimizações de performance */
+.leaflet-container {
+  contain: layout style paint;
+  transform: translateZ(0);
+}
+
+.tooltip {
+  contain: layout style;
+  transform: translateZ(0);
+}
+
+.leaflet-interactive {
+  contain: layout;
+  shape-rendering: optimizeSpeed;
+}

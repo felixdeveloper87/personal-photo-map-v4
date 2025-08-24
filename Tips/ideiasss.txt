@@ -1,0 +1,15 @@
+usar o servidor Heroku
+
+
+quando adiciono uma imagem de um pais ele nao esta sendo exibida em ordem de mais recente ao menos recente
+
+o chakra deu uma mudada na parada ai, pra ter nocao usar no main.jsx o comando <ChakraProvider resetCSS={false}>
+
+alguns paises como a franca, noruega etc estao com o id= -99 e preciso arrumar isso
+
+https://mapshaper.org/ 
+filter 'iso_a2 === "-99"'
+
+https://www.naturalearthdata.com/downloads/
+
+shift+alt+ seta = para mudar o codigo pra cima oupra baixo

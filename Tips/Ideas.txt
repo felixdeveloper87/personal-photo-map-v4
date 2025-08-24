@@ -1,0 +1,3 @@
+quando o usuario completar um continente inteiro, fazer alguma coisas especial
+
+mudar o nome da aplicacao para MapMyMemories
