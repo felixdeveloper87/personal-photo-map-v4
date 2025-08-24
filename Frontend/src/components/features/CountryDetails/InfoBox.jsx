@@ -8,7 +8,7 @@ const InfoBox = ({ icon, label, value, colorScheme = "blue", onClick, size = "de
 
   // Tamanhos baseados na prop size
   const sizes = {
-    large: {
+    small: {
       minW: "120px",
       p: 2,
       borderRadius: "8px",

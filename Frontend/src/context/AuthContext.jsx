@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
 
 /**
  * AuthContext
@@ -85,6 +85,29 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
+   * logout
+   * Handles the logout process by removing user-related data from localStorage,
+   * resetting the relevant states, and dispatching a 'storage' event to inform
+   * other parts of the application of the change.
+   */
+  const logout = useCallback(() => {
+    // Remove user credentials from localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('fullname');
+    localStorage.removeItem('email');
+    // localStorage.setItem('premium', "false"); // Uncomment if needed
+
+    // Reset the local state to reflect that the user is no longer logged in
+    setIsLoggedIn(false);
+    setFullname('');
+    setEmail('');
+    // setIsPremium(false); // Uncomment if you want to reset premium status on logout
+
+    // Dispatch a storage event to notify other components or tabs
+    window.dispatchEvent(new Event('storage'));
+  }, []);
+
+  /**
    * Checks token validity on component mount and sets up periodic validation
    */
   useEffect(() => {
@@ -150,7 +173,7 @@ export const AuthProvider = ({ children }) => {
    * @param {string} data.email - The user's email address.
    * @param {boolean|string} data.premium - Indicates whether the user is a premium member.
    */
-  const login = (data) => {
+  const login = useCallback((data) => {
     console.log("Data received in login function:", data);
 
     if (typeof data !== "object") {
@@ -179,30 +202,9 @@ export const AuthProvider = ({ children }) => {
 
     // Dispatch a storage event to notify other browser tabs or components
     window.dispatchEvent(new Event('storage'));
-  };
+  }, []);
 
-  /**
-   * logout
-   * Handles the logout process by removing user-related data from localStorage,
-   * resetting the relevant states, and dispatching a 'storage' event to inform
-   * other parts of the application of the change.
-   */
-  const logout = () => {
-    // Remove user credentials from localStorage
-    localStorage.removeItem('token');
-    localStorage.removeItem('fullname');
-    localStorage.removeItem('email');
-    // localStorage.setItem('premium', "false"); // Uncomment if needed
 
-    // Reset the local state to reflect that the user is no longer logged in
-    setIsLoggedIn(false);
-    setFullname('');
-    setEmail('');
-    // setIsPremium(false); // Uncomment if you want to reset premium status on logout
-
-    // Dispatch a storage event to notify other components or tabs
-    window.dispatchEvent(new Event('storage'));
-  };
 
   /**
    * register
@@ -212,7 +214,7 @@ export const AuthProvider = ({ children }) => {
    * @param {object} userData - Registration data (fullname, email, password)
    * @returns {Promise} - Promise that resolves with the response or rejects with an error
    */
-  const register = async (userData) => {
+  const register = useCallback(async (userData) => {
     console.log('🚀 Register function called with:', userData);
     
     try {
@@ -251,7 +253,7 @@ export const AuthProvider = ({ children }) => {
       console.error('💥 Register function error:', error);
       throw error;
     }
-  };
+  }, [login]);
 
   /**
    * updatePremiumStatus
