@@ -70,8 +70,8 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
   // Responsive values
   const headerPadding = useBreakpointValue({ base: 2, sm: 3, md: 4, lg: 5 });
   const headerBorderRadius = useBreakpointValue({ base: "16px", sm: "18px", md: "20px", lg: "24px" });
-  const countryNameSize = useBreakpointValue({ base: "xl", sm: "2xl", md: "3xl", lg: "4xl" });
-  const nativeNameSize = useBreakpointValue({ base: "md", sm: "lg", md: "xl", lg: "2xl" });
+  const countryNameSize = useBreakpointValue({ base: "lg", sm: "xl", md: "2xl", lg: "3xl" });
+  const nativeNameSize = useBreakpointValue({ base: "sm", sm: "md", md: "lg", lg: "xl" });
   const capitalTextSize = useBreakpointValue({ base: "sm", sm: "md", md: "lg", lg: "xl" });
   const flagHeight = useBreakpointValue({ base: "200px", sm: "250px", md: "300px", lg: "350px", xl: "400px" });
   const flagBorderRadius = useBreakpointValue({ base: "12px", sm: "16px", md: "20px", lg: "24px" });
@@ -132,58 +132,67 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
           flex="1"
           px={{ base: 2, sm: 4, md: 6, lg: 8 }}
         >
-          <Heading
-            as="h1"
-            size={countryNameSize}
-            color={countryNameColorEnhanced}
-            textShadow={countryNameTextShadow}
-            fontWeight="bold"
-            noOfLines={{ base: 3, sm: 2, md: 2, lg: 1 }}
-            wordBreak="break-word"
-            whiteSpace="normal"
-            maxW="100%"
-            lineHeight={{ base: "1.2", sm: "1.3", md: "1.4", lg: "1.5" }}
+          {/* Nome do país em inglês, nome local e capital lado a lado */}
+          <Flex
+            direction={{ base: "column", sm: "row" }}
+            align="center"
+            justify="center"
+            gap={{ base: 2, sm: 4, md: 6, lg: 8 }}
+            flexWrap="wrap"
           >
-            {countries.getName(countryId.toUpperCase(), 'en') || countryId.toUpperCase()}
-          </Heading>
-          
-          {countryInfo?.nativeName && countryInfo.nativeName !== countries.getName(countryId.toUpperCase(), 'en') && (
-            <Text
-              fontSize={nativeNameSize}
-              color={nativeNameColor}
+            <Heading
+              as="h1"
+              size={countryNameSize}
+              color={countryNameColorEnhanced}
               textShadow={countryNameTextShadow}
-              fontStyle="italic"
-              opacity={0.9}
-              fontFamily="serif"
-              letterSpacing="wide"
-              textAlign="center"
-              noOfLines={{ base: 2, sm: 1, md: 1, lg: 1 }}
+              fontWeight="bold"
+              noOfLines={{ base: 3, sm: 2, md: 2, lg: 1 }}
+              wordBreak="break-word"
+              whiteSpace="normal"
+              maxW="100%"
+              lineHeight={{ base: "1.2", sm: "1.3", md: "1.4", lg: "1.5" }}
             >
-              {countryInfo.nativeName}
-            </Text>
-          )}
-          
-          {countryInfo?.capital && (
-            <Text
-              fontSize={capitalTextSize}
-              color={useColorModeValue('blue.600', 'blue.300')}
-              textShadow={countryNameTextShadow}
-              fontWeight="semibold"
-              opacity={0.9}
-              fontFamily="system-ui"
-              letterSpacing="wide"
-              textAlign="center"
-              bg={useColorModeValue('blue.50', 'blue.900')}
-              px={{ base: 2, sm: 3, md: 4, lg: 5 }}
-              py={{ base: 1, sm: 1, md: 2, lg: 2 }}
-              borderRadius="full"
-              border="1px solid"
-              borderColor={useColorModeValue('blue.200', 'blue.700')}
-              noOfLines={1}
-            >
-              Capital: {countryInfo.capital}
-            </Text>
-          )}
+              {countries.getName(countryId.toUpperCase(), 'en') || countryId.toUpperCase()}
+            </Heading>
+            
+            {countryInfo?.nativeName && countryInfo.nativeName !== countries.getName(countryId.toUpperCase(), 'en') && (
+              <Text
+                fontSize={nativeNameSize}
+                color={nativeNameColor}
+                textShadow={countryNameTextShadow}
+                fontStyle="italic"
+                opacity={0.9}
+                fontFamily="serif"
+                letterSpacing="wide"
+                textAlign="center"
+                noOfLines={{ base: 2, sm: 1, md: 1, lg: 1 }}
+              >
+                {countryInfo.nativeName}
+              </Text>
+            )}
+            
+            {countryInfo?.capital && (
+              <Text
+                fontSize={capitalTextSize}
+                color={useColorModeValue('blue.600', 'blue.300')}
+                textShadow={countryNameTextShadow}
+                fontWeight="semibold"
+                opacity={0.9}
+                fontFamily="system-ui"
+                letterSpacing="wide"
+                textAlign="center"
+                bg={useColorModeValue('blue.50', 'blue.900')}
+                px={{ base: 2, sm: 3, md: 4, lg: 5 }}
+                py={{ base: 1, sm: 1, md: 2, lg: 2 }}
+                borderRadius="full"
+                border="1px solid"
+                borderColor={useColorModeValue('blue.200', 'blue.700')}
+                noOfLines={1}
+              >
+                Capital: {countryInfo.capital}
+              </Text>
+            )}
+          </Flex>
         </Flex>
 
         {/* Espaçador invisível para manter o botão de voltar à esquerda */}
