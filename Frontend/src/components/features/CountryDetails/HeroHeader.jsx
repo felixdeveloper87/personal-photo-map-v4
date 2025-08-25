@@ -280,29 +280,128 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
             <InfoBox icon={FaUsers} label="Population" value={countryInfo?.population ? formatPopulation(countryInfo.population) : undefined} colorScheme="green" size="large" />
             <InfoBox icon={FaPercent} label="Inflation Rate" value={indicatorsData?.inflationCPI ? `${indicatorsData.inflationCPI.value}%` : undefined} colorScheme="orange" size="large" />
             <InfoBox icon={FaChartLine} label="GDP Growth" value={indicatorsData?.gdpGrowth ? `${indicatorsData.gdpGrowth.value}%` : undefined} colorScheme="green" size="large" />
-            <InfoBox icon={FaBook} label="See more" value="More indicators" colorScheme="teal" onClick={onOpen} size="large" />
+            
+            {/* See More com fundo destacado */}
+            <Box
+              p={4}
+              bg="linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)"
+              borderRadius="xl"
+              border="2px solid"
+              borderColor="purple.200"
+              _hover={{
+                transform: "translateY(-2px)",
+                boxShadow: "0 8px 25px rgba(224, 195, 252, 0.3)"
+              }}
+              transition="all 0.3s ease"
+              cursor="pointer"
+              onClick={onOpen}
+              color="white"
+              textAlign="center"
+              minH="120px"
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="center"
+              gap={2}
+            >
+              <Box
+                p={2}
+                borderRadius="full"
+                bg="rgba(255, 255, 255, 0.2)"
+                color="white"
+              >
+                <Icon as={FaBook} boxSize={6} />
+              </Box>
+              <Text fontSize="lg" fontWeight="bold">
+                See more
+              </Text>
+              <Text fontSize="sm" opacity={0.9}>
+                More indicators
+              </Text>
+            </Box>
             
             {/* Terceira linha: 2 infoboxes adicionais */}
             <InfoBox icon={FaSun} label="Weather" value={weatherData?.description ? weatherData.description : undefined} colorScheme="yellow" size="large" />
             <InfoBox icon={FaUsers} label="Net Migration" value={indicatorsData?.netMigration ? `${indicatorsData.netMigration.value}` : undefined} colorScheme="cyan" size="large" />
             
-            {/* Quarta linha: Check Flights & Accommodation */}
-            <InfoBox 
-              icon={FaPlane} 
-              label="Check Flights" 
-              value={`to ${countries.getName(countryId.toUpperCase(), 'en')}`} 
-              colorScheme="blue" 
-              size="large"
+            {/* Quarta linha: Check Flights & Accommodation com fundos destacados */}
+            {/* Check Flights com fundo destacado */}
+            <Box
+              p={4}
+              bg="linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)"
+              borderRadius="xl"
+              border="2px solid"
+              borderColor="teal.200"
+              _hover={{
+                transform: "translateY(-2px)",
+                boxShadow: "0 8px 25px rgba(168, 237, 234, 0.3)"
+              }}
+              transition="all 0.3s ease"
+              cursor="pointer"
               onClick={() => window.open(`https://www.google.com/travel/flights?q=Flights%20to%20${encodeURIComponent(countries.getName(countryId.toUpperCase(), 'en'))}`, '_blank')}
-            />
-            <InfoBox 
-              icon={FaCity} 
-              label="Find Hotels" 
-              value={`in ${countries.getName(countryId.toUpperCase(), 'en')}`} 
-              colorScheme="green" 
-              size="large"
+              color="gray.700"
+              textAlign="center"
+              minH="120px"
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="center"
+              gap={2}
+            >
+              <Box
+                p={2}
+                borderRadius="full"
+                bg="rgba(0, 0, 0, 0.1)"
+                color="gray.700"
+              >
+                <Icon as={FaPlane} boxSize={6} />
+              </Box>
+              <Text fontSize="lg" fontWeight="bold">
+                Check Flights
+              </Text>
+              <Text fontSize="sm" opacity={0.8}>
+                to {countries.getName(countryId.toUpperCase(), 'en')}
+              </Text>
+            </Box>
+
+            {/* Find Hotels com fundo destacado */}
+            <Box
+              p={4}
+              bg="linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)"
+              borderRadius="xl"
+              border="2px solid"
+              borderColor="orange.200"
+              _hover={{
+                transform: "translateY(-2px)",
+                boxShadow: "0 8px 25px rgba(255, 236, 210, 0.3)"
+              }}
+              transition="all 0.3s ease"
+              cursor="pointer"
               onClick={() => window.open(`https://www.booking.com/searchresults.html?ss=${encodeURIComponent(countries.getName(countryId.toUpperCase(), 'en'))}`, '_blank')}
-            />
+              color="gray.700"
+              textAlign="center"
+              minH="120px"
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="center"
+              gap={2}
+            >
+              <Box
+                p={2}
+                borderRadius="full"
+                bg="rgba(0, 0, 0, 0.1)"
+                color="gray.700"
+              >
+                <Icon as={FaCity} boxSize={6} />
+              </Box>
+              <Text fontSize="lg" fontWeight="bold">
+                Find Hotels
+              </Text>
+              <Text fontSize="sm" opacity={0.8}>
+                in {countries.getName(countryId.toUpperCase(), 'en')}
+              </Text>
+            </Box>
           </Box>
         </Box>
       </Flex>
