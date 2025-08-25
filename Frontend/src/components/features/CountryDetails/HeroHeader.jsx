@@ -83,15 +83,15 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
   
   return (
     <Box mb={4} position="relative">
-      {/* Header: Nome do país */}
+      {/* Header: Nome do país, capital e botão de voltar alinhados */}
       <Box
         bg={useColorModeValue('rgba(255,255,255,0.9)', 'rgba(0,0,0,0.8)')}
         p={headerPadding}
         borderRadius={headerBorderRadius}
         display="flex"
-        flexDirection="column"
+        flexDirection="row"
         alignItems="center"
-        justifyContent="center"
+        justifyContent="space-between"
         mb={4}
         position="relative"
         border={useColorModeValue('1px solid rgba(0,0,0,0.1)', '1px solid rgba(255,255,255,0.1)')}
@@ -101,43 +101,35 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
         minW="0"
       >
         {/* Back Button */}
-        <Box 
-          position="absolute" 
-          top="50%" 
-          left={{ base: "0.25rem", sm: "0.5rem", md: "1rem" }} 
-          transform="translateY(-50%)" 
-          zIndex={35}
-        >
-          <IconButton
-            aria-label="Go back"
-            icon={<ArrowBackIcon />}
-            onClick={() => navigate('/')}
-            variant="outline"
-            size={{ base: "xs", sm: "sm", md: "md", lg: "lg" }}
-            colorScheme="teal"
-            bg={useColorModeValue('white', 'gray.700')}
-            color={useColorModeValue('teal.500', 'teal.300')}
-            borderColor={useColorModeValue('teal.200', 'teal.600')}
-            borderRadius="20px"
-            boxShadow={useColorModeValue("0 4px 12px rgba(0, 0, 0, 0.15)", "none")}
-            _hover={{
-              transform: 'scale(1.05)',
-              bg: useColorModeValue("teal.50", "teal.900"),
-              borderColor: useColorModeValue("teal.300", "teal.400"),
-              boxShadow: useColorModeValue("0 6px 20px rgba(0, 0, 0, 0.25)", "none")
-            }}
-            transition="all 0.2s"
-          />
-        </Box>
+        <IconButton
+          aria-label="Go back"
+          icon={<ArrowBackIcon />}
+          onClick={() => navigate('/')}
+          variant="outline"
+          size={{ base: "xs", sm: "sm", md: "md", lg: "lg" }}
+          colorScheme="teal"
+          bg={useColorModeValue('white', 'gray.700')}
+          color={useColorModeValue('teal.500', 'teal.300')}
+          borderColor={useColorModeValue('teal.200', 'teal.600')}
+          borderRadius="20px"
+          boxShadow={useColorModeValue("0 4px 12px rgba(0, 0, 0, 0.15)", "none")}
+          _hover={{
+            transform: 'scale(1.05)',
+            bg: useColorModeValue("teal.50", "teal.900"),
+            borderColor: useColorModeValue("teal.300", "teal.400"),
+            boxShadow: useColorModeValue("0 6px 20px rgba(0, 0, 0, 0.25)", "none")
+          }}
+          transition="all 0.2s"
+        />
         
-        {/* Nome do país, nome local e capital lado a lado */}
+        {/* Nome do país, nome local e capital centralizados */}
         <Flex
-          direction={{ base: "column", sm: "column", md: "row", lg: "row" }}
+          direction="column"
           align="center"
           justify="center"
-          gap={{ base: 2, sm: 3, md: 4, lg: 6 }}
+          gap={{ base: 1, sm: 2, md: 3, lg: 4 }}
           textAlign="center"
-          width="100%"
+          flex="1"
           px={{ base: 2, sm: 4, md: 6, lg: 8 }}
         >
           <Heading
@@ -193,9 +185,12 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
             </Text>
           )}
         </Flex>
+
+        {/* Espaçador invisível para manter o botão de voltar à esquerda */}
+        <Box w={{ base: "40px", sm: "50px", md: "60px", lg: "70px" }} />
       </Box>
 
-      {/* Layout principal: esquerda (bandeira) vs direita (infoboxes) */}
+      {/* Layout principal: esquerda (bandeira 1/3) vs direita (infoboxes 2/3) */}
       <Flex
         direction={{ base: "column", lg: "row" }}
         gap={sectionGap}
@@ -204,9 +199,9 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
         mx="auto"
         minW="0"
       >
-        {/* Lado Esquerdo: Bandeira */}
+        {/* Lado Esquerdo: Bandeira (1/3 do espaço) */}
         <Box
-          width={{ base: "100%", md: "100%", lg: "700px" }}
+          width={{ base: "100%", lg: "33.333%" }}
           display="flex"
           flexDirection="column"
           alignItems="center"
@@ -245,149 +240,61 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
           </Box>
         </Box>
         
-        {/* Lado Direito: Infoboxes (2 linhas com 4 cada) */}
+        {/* Lado Direito: Infoboxes e botões (2/3 do espaço) */}
         <Box
           flex="2"
           display="flex"
           flexDirection="column"
           gap={infoBoxGap}
           minW="0"
-          w={{ base: "100%", lg: "auto" }}
+          w={{ base: "100%", lg: "66.667%" }}
         >
-          {/* Primeira linha: 4 infoboxes */}
-          <Flex 
-            wrap="wrap" 
-            justify={{ base: "center", sm: "center", md: "flex-start", lg: "flex-start" }}
-            align="center" 
+          {/* Grid dinâmico de infoboxes - organizados automaticamente */}
+          <Box
+            display="grid"
+            gridTemplateColumns={{
+              base: "repeat(2, 1fr)",
+              sm: "repeat(2, 1fr)",
+              md: "repeat(3, 1fr)",
+              lg: "repeat(4, 1fr)"
+            }}
             gap={infoBoxGap}
-            minW="0"
+            w="full"
           >
+            {/* Primeira linha: 4 infoboxes principais */}
             <InfoBox icon={FaClock} label="Local Time" value={currentTime} colorScheme="blue" size="large" />
             <InfoBox icon={FaCalendarAlt} label="Local Date" value={weatherData?.timezone ? moment().utcOffset(weatherData.timezone / 60).format('DD/MM/YYYY') : moment().format('DD/MM/YYYY')} colorScheme="teal" size="large" />
             <InfoBox icon={FaThermometerHalf} label="Temperature" value={weatherData?.temperature ? `${weatherData.temperature}°C` : undefined} colorScheme="red" size="large" />
             <InfoBox icon={FaLanguage} label="Language" value={countryInfo?.officialLanguage} colorScheme="orange" size="large" />
-          </Flex>
-          
-          {/* Segunda linha: 4 infoboxes */}
-          <Flex 
-            wrap="wrap" 
-            justify={{ base: "center", sm: "center", md: "flex-start", lg: "flex-start" }}
-            align="center" 
-            gap={infoBoxGap}
-            minW="0"
-          >
+            
+            {/* Segunda linha: 4 infoboxes */}
             <InfoBox icon={FaUsers} label="Population" value={countryInfo?.population ? formatPopulation(countryInfo.population) : undefined} colorScheme="green" size="large" />
             <InfoBox icon={FaPercent} label="Inflation Rate" value={indicatorsData?.inflationCPI ? `${indicatorsData.inflationCPI.value}%` : undefined} colorScheme="orange" size="large" />
             <InfoBox icon={FaChartLine} label="GDP Growth" value={indicatorsData?.gdpGrowth ? `${indicatorsData.gdpGrowth.value}%` : undefined} colorScheme="green" size="large" />
             <InfoBox icon={FaBook} label="See more" value="More indicators" colorScheme="teal" onClick={onOpen} size="large" />
-          </Flex>
-          
-          {/* Check Flights & Accommodation Section */}
-          <Flex
-            mt={{ base: 3, sm: 4, md: 5, lg: 6 }}
-            gap={{ base: 2, sm: 3, md: 4, lg: 5 }}
-            direction={{ base: "column", sm: "column", md: "row", lg: "row" }}
-          >
-            {/* Check Flights */}
-            <Box
-              flex="1"
-              p={buttonPadding}
-              bg={useColorModeValue('blue.50', 'blue.900')}
-              borderRadius={{ base: "12px", sm: "14px", md: "16px", lg: "18px" }}
-              border="2px solid"
-              borderColor={useColorModeValue('blue.200', 'blue.700')}
-              _hover={{
-                transform: "translateY(-2px)",
-                boxShadow: useColorModeValue("0 8px 25px rgba(59, 130, 246, 0.15)", "0 8px 25px rgba(59, 130, 246, 0.3)")
-              }}
-              transition="all 0.3s ease"
-              cursor="pointer"
+            
+            {/* Terceira linha: 2 infoboxes adicionais */}
+            <InfoBox icon={FaSun} label="Weather" value={weatherData?.description ? weatherData.description : undefined} colorScheme="yellow" size="large" />
+            <InfoBox icon={FaUsers} label="Net Migration" value={indicatorsData?.netMigration ? `${indicatorsData.netMigration.value}` : undefined} colorScheme="cyan" size="large" />
+            
+            {/* Quarta linha: Check Flights & Accommodation */}
+            <InfoBox 
+              icon={FaPlane} 
+              label="Check Flights" 
+              value={`to ${countries.getName(countryId.toUpperCase(), 'en')}`} 
+              colorScheme="blue" 
+              size="large"
               onClick={() => window.open(`https://www.google.com/travel/flights?q=Flights%20to%20${encodeURIComponent(countries.getName(countryId.toUpperCase(), 'en'))}`, '_blank')}
-            >
-            <Flex 
-              align="center" 
-              justify="space-between"
-              direction={{ base: "column", sm: "row" }}
-              gap={{ base: 2, sm: 0 }}
-            >
-              <Flex align="center" gap={{ base: 2, sm: 3, md: 3, lg: 3 }}>
-                <Box
-                  p={{ base: 1.5, sm: 2, md: 2, lg: 2 }}
-                  borderRadius="full"
-                  bg={useColorModeValue('blue.100', 'blue.800')}
-                  color={useColorModeValue('blue.600', 'blue.200')}
-                >
-                  <Icon as={FaPlane} boxSize={{ base: 4, sm: 5, md: 5, lg: 5 }} />
-                </Box>
-                <Box>
-                  <Text fontSize={buttonTextSize} fontWeight="bold" color={useColorModeValue('blue.800', 'blue.100')}>
-                    Check Flights
-                  </Text>
-                  <Text fontSize={buttonSubTextSize} color={useColorModeValue('blue.600', 'blue.300')}>
-                    Find the best deals to {countries.getName(countryId.toUpperCase(), 'en')}
-                  </Text>
-                </Box>
-              </Flex>
-              <Icon 
-                as={FaArrowRight} 
-                boxSize={{ base: 3, sm: 4, md: 4, lg: 4 }} 
-                color={useColorModeValue('blue.500', 'blue.300')}
-                _groupHover={{ transform: "translateX(4px)" }}
-                transition="transform 0.2s ease"
-              />
-            </Flex>
-          </Box>
-
-                      {/* Find Accommodation */}
-            <Box
-              flex="1"
-              p={buttonPadding}
-              bg={useColorModeValue('green.50', 'green.900')}
-              borderRadius={{ base: "12px", sm: "14px", md: "16px", lg: "18px" }}
-              border="2px solid"
-              borderColor={useColorModeValue('green.200', 'green.700')}
-              _hover={{
-                transform: "translateY(-2px)",
-                boxShadow: useColorModeValue("0 8px 25px rgba(34, 197, 94, 0.15)", "0 8px 25px rgba(34, 197, 94, 0.3)")
-              }}
-              transition="all 0.3s ease"
-              cursor="pointer"
+            />
+            <InfoBox 
+              icon={FaCity} 
+              label="Find Hotels" 
+              value={`in ${countries.getName(countryId.toUpperCase(), 'en')}`} 
+              colorScheme="green" 
+              size="large"
               onClick={() => window.open(`https://www.booking.com/searchresults.html?ss=${encodeURIComponent(countries.getName(countryId.toUpperCase(), 'en'))}`, '_blank')}
-            >
-            <Flex 
-              align="center" 
-              justify="space-between"
-              direction={{ base: "column", sm: "row" }}
-              gap={{ base: 2, sm: 0 }}
-            >
-              <Flex align="center" gap={{ base: 2, sm: 3, md: 3, lg: 3 }}>
-                <Box
-                  p={{ base: 1.5, sm: 2, md: 2, lg: 2 }}
-                  borderRadius="full"
-                  bg={useColorModeValue('green.100', 'green.800')}
-                  color={useColorModeValue('green.600', 'green.200')}
-                >
-                  <Icon as={FaCity} boxSize={{ base: 4, sm: 5, md: 5, lg: 5 }} />
-                </Box>
-                <Box>
-                  <Text fontSize={buttonTextSize} fontWeight="bold" color={useColorModeValue('green.800', 'green.100')}>
-                    Find Accommodation
-                  </Text>
-                  <Text fontSize={buttonSubTextSize} color={useColorModeValue('green.600', 'green.300')}>
-                    Discover hotels in {countries.getName(countryId.toUpperCase(), 'en')}
-                  </Text>
-                </Box>
-              </Flex>
-              <Icon 
-                as={FaArrowRight} 
-                boxSize={{ base: 3, sm: 4, md: 4, lg: 4 }} 
-                color={useColorModeValue('green.500', 'green.300')}
-                _groupHover={{ transform: "translateX(4px)" }}
-                transition="transform 0.2s ease"
-              />
-            </Flex>
+            />
           </Box>
-            </Flex>
         </Box>
       </Flex>
 
