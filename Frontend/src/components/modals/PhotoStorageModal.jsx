@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Box,
   Text,
@@ -7,43 +7,174 @@ import {
   Progress,
   useColorModeValue,
   Badge,
-  Icon
+  Icon,
+  Spinner,
+  useToast
 } from "@chakra-ui/react";
-import { FaCloud, FaUpload, FaDownload, FaTrash, FaExclamationTriangle } from "react-icons/fa";
+import { FaCloud, FaUpload, FaDownload, FaTrash, FaExclamationTriangle, FaSync } from "react-icons/fa";
 import BaseModal from "./BaseModal";
 import ModalButton from "./ModalButton";
+import { AuthContext } from "../../context/AuthContext";
+import { CountriesContext } from "../../context/CountriesContext";
+import { buildApiUrl } from "../../utils/apiConfig";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+
+/**
+ * Hook personalizado para buscar informações de storage do usuário
+ */
+const useStorageInfo = () => {
+  const { isLoggedIn } = useContext(AuthContext);
+  
+  return useQuery({
+    queryKey: ['storage-usage'],
+    queryFn: async () => {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No token available');
+      
+      // Buscar informações de storage (tamanho dos arquivos)
+      const storageResponse = await fetch(buildApiUrl('/api/images/storage-usage'), {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      let storageData = { usedBytes: 0 };
+      if (storageResponse.ok) {
+        storageData = await storageResponse.json();
+      }
+      
+      // Calcular storage em GB
+      const usedGB = storageData.usedBytes / (1024 * 1024 * 1024);
+      
+      // Determinar plano baseado no status premium
+      const isPremium = localStorage.getItem('premium') === 'true';
+      const totalGB = isPremium ? 100 : 5; // 100GB para premium, 5GB para free
+      
+      return {
+        used: parseFloat(usedGB.toFixed(2)),
+        total: totalGB,
+        usedBytes: storageData.usedBytes || 0,
+        lastUpdated: new Date().toISOString()
+      };
+    },
+    enabled: isLoggedIn,
+    refetchInterval: 30000, // Atualiza a cada 30 segundos
+    staleTime: 10000, // Dados ficam "frescos" por 10 segundos
+    retry: 3,
+    retryDelay: 1000
+  });
+};
 
 /**
  * Professional Photo Storage Modal
- * Shows storage usage and management options
+ * Shows real-time storage usage and management options
  */
 const PhotoStorageModal = ({ isOpen, onClose, storageInfo, onUpgrade }) => {
   const textColor = useColorModeValue("gray.700", "gray.200");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const bgColor = useColorModeValue("gray.50", "gray.700");
-
-  // Mock data - replace with actual props
-  const storageData = storageInfo || {
-    used: 2.5, // GB
-    total: 5, // GB
-    photos: 150,
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  
+  // Contextos - usando dados já disponíveis
+  const { isLoggedIn, isPremium } = useContext(AuthContext);
+  const { photoCount, refreshCountriesWithPhotos } = useContext(CountriesContext);
+  
+  // Hook para buscar informações de storage (apenas tamanho dos arquivos)
+  const { 
+    data: storageData, 
+    isLoading, 
+    isError, 
+    error,
+    refetch 
+  } = useStorageInfo();
+  
+  // Estado local para dados de storage
+  const [localStorageData, setLocalStorageData] = useState({
+    used: 0,
+    total: 5,
+    photos: 0,
     isPremium: false
+  });
+  
+  // Atualizar dados locais quando os dados da API mudarem
+  useEffect(() => {
+    if (storageData) {
+      setLocalStorageData(prev => ({
+        ...prev,
+        used: storageData.used,
+        total: storageData.total
+      }));
+    }
+  }, [storageData]);
+  
+  // Atualizar contagem de fotos do contexto (já disponível)
+  useEffect(() => {
+    if (photoCount !== undefined) {
+      setLocalStorageData(prev => ({
+        ...prev,
+        photos: photoCount
+      }));
+    }
+  }, [photoCount]);
+  
+  // Atualizar status premium do contexto (já disponível)
+  useEffect(() => {
+    if (isPremium !== undefined) {
+      setLocalStorageData(prev => ({
+        ...prev,
+        isPremium,
+        total: isPremium ? 100 : 5
+      }));
+    }
+  }, [isPremium]);
+  
+  // Função para forçar atualização
+  const handleRefresh = async () => {
+    try {
+      await refetch();
+      await refreshCountriesWithPhotos();
+      toast({
+        title: "Storage Updated",
+        description: "Storage information has been refreshed",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Update Failed",
+        description: "Failed to refresh storage information",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   };
-
-  const usagePercentage = (storageData.used / storageData.total) * 100;
+  
+  // Calcular porcentagem de uso
+  const usagePercentage = localStorageData.total > 0 ? (localStorageData.used / localStorageData.total) * 100 : 0;
   const isNearLimit = usagePercentage > 80;
   const isAtLimit = usagePercentage >= 100;
-
+  
   const getStorageColor = () => {
     if (isAtLimit) return "red";
     if (isNearLimit) return "orange";
     return "green";
   };
-
+  
+  // Formatar tamanho de arquivo
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+  
+  // Footer com botões
   const footer = (
     <Box w="full">
       <VStack spacing={3}>
-        {!storageData.isPremium && (
+        {!localStorageData.isPremium && (
           <ModalButton
             variant="primary"
             onClick={onUpgrade}
@@ -55,6 +186,15 @@ const PhotoStorageModal = ({ isOpen, onClose, storageInfo, onUpgrade }) => {
         )}
         <ModalButton
           variant="secondary"
+          onClick={handleRefresh}
+          leftIcon={<FaSync />}
+          w="full"
+          isLoading={isLoading}
+        >
+          Refresh Storage Info
+        </ModalButton>
+        <ModalButton
+          variant="secondary"
           onClick={onClose}
           w="full"
         >
@@ -63,6 +203,50 @@ const PhotoStorageModal = ({ isOpen, onClose, storageInfo, onUpgrade }) => {
       </VStack>
     </Box>
   );
+  
+  // Loading state
+  if (isLoading) {
+    return (
+      <BaseModal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Photo Storage"
+        icon={FaCloud}
+        size="md"
+      >
+        <VStack spacing={6} align="center" py={8}>
+          <Spinner size="xl" color="blue.500" />
+          <Text>Loading storage information...</Text>
+        </VStack>
+      </BaseModal>
+    );
+  }
+  
+  // Error state
+  if (isError) {
+    return (
+      <BaseModal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Photo Storage"
+        icon={FaCloud}
+        size="md"
+      >
+        <VStack spacing={6} align="center" py={8}>
+          <Icon as={FaExclamationTriangle} color="red.500" boxSize={8} />
+          <Text color="red.500">Failed to load storage information</Text>
+          <Text fontSize="sm" color="gray.500">{error?.message}</Text>
+          <ModalButton
+            variant="primary"
+            onClick={handleRefresh}
+            leftIcon={<FaSync />}
+          >
+            Retry
+          </ModalButton>
+        </VStack>
+      </BaseModal>
+    );
+  }
 
   return (
     <BaseModal
@@ -98,7 +282,10 @@ const PhotoStorageModal = ({ isOpen, onClose, storageInfo, onUpgrade }) => {
             Storage Usage
           </Text>
           <Text fontSize="md" color={useColorModeValue("gray.600", "gray.300")}>
-            {storageData.used} GB of {storageData.total} GB used
+            {localStorageData.used} GB of {localStorageData.total} GB used
+          </Text>
+          <Text fontSize="sm" color={useColorModeValue("gray.500", "gray.400")} mt={1}>
+            Raw size: {formatFileSize(localStorageData.usedBytes)}
           </Text>
         </Box>
 
@@ -121,10 +308,10 @@ const PhotoStorageModal = ({ isOpen, onClose, storageInfo, onUpgrade }) => {
           />
           <HStack justify="space-between" mt={2}>
             <Text fontSize="sm" color={useColorModeValue("gray.500", "gray.400")}>
-              {storageData.used} GB used
+              {localStorageData.used} GB used
             </Text>
             <Text fontSize="sm" color={useColorModeValue("gray.500", "gray.400")}>
-              {storageData.total - storageData.used} GB free
+              {Math.max(0, localStorageData.total - localStorageData.used).toFixed(2)} GB free
             </Text>
           </HStack>
         </Box>
@@ -178,11 +365,16 @@ const PhotoStorageModal = ({ isOpen, onClose, storageInfo, onUpgrade }) => {
               </Text>
             </HStack>
             <Text fontSize="2xl" fontWeight="bold" color={textColor}>
-              {storageData.photos}
+              {localStorageData.photos}
             </Text>
             <Text fontSize="sm" color={useColorModeValue("gray.600", "gray.400")}>
               Total photos in your collection
             </Text>
+            {storageData?.lastUpdated && (
+              <Text fontSize="xs" color={useColorModeValue("gray.500", "gray.400")} mt={2}>
+                Last updated: {new Date(storageData.lastUpdated).toLocaleTimeString()}
+              </Text>
+            )}
           </Box>
 
           {/* Storage Plans */}
