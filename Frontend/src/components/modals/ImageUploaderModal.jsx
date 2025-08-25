@@ -119,6 +119,7 @@ const ImageUploaderModal = ({ countryId, onUpload, onUploadSuccess, isOpen: exte
     try {
       const formData = new FormData();
       formData.append('year', year);
+      formData.append('countryId', countryId);
 
       setUploadProgress(25);
 
@@ -135,7 +136,7 @@ const ImageUploaderModal = ({ countryId, onUpload, onUploadSuccess, isOpen: exte
       setUploadProgress(50);
 
       // Debug: Log the request details
-      const uploadUrl = buildApiUrl(`/api/images/${countryId}/upload`);
+      const uploadUrl = buildApiUrl('/api/images/upload');
       const authHeaders = getAuthHeaders();
       console.log('🚀 Upload Request Debug:');
       console.log('URL:', uploadUrl);
