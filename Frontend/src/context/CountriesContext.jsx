@@ -43,19 +43,27 @@ export const CountriesProvider = ({ children }) => {
         if (!token) return;
 
         try {
+            console.log('🔄 Fetching counts...');
+            
             const response = await fetch(buildApiUrl('/api/images/count'), {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
 
+            console.log('📊 Counts response status:', response.status, response.statusText);
+
             if (!response.ok) {
                 throw new Error('Error fetching photo and country counts');
             }
 
             const data = await response.json();
+            console.log('📊 Counts data:', data);
+            
             setPhotoCount(data.photoCount);
             setCountryCount(data.countryCount);
+            
+            console.log('✅ Counts set successfully:', { photoCount: data.photoCount, countryCount: data.countryCount });
         } catch (error) {
             console.error('Error fetching photo/country counts:', error);
             setPhotoCount(0);
@@ -77,12 +85,16 @@ export const CountriesProvider = ({ children }) => {
         }
 
         try {
+            console.log('🔄 Fetching from detailed endpoint...');
+            
             // Use the new detailed endpoint
             const response = await fetch(buildApiUrl('/api/images/countries-with-photos-detailed'), {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
+
+            console.log('📊 Response status:', response.status, response.statusText);
 
             if (!response.ok) {
                 console.warn('⚠️ Detailed endpoint failed, falling back to old endpoint');
@@ -102,6 +114,14 @@ export const CountriesProvider = ({ children }) => {
             
             // Data already comes with countryId, countryName, and photoCount
             setCountriesWithPhotos(data);
+            console.log('✅ Detailed data set successfully');
+            console.log('✅ Final countriesWithPhotos state:', data);
+            
+            // Force a re-render by updating the state again
+            setTimeout(() => {
+                console.log('🔄 Forcing re-render after 100ms...');
+                setCountriesWithPhotos([...data]);
+            }, 100);
         } catch (error) {
             console.error('Error fetching countries with photos detailed:', error);
             console.warn('⚠️ Falling back to old endpoint due to error');
@@ -224,22 +244,35 @@ export const CountriesProvider = ({ children }) => {
     const refreshCountriesWithPhotos = useCallback(async (force = false) => {
         const now = Date.now();
         
+        console.log('🔄 refreshCountriesWithPhotos called with force:', force);
+        console.log('🔄 Current time:', new Date(now).toLocaleTimeString());
+        console.log('🔄 Last fetch time:', new Date(lastFetch).toLocaleTimeString());
+        console.log('🔄 Cache duration:', CACHE_DURATION, 'ms');
+        
         // Check if cache is still valid (unless forced refresh)
         if (!force && (now - lastFetch) < CACHE_DURATION) {
             console.log('🔄 Using cached data, last fetch:', new Date(lastFetch).toLocaleTimeString());
             return;
         }
 
-        console.log('🔄 Fetching fresh data...');
+        console.log('🔄 Fetching fresh data...', force ? '(FORCED)' : '');
         setLoading(true);
         
         try {
+            // Clear cache if forced refresh
+            if (force) {
+                setLastFetch(0);
+                console.log('🔄 Cache cleared for forced refresh');
+            }
+            
+            console.log('🔄 Starting parallel data fetch...');
             await Promise.all([
                 fetchCounts(), 
                 fetchCountriesWithPhotosDetailed(), 
                 fetchAvailableYears()
             ]);
             setLastFetch(now);
+            console.log('🔄 Data refresh completed successfully at:', new Date(now).toLocaleTimeString());
         } catch (error) {
             console.error('Error refreshing data:', error);
         } finally {

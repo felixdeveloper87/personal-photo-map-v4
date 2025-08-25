@@ -206,11 +206,21 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
 
   // Handle upload success
   const handleUploadSuccess = () => {
-    // Refresh the data after successful upload
+    console.log('🔄 Upload success - refreshing data...');
+    
+    // Force immediate refresh of all data
+    refreshCountriesWithPhotos(true);
+    
+    // Invalidate React Query cache for immediate refetch
     queryClient.invalidateQueries(['allImages', countryId]);
     queryClient.invalidateQueries(['years', countryId]);
     queryClient.invalidateQueries(['albums', countryId]);
-    refreshCountriesWithPhotos();
+    
+    // Force refetch of specific queries
+    queryClient.refetchQueries(['allImages', countryId]);
+    queryClient.refetchQueries(['years', countryId]);
+    queryClient.refetchQueries(['albums', countryId]);
+    
     onImageUploaderClose();
   };
 
