@@ -174,7 +174,7 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
       {/* Layout principal: esquerda (bandeira) vs direita (infoboxes) */}
       <Flex
         direction={{ base: "column", lg: "row" }}
-        gap={6}
+        gap={{ base: 4, md: 6 }}
         align="flex-start"
         maxW="1600px"
         mx="auto"
@@ -182,24 +182,25 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
       >
         {/* Lado Esquerdo: Bandeira */}
         <Box
-          width={{ base: "100%", lg: "700px" }}
+          width={{ base: "100%", md: "100%", lg: "700px" }}
           display="flex"
           flexDirection="column"
           alignItems="center"
+          mb={{ base: 4, lg: 0 }}
         >
           <Box
             width="100%"
-            height="380px"
-            borderRadius="20px"
+            height={{ base: "250px", sm: "300px", md: "350px", lg: "380px" }}
+            borderRadius={{ base: "16px", md: "20px" }}
             overflow="hidden"
-            boxShadow="0 20px 40px rgba(0, 0, 0, 0.3)"
+            boxShadow={{ base: "0 10px 20px rgba(0, 0, 0, 0.2)", md: "0 20px 40px rgba(0, 0, 0, 0.3)" }}
             bg="linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)"
             _dark={{
               bg: "linear-gradient(135deg, #1e293b 0%, #334155 100%)"
             }}
             _hover={{
-              transform: "scale(1.01)",
-              boxShadow: "0 25px 50px rgba(0, 0, 0, 0.4)"
+              transform: { base: "scale(1.005)", md: "scale(1.01)" },
+              boxShadow: { base: "0 15px 30px rgba(0, 0, 0, 0.25)", md: "0 25px 50px rgba(0, 0, 0, 0.4)" }
             }}
             transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
             display="flex"
@@ -215,15 +216,16 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
           flex="2"
           display="flex"
           flexDirection="column"
-          gap={3}
+          gap={{ base: 2, md: 3 }}
           minW="0"
+          w={{ base: "100%", lg: "auto" }}
         >
           {/* Primeira linha: 4 infoboxes */}
           <Flex 
             wrap="wrap" 
-            justify="flex-start" 
+            justify={{ base: "center", md: "flex-start" }}
             align="center" 
-            gap={3}
+            gap={{ base: 2, md: 3 }}
             minW="0"
           >
             <InfoBox icon={FaClock} label="Local Time" value={currentTime} colorScheme="blue" size="large" />
@@ -235,9 +237,9 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
           {/* Segunda linha: 4 infoboxes */}
           <Flex 
             wrap="wrap" 
-            justify="flex-start" 
+            justify={{ base: "center", md: "flex-start" }}
             align="center" 
-            gap={3}
+            gap={{ base: 2, md: 3 }}
             minW="0"
           >
             <InfoBox icon={FaUsers} label="Population" value={countryInfo?.population ? formatPopulation(countryInfo.population) : undefined} colorScheme="green" size="large" />
@@ -248,8 +250,8 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
           
           {/* Check Flights & Accommodation Section */}
           <Flex
-            mt={4}
-            gap={3}
+            mt={{ base: 3, md: 4 }}
+            gap={{ base: 2, md: 3 }}
             direction={{ base: "column", md: "row" }}
           >
             {/* Check Flights */}
