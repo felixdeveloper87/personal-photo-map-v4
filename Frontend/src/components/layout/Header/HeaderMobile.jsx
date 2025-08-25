@@ -151,43 +151,79 @@ const HeaderMobile = ({
               </Flex>
 
               {/* Botões de funcionalidades - usando os mesmos do desktop */}
-              <VStack spacing={3} w="full">
-                {/* Photo Storage Button */}
-                <ModernPhotoStorageButton
-                  onClick={onPhotoStorageClick}
+              <Box w="full">
+                {/* Grid de botões quadrados 2x2 */}
+                <Box
+                  display="grid"
+                  gridTemplateColumns="1fr 1fr"
+                  gap={3}
                   w="full"
-                  size="md"
-                />
+                >
+                  {/* Photo Storage Button */}
+                  <ModernPhotoStorageButton
+                    onClick={onPhotoStorageClick}
+                    w="full"
+                    h="80px"
+                    size="md"
+                    borderRadius="xl"
+                    display="flex"
+                    flexDirection="column"
+                    alignItems="center"
+                    justifyContent="center"
+                    gap={2}
+                  />
 
-                {/* Countries Visited Button */}
-                <ModernCountriesVisitedButton
-                  onClick={onCountriesClick}
-                  w="full"
-                  size="md"
-                />
+                  {/* Countries Visited Button */}
+                  <ModernCountriesVisitedButton
+                    onClick={onCountriesClick}
+                    w="full"
+                    h="80px"
+                    size="md"
+                    borderRadius="xl"
+                    display="flex"
+                    flexDirection="column"
+                    alignItems="center"
+                    justifyContent="center"
+                    gap={2}
+                  />
 
-                {/* Search Button */}
-                <ModernSearchButton
-                  onClick={() => {
-                    // Encontrar e clicar no botão oculto do SearchForm
-                    const searchTrigger = document.querySelector('[data-search-trigger]');
-                    if (searchTrigger) {
-                      searchTrigger.click();
-                    }
-                    // Não fechar o menu imediatamente para permitir que o usuário use o SearchForm
-                    // O menu será fechado quando o SearchForm for fechado
-                  }}
-                  w="full"
-                  size="md"
-                />
+                  {/* Search Button */}
+                  <ModernSearchButton
+                    onClick={() => {
+                      // Encontrar e clicar no botão oculto do SearchForm
+                      const searchTrigger = document.querySelector('[data-search-trigger]');
+                      if (searchTrigger) {
+                        searchTrigger.click();
+                      }
+                      // Não fechar o menu imediatamente para permitir que o usuário use o SearchForm
+                      // O menu será fechado quando o SearchForm for fechado
+                    }}
+                    w="full"
+                    h="80px"
+                    size="md"
+                    borderRadius="xl"
+                    display="flex"
+                    flexDirection="column"
+                    alignItems="center"
+                    justifyContent="center"
+                    gap={2}
+                  />
 
-                {/* Timeline Button */}
-                <ModernTimelineButton
-                  onClick={onTimelineClick}
-                  w="full"
-                  size="md"
-                />
-              </VStack>
+                  {/* Timeline Button */}
+                  <ModernTimelineButton
+                    onClick={onTimelineClick}
+                    w="full"
+                    h="80px"
+                    size="md"
+                    borderRadius="xl"
+                    display="flex"
+                    flexDirection="column"
+                    alignItems="center"
+                    justifyContent="center"
+                    gap={2}
+                  />
+                </Box>
+              </Box>
 
               {/* Upgrade Premium */}
               {!isPremium && (
