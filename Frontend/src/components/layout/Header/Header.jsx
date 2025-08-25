@@ -163,6 +163,7 @@ const Header = () => {
         isPremium={isPremium}
         photoCount={photoCount}
         countryCount={countryCount}
+        countriesWithPhotos={countriesWithPhotos}
         onProfileClick={() => {
           profileModal.onOpen();
           mobileMenu.onClose();
@@ -183,6 +184,7 @@ const Header = () => {
           navigate("/timeline");
           mobileMenu.onClose();
         }}
+        onSearch={(p) => navigate(`/countries/${p.country}?year=${p.year}`)}
         onLoginClick={() => {
           loginModal.onOpen();
           mobileMenu.onClose();

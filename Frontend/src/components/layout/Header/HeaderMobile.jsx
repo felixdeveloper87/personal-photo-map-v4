@@ -13,7 +13,16 @@ import {
   Button,
 } from "@chakra-ui/react";
 import { FaImages, FaMap, FaUser, FaSignOutAlt, FaMoon, FaSun, FaTimes } from "react-icons/fa";
-import { ModernUpgradeToPremiumButton, ModernLoginButton, ModernRegisterButton } from "../../ui/buttons/HeaderButtons";
+import { 
+  ModernUpgradeToPremiumButton, 
+  ModernLoginButton, 
+  ModernRegisterButton,
+  ModernPhotoStorageButton,
+  ModernCountriesVisitedButton,
+  ModernSearchButton,
+  ModernTimelineButton
+} from "../../ui/buttons/HeaderButtons";
+import SearchForm from "../../features/SearchForm";
 import {
   userProfileCardStyles,
   mobileMenuStyles,
@@ -37,17 +46,23 @@ const HeaderMobile = ({
   isPremium,
   photoCount,
   countryCount,
+  countriesWithPhotos,
   onProfileClick,
   onPremiumClick,
   onPhotoStorageClick,
   onCountriesClick,
   onTimelineClick,
+  onSearch,
   onLoginClick,
   onRegisterClick,
   onLogout,
   onClose, // ⬅️ novo: para fechar pelo X no topo
 }) => {
   const navigate = useNavigate();
+
+  // Debug: Log the data received
+  console.log('📱 HeaderMobile - countriesWithPhotos:', countriesWithPhotos);
+  console.log('📱 HeaderMobile - isLoggedIn:', isLoggedIn);
 
   return (
     <Box display={{ base: "block", lg: "none" }}>
@@ -135,73 +150,43 @@ const HeaderMobile = ({
                 </Box>
               </Flex>
 
-              {/* Contador de Fotos */}
-              <Flex
-                {...counterCardEnhancedStyles(styles)}
-                align="center"
-                cursor="pointer"
-                onClick={onPhotoStorageClick}
-                w="full"
-                justify="center"
-              >
-                <Center>
-                  <VStack spacing={1}>
-                    <Text fontSize="2xl" fontWeight="700" color={styles.accentColor} lineHeight="1">
-                      📸
-                    </Text>
-                    <Text fontSize="lg" fontWeight="600" color={styles.textColor}>
-                      {photoCount} Photos
-                    </Text>
-                  </VStack>
-                </Center>
-              </Flex>
-
-              {/* Contador de Países */}
-              <Flex
-                {...counterCardEnhancedStyles(styles)}
-                align="center"
-                cursor="pointer"
-                onClick={onCountriesClick}
-                w="full"
-                justify="center"
-              >
-                <Center>
-                  <VStack spacing={1}>
-                    <Text fontSize="2xl" fontWeight="700" color={styles.accentColor} lineHeight="1">
-                      🌍
-                    </Text>
-                    <Text fontSize="lg" fontWeight="600" color={styles.textColor}>
-                      {countryCount} Countries
-                    </Text>
-                  </VStack>
-                </Center>
-              </Flex>
-
-              {/* Navegação */}
+              {/* Botões de funcionalidades - usando os mesmos do desktop */}
               <VStack spacing={3} w="full">
-                <Button
+                {/* Photo Storage Button */}
+                <ModernPhotoStorageButton
+                  onClick={onPhotoStorageClick}
+                  w="full"
+                  size="md"
+                />
+
+                {/* Countries Visited Button */}
+                <ModernCountriesVisitedButton
+                  onClick={onCountriesClick}
+                  w="full"
+                  size="md"
+                />
+
+                {/* Search Button */}
+                <ModernSearchButton
                   onClick={() => {
-                    navigate("/countries");
-                    onClose?.();
+                    // Encontrar e clicar no botão oculto do SearchForm
+                    const searchTrigger = document.querySelector('[data-search-trigger]');
+                    if (searchTrigger) {
+                      searchTrigger.click();
+                    }
+                    // Não fechar o menu imediatamente para permitir que o usuário use o SearchForm
+                    // O menu será fechado quando o SearchForm for fechado
                   }}
                   w="full"
-                  bg={styles.accentColor}
-                  color="white"
-                  _hover={{ opacity: 0.85 }}
-                  leftIcon={<FaMap />}
-                >
-                  Countries
-                </Button>
-                <Button
+                  size="md"
+                />
+
+                {/* Timeline Button */}
+                <ModernTimelineButton
                   onClick={onTimelineClick}
                   w="full"
-                  bg={styles.accentColor}
-                  color="white"
-                  _hover={{ opacity: 0.85 }}
-                  leftIcon={<FaImages />}
-                >
-                  Timeline
-                </Button>
+                  size="md"
+                />
               </VStack>
 
               {/* Upgrade Premium */}
@@ -245,6 +230,13 @@ const HeaderMobile = ({
                   Logout
                 </Text>
               </Flex>
+
+              {/* SearchForm para usuários logados */}
+              <SearchForm
+                countriesWithPhotos={countriesWithPhotos}
+                onSearch={onSearch}
+                onClose={onClose}
+              />
             </VStack>
           ) : (
             <VStack spacing={6} px={4} pt={2} pb={4}>

@@ -37,15 +37,20 @@ const MotionVStack = motion(VStack);
  * - Navigates to /timeline/[year], if only a year is selected.
  *
  * @param {function} onSearch - A callback function triggered when a country is selected (extra logic if needed).
+ * @param {function} onClose - Optional callback function to be called when the modal is closed.
  * @returns {JSX.Element}
  */
-export default function SearchForm({ onSearch }) {
+export default function SearchForm({ onSearch, onClose: externalOnClose }) {
   // Chakra UI modal controls
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
   // Retrieve country data and available years from context
   const { countriesWithPhotos, availableYears } = useContext(CountriesContext);
+
+  // Debug: Log the data received
+  console.log('🔍 SearchForm - countriesWithPhotos:', countriesWithPhotos);
+  console.log('🔍 SearchForm - availableYears:', availableYears);
 
   // Local states for selected country and year
   const [selectedCountry, setSelectedCountry] = useState('');
@@ -123,6 +128,10 @@ export default function SearchForm({ onSearch }) {
       setTimeout(() => {
         onClose();
         setIsLoading(false);
+        // Chamar função externa se fornecida
+        if (externalOnClose) {
+          externalOnClose();
+        }
       }, 1000);
     } catch (error) {
       setValidationError('An error occurred during the search. Please try again.');
@@ -137,6 +146,10 @@ export default function SearchForm({ onSearch }) {
     setValidationError('');
     setIsLoading(false);
     onClose();
+    // Chamar função externa se fornecida
+    if (externalOnClose) {
+      externalOnClose();
+    }
   };
 
   const hasSelection = selectedCountry || selectedYear;
@@ -244,8 +257,8 @@ export default function SearchForm({ onSearch }) {
                 >
                   {(countriesWithPhotos || []).length > 0 ? (
                     countriesWithPhotos.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
+                      <option key={c.countryId || c.id} value={c.countryId || c.id}>
+                        {c.countryName || c.name}
                       </option>
                     ))
                   ) : (
