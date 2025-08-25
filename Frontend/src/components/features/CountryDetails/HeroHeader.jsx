@@ -281,21 +281,25 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
             <InfoBox icon={FaPercent} label="Inflation Rate" value={indicatorsData?.inflationCPI ? `${indicatorsData.inflationCPI.value}%` : undefined} colorScheme="orange" size="large" />
             <InfoBox icon={FaChartLine} label="GDP Growth" value={indicatorsData?.gdpGrowth ? `${indicatorsData.gdpGrowth.value}%` : undefined} colorScheme="green" size="large" />
             
-            {/* See More com fundo destacado */}
+            {/* Terceira linha: 2 infoboxes adicionais */}
+            <InfoBox icon={FaSun} label="Weather" value={weatherData?.description ? weatherData.description : undefined} colorScheme="yellow" size="large" />
+            <InfoBox icon={FaUsers} label="Net Migration" value={indicatorsData?.netMigration ? `${indicatorsData.netMigration.value}` : undefined} colorScheme="cyan" size="large" />
+            
+            {/* See More com fundo destacado - cor mais sutil */}
             <Box
               p={4}
-              bg="linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)"
+              bg="linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)"
               borderRadius="xl"
               border="2px solid"
-              borderColor="purple.200"
+              borderColor="gray.200"
               _hover={{
                 transform: "translateY(-2px)",
-                boxShadow: "0 8px 25px rgba(224, 195, 252, 0.3)"
+                boxShadow: "0 8px 25px rgba(197, 207, 226, 0.3)"
               }}
               transition="all 0.3s ease"
               cursor="pointer"
               onClick={onOpen}
-              color="white"
+              color="gray.600"
               textAlign="center"
               minH="120px"
               display="flex"
@@ -307,22 +311,18 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
               <Box
                 p={2}
                 borderRadius="full"
-                bg="rgba(255, 255, 255, 0.2)"
-                color="white"
+                bg="rgba(0, 0, 0, 0.1)"
+                color="gray.600"
               >
                 <Icon as={FaBook} boxSize={6} />
               </Box>
               <Text fontSize="lg" fontWeight="bold">
                 See more
               </Text>
-              <Text fontSize="sm" opacity={0.9}>
+              <Text fontSize="sm" opacity={0.8}>
                 More indicators
               </Text>
             </Box>
-            
-            {/* Terceira linha: 2 infoboxes adicionais */}
-            <InfoBox icon={FaSun} label="Weather" value={weatherData?.description ? weatherData.description : undefined} colorScheme="yellow" size="large" />
-            <InfoBox icon={FaUsers} label="Net Migration" value={indicatorsData?.netMigration ? `${indicatorsData.netMigration.value}` : undefined} colorScheme="cyan" size="large" />
             
             {/* Quarta linha: Check Flights & Accommodation com fundos destacados */}
             {/* Check Flights com fundo destacado */}
