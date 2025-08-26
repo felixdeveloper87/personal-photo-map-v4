@@ -30,10 +30,7 @@ const STATIC_COLORS = {
 // Cache para estilos de países - evita recriação
 const countryStyleCache = new Map();
 
-// Função para selecionar países de destaque
-export const selectHighlightCountries = (countriesWithPhotos) => {
-  console.log('🎯 selectHighlightCountries called with:', countriesWithPhotos);
-  
+// Função para selecionar países de destaque 
   const maxCountries = 3;
   if (countriesWithPhotos.length > 0) {
     const selectedCountries = countriesWithPhotos
@@ -41,7 +38,6 @@ export const selectHighlightCountries = (countriesWithPhotos) => {
       .map(country => country.countryId)
       .sort(() => Math.random() - 0.5);
     
-    console.log('🎯 Selected countries from user data:', selectedCountries);
     return selectedCountries;
   } else {
     const fallbackCountries = [
@@ -52,9 +48,7 @@ export const selectHighlightCountries = (countriesWithPhotos) => {
     const selectedFallback = fallbackCountries
       .sort(() => Math.random() - 0.5)
       .slice(0, maxCountries);
-    
-    console.log('🎯 Using fallback countries:', selectedFallback);
-    return selectedFallback;
+        return selectedFallback;
   }
 };
 
@@ -113,7 +107,6 @@ export const createCountryStyle = (colors) => {
     
     // Debug logging for specific countries
     if (countryId === 'br' || countryId === 'us' || countryId === 'gb') {
-      console.log(`🎨 Style for ${countryId}:`, { hasPhotos, isHighlighted, isLoggedIn, countriesWithPhotosLength: countriesWithPhotos.length });
     }
 
     // Países destacados para usuários LOGADOS com cores de verão - ESTÁTICO
