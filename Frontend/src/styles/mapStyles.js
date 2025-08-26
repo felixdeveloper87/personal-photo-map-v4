@@ -31,6 +31,7 @@ const STATIC_COLORS = {
 const countryStyleCache = new Map();
 
 // Função para selecionar países de destaque 
+export const selectHighlightedCountries = (countriesWithPhotos) => {
   const maxCountries = 3;
   if (countriesWithPhotos.length > 0) {
     const selectedCountries = countriesWithPhotos
@@ -48,7 +49,7 @@ const countryStyleCache = new Map();
     const selectedFallback = fallbackCountries
       .sort(() => Math.random() - 0.5)
       .slice(0, maxCountries);
-        return selectedFallback;
+    return selectedFallback;
   }
 };
 
