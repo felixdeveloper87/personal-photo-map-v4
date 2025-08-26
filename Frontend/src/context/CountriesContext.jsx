@@ -263,35 +263,16 @@ export const CountriesProvider = ({ children }) => {
             if (force) {
                 setLastFetch(0);
                 console.log('🔄 Cache cleared for forced refresh');
-                
-                // Clear existing state to force immediate re-render
-                setCountriesWithPhotos([]);
-                setPhotoCount(0);
-                setCountryCount(0);
-                setAvailableYears([]);
             }
             
             console.log('🔄 Starting parallel data fetch...');
-            
-            // Ensure fresh data by adding timestamp to bust any HTTP cache
-            const timestamp = Date.now();
-            console.log('🔄 Using cache-busting timestamp:', timestamp);
-            
             await Promise.all([
                 fetchCounts(), 
                 fetchCountriesWithPhotosDetailed(), 
                 fetchAvailableYears()
             ]);
-            
             setLastFetch(now);
             console.log('🔄 Data refresh completed successfully at:', new Date(now).toLocaleTimeString());
-            
-            // Log final state for debugging
-            console.log('🔄 Final refresh state check:');
-            console.log('- Photo count will be updated');
-            console.log('- Country count will be updated');
-            console.log('- Countries with photos will be updated');
-            
         } catch (error) {
             console.error('Error refreshing data:', error);
         } finally {
@@ -306,41 +287,6 @@ export const CountriesProvider = ({ children }) => {
     const forceRefresh = useCallback(async () => {
         console.log('🔄 Force refresh triggered');
         await refreshCountriesWithPhotos(true);
-    }, [refreshCountriesWithPhotos]);
-
-    /**
-     * forceRefreshWithCallback - Forces refresh and executes callback when done
-     * This is useful for upload success handlers to ensure data is refreshed
-     */
-    const forceRefreshWithCallback = useCallback(async (callback, retries = 3) => {
-        console.log('🔄 Force refresh with callback triggered, retries:', retries);
-        
-        const attemptRefresh = async (attempt = 1) => {
-            try {
-                await refreshCountriesWithPhotos(true);
-                
-                if (callback) {
-                    callback(true, attempt);
-                }
-                
-                console.log(`✅ Force refresh completed successfully on attempt ${attempt}`);
-            } catch (error) {
-                console.error(`❌ Force refresh attempt ${attempt} failed:`, error);
-                
-                if (attempt < retries) {
-                    const delay = 1000 * attempt; // Progressive delay
-                    console.log(`🔄 Retrying force refresh in ${delay}ms...`);
-                    setTimeout(() => attemptRefresh(attempt + 1), delay);
-                } else {
-                    console.error('❌ All force refresh attempts failed');
-                    if (callback) {
-                        callback(false, attempt);
-                    }
-                }
-            }
-        };
-        
-        await attemptRefresh();
     }, [refreshCountriesWithPhotos]);
 
     /**
@@ -383,7 +329,6 @@ export const CountriesProvider = ({ children }) => {
                 availableYears,
                 refreshCountriesWithPhotos,
                 forceRefresh, // New method for immediate refresh
-                forceRefreshWithCallback, // New method with callback support
             }}
         >
             {children}

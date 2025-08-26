@@ -131,45 +131,13 @@ const CountryDetails = () => {
               cardBg={cardBg}
               borderColor={borderColor}
               countryId={countryId}
-              onUploadSuccess={async () => {
-                // Refresh data after upload with retry logic for async backend operations
-                console.log('🔄 Upload success in CountryDetails - refreshing data...');
-                
-                // Invalidate React Query cache immediately
+              onUploadSuccess={() => {
+                // Refresh data after upload
                 queryClient.invalidateQueries(['allImages', countryId]);
                 queryClient.invalidateQueries(['years', countryId]);
                 queryClient.invalidateQueries(['albums', countryId]);
-                
-                // Implement retry logic for data refresh
-                const refreshWithRetry = async (retryCount = 0) => {
-                  const maxRetries = 3;
-                  const baseDelay = 1000;
-                  
-                  try {
-                    console.log(`🔄 CountryDetails refresh attempt ${retryCount + 1}/${maxRetries + 1}`);
-                    
-                    // Force refresh countries data
-                    await refreshCountriesWithPhotos(true);
-                    
-                    // Additional refresh for consistency
-                    if (retryCount < maxRetries) {
-                      setTimeout(() => {
-                        refreshCountriesWithPhotos(true);
-                      }, baseDelay * (retryCount + 2));
-                    }
-                    
-                  } catch (error) {
-                    console.error(`❌ CountryDetails refresh attempt ${retryCount + 1} failed:`, error);
-                    
-                    if (retryCount < maxRetries) {
-                      const delay = baseDelay * Math.pow(2, retryCount);
-                      setTimeout(() => refreshWithRetry(retryCount + 1), delay);
-                    }
-                  }
-                };
-                
-                // Start refresh with small delay
-                setTimeout(() => refreshWithRetry(), 500);
+                // Refresh SearchForm data (countries and years)
+                refreshCountriesWithPhotos();
               }}
             />
           </Box>
