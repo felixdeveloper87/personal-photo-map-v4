@@ -167,27 +167,43 @@ const ImageUploaderModal = ({ countryId, onUpload, onUploadSuccess, isOpen: exte
       console.log('✅ Upload successful:', result);
 
       setUploadProgress(100);
-      showSuccessToast(toast, `Successfully uploaded ${files.length} image(s)!`);
+      console.log('🎯 About to show success toast...');
+      
+      try {
+        showSuccessToast(toast, `Successfully uploaded ${files.length} image(s)!`);
+        console.log('🎯 Success toast shown, proceeding to callbacks...');
 
-      // Call the success callback if provided
-      console.log('🔄 ImageUploaderModal: onUploadSuccess callback exists?', !!onUploadSuccess);
-      if (onUploadSuccess) {
-        console.log('🔄 ImageUploaderModal: Calling onUploadSuccess callback');
-        onUploadSuccess();
-      } else {
-        console.warn('⚠️ ImageUploaderModal: No onUploadSuccess callback provided!');
+        // Call the success callback if provided
+        console.log('🔄 ImageUploaderModal: onUploadSuccess callback exists?', !!onUploadSuccess);
+        if (onUploadSuccess) {
+          console.log('🔄 ImageUploaderModal: Calling onUploadSuccess callback');
+          onUploadSuccess();
+          console.log('🔄 ImageUploaderModal: onUploadSuccess callback completed');
+        } else {
+          console.warn('⚠️ ImageUploaderModal: No onUploadSuccess callback provided!');
+        }
+
+        // Also dispatch global event as backup
+        console.log('📸 Dispatching global photo-upload event...');
+        window.dispatchEvent(new CustomEvent('photo-upload'));
+        localStorage.setItem('photo-upload-timestamp', Date.now().toString());
+        console.log('📸 Global event dispatched successfully');
+
+        // Reset form
+        console.log('🧹 Resetting form...');
+        setFiles([]);
+        setYear(currentYear);
+        if (fileInputRef.current) fileInputRef.current.value = null;
+        console.log('🧹 Form reset completed');
+        
+        console.log('🚪 Closing modal...');
+        finalOnClose(); // Close modal after successful upload
+        console.log('🚪 Modal close called');
+        
+      } catch (postUploadError) {
+        console.error('💥 Error in post-upload processing:', postUploadError);
+        console.error('Stack:', postUploadError.stack);
       }
-
-      // Also dispatch global event as backup
-      console.log('📸 Dispatching global photo-upload event...');
-      window.dispatchEvent(new CustomEvent('photo-upload'));
-      localStorage.setItem('photo-upload-timestamp', Date.now().toString());
-
-      // Reset form
-      setFiles([]);
-      setYear(currentYear);
-      if (fileInputRef.current) fileInputRef.current.value = null;
-      finalOnClose(); // Close modal after successful upload
 
     } catch (error) {
       console.error('💥 Upload error details:', {
