@@ -7,6 +7,17 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    
+    // Configuração específica para build de produção
+    build: {
+      outDir: 'dist',
+      assetsDir: 'assets',
+      rollupOptions: {
+        output: {
+          manualChunks: undefined,
+        },
+      },
+    },
 
     // ⚠️ NÃO "defina" VITE_BACKEND_URL aqui no dev (evita congelar valor)
     // define: {},

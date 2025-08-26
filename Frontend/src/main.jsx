@@ -41,6 +41,7 @@ function AppWithQueryClient() {
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter
+      basename="/"
       future={{
         v7_startTransition: true,
         v7_relativeSplatPath: true
