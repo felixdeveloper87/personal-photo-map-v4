@@ -458,7 +458,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
    * Optionally invalidates queries or triggers re-fetch to show new images.
    */
   const handleUpload = (newImages, year) => {
-    // Option 1: Invalidate queries to refetch new data
+    // Option 1: Invalidate queries to refetch new dataa
     queryClient.invalidateQueries(['images']);
     queryClient.invalidateQueries(['years']);
     queryClient.invalidateQueries(['albums']);
