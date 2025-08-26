@@ -204,24 +204,62 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
     onClose: onImageUploaderClose,
   } = useDisclosure();
 
-  // Handle upload success
-  const handleUploadSuccess = () => {
-    console.log('🔄 Upload success - refreshing data...');
+  // Handle upload success with proper async handling
+  const handleUploadSuccess = async () => {
+    console.log('🔄 Upload success - refreshing data with retry logic...');
     
-    // Force immediate refresh of all data
-    refreshCountriesWithPhotos(true);
+    // Close modal immediately for better UX
+    onImageUploaderClose();
     
-    // Invalidate React Query cache for immediate refetch
+    // Invalidate React Query cache immediately
     queryClient.invalidateQueries(['allImages', countryId]);
     queryClient.invalidateQueries(['years', countryId]);
     queryClient.invalidateQueries(['albums', countryId]);
     
-    // Force refetch of specific queries
-    queryClient.refetchQueries(['allImages', countryId]);
-    queryClient.refetchQueries(['years', countryId]);
-    queryClient.refetchQueries(['albums', countryId]);
+    // Implement retry logic for data refresh due to async backend operations
+    const refreshWithRetry = async (retryCount = 0) => {
+      const maxRetries = 3;
+      const baseDelay = 1000; // 1 second
+      
+      try {
+        console.log(`🔄 Attempt ${retryCount + 1}/${maxRetries + 1} - Refreshing countries data...`);
+        
+        // Force refresh of countries data
+        await refreshCountriesWithPhotos(true);
+        
+        // Force refetch of specific queries
+        await Promise.all([
+          queryClient.refetchQueries(['allImages', countryId]),
+          queryClient.refetchQueries(['years', countryId]),
+          queryClient.refetchQueries(['albums', countryId])
+        ]);
+        
+        console.log('✅ Data refresh completed successfully');
+        
+        // Verify if the data was actually updated by checking photo count
+        // If still same count and we have retries left, try again
+        if (retryCount < maxRetries) {
+          setTimeout(() => {
+            console.log(`🔄 Additional refresh in ${baseDelay * (retryCount + 2)}ms to ensure data consistency...`);
+            refreshCountriesWithPhotos(true);
+          }, baseDelay * (retryCount + 2));
+        }
+        
+      } catch (error) {
+        console.error(`❌ Refresh attempt ${retryCount + 1} failed:`, error);
+        
+        if (retryCount < maxRetries) {
+          const delay = baseDelay * Math.pow(2, retryCount); // Exponential backoff
+          console.log(`🔄 Retrying in ${delay}ms...`);
+          setTimeout(() => refreshWithRetry(retryCount + 1), delay);
+        } else {
+          console.error('❌ All refresh attempts failed');
+        }
+      }
+    };
     
-    onImageUploaderClose();
+    // Start the refresh process with a small initial delay to account for async backend processing
+    setTimeout(() => refreshWithRetry(), 500);
   };
 
   /** Local UI state */
