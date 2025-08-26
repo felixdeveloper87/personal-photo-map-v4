@@ -170,9 +170,18 @@ const ImageUploaderModal = ({ countryId, onUpload, onUploadSuccess, isOpen: exte
       showSuccessToast(toast, `Successfully uploaded ${files.length} image(s)!`);
 
       // Call the success callback if provided
+      console.log('🔄 ImageUploaderModal: onUploadSuccess callback exists?', !!onUploadSuccess);
       if (onUploadSuccess) {
+        console.log('🔄 ImageUploaderModal: Calling onUploadSuccess callback');
         onUploadSuccess();
+      } else {
+        console.warn('⚠️ ImageUploaderModal: No onUploadSuccess callback provided!');
       }
+
+      // Also dispatch global event as backup
+      console.log('📸 Dispatching global photo-upload event...');
+      window.dispatchEvent(new CustomEvent('photo-upload'));
+      localStorage.setItem('photo-upload-timestamp', Date.now().toString());
 
       // Reset form
       setFiles([]);
