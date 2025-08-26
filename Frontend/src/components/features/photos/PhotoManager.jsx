@@ -468,7 +468,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
       onUploadSuccess();
     }
     // Refresh countries context
-    refreshCountriesWithPhotos();
+    refreshCountriesWithPhotos(true);
   };
 
   /**
