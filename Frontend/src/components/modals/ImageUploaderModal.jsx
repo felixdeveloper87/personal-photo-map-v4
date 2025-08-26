@@ -181,7 +181,7 @@ const ImageUploaderModal = ({ countryId, onUpload, onUploadSuccess, isOpen: exte
         console.log('🔄 ImageUploaderModal: onUploadSuccess callback exists?', !!onUploadSuccess);
         if (onUploadSuccess) {
           console.log('🔄 ImageUploaderModal: Calling onUploadSuccess callback');
-          onUploadSuccess();
+          await onUploadSuccess();
           console.log('🔄 ImageUploaderModal: onUploadSuccess callback completed');
         } else {
           console.warn('⚠️ ImageUploaderModal: No onUploadSuccess callback provided!');
