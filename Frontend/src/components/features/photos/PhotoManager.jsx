@@ -206,7 +206,8 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
 
   // Handle upload success
   const handleUploadSuccess = async () => {
-    console.log('🔄 Upload success - refreshing data...');
+    console.log('🔄 Upload success - refreshing data... (VERSION 3.0 WITH ASYNC FIX)');
+    console.log('🔄 handleUploadSuccess function called - countryId:', countryId);
     
     try {
       // 1. Trigger immediate map update for instant visual feedback

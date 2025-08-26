@@ -174,15 +174,22 @@ const ImageUploaderModal = ({ countryId, onUpload, onUploadSuccess, isOpen: exte
       console.log('🎯 About to show success toast...');
       
       try {
+        console.log('🎯 ENTERING post-upload try block...');
         showSuccessToast(toast, `Successfully uploaded ${files.length} image(s)!`);
         console.log('🎯 Success toast shown, proceeding to callbacks...');
 
         // Call the success callback if provided
         console.log('🔄 ImageUploaderModal: onUploadSuccess callback exists?', !!onUploadSuccess);
+        console.log('🔄 ImageUploaderModal: onUploadSuccess type:', typeof onUploadSuccess);
         if (onUploadSuccess) {
           console.log('🔄 ImageUploaderModal: Calling onUploadSuccess callback');
-          await onUploadSuccess();
-          console.log('🔄 ImageUploaderModal: onUploadSuccess callback completed');
+          try {
+            await onUploadSuccess();
+            console.log('🔄 ImageUploaderModal: onUploadSuccess callback completed successfully');
+          } catch (callbackError) {
+            console.error('💥 Error in onUploadSuccess callback:', callbackError);
+            console.error('💥 Callback error stack:', callbackError.stack);
+          }
         } else {
           console.warn('⚠️ ImageUploaderModal: No onUploadSuccess callback provided!');
         }
