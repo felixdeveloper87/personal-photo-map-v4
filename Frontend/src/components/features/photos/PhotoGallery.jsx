@@ -76,7 +76,7 @@ const PhotoGallery = memo(function PhotoGallery({
   const selectionColor = useColorModeValue('blue.500', 'blue.400');
   const overlayBg = useColorModeValue('blackAlpha.600', 'blackAlpha.700');
 
-  // Normalize selected IDs to ensure consistent comparison - use useMemo to prevent unnecessary recalculations
+  // Normalize selected IDs to ensure consistent ccomparison - use useMemo to prevent unnecessary recalculations
   const normalizedSelectedIds = useMemo(() => 
     selectedImageIds.map(id => String(id)), 
     [selectedImageIds]
