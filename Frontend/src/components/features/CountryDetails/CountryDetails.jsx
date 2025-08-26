@@ -136,8 +136,8 @@ const CountryDetails = () => {
                 queryClient.invalidateQueries(['allImages', countryId]);
                 queryClient.invalidateQueries(['years', countryId]);
                 queryClient.invalidateQueries(['albums', countryId]);
-                // Refresh SearchForm data (countries and years)
-                refreshCountriesWithPhotos();
+                // Force refresh SearchForm data (countries and years) to bypass cache
+                refreshCountriesWithPhotos(true);
               }}
             />
           </Box>
