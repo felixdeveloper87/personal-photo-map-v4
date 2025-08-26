@@ -165,8 +165,11 @@ const ImageUploaderModal = ({ countryId, onUpload, onUploadSuccess, isOpen: exte
 
       const result = await response.json();
       console.log('✅ Upload successful:', result);
+      console.log('🚀 IMMEDIATELY after upload success log');
 
+      console.log('🚀 About to setUploadProgress(100)');
       setUploadProgress(100);
+      console.log('🚀 setUploadProgress(100) completed');
       console.log('🎯 About to show success toast...');
       
       try {
