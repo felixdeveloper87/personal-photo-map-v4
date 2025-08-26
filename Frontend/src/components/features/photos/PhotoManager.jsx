@@ -221,6 +221,13 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
     queryClient.refetchQueries(['years', countryId]);
     queryClient.refetchQueries(['albums', countryId]);
     
+    // Dispatch custom event for global listeners (photo-upload to match the listener)
+    console.log('📸 Dispatching photo-upload event for global listeners...');
+    window.dispatchEvent(new CustomEvent('photo-upload'));
+    
+    // Update timestamp in storage for cross-tab synchronization
+    localStorage.setItem('photo-upload-timestamp', Date.now().toString());
+    
     onImageUploaderClose();
   };
 
@@ -333,6 +340,11 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
       queryClient.invalidateQueries(['albums']);
       refreshCountriesWithPhotos();
       setSelectedImageIds([]);
+      
+      // Dispatch custom event for global listeners
+      console.log('🗑️ Dispatching photo-delete event for global listeners...');
+      window.dispatchEvent(new CustomEvent('photo-delete'));
+      localStorage.setItem('photo-upload-timestamp', Date.now().toString());
     },
     onError: () => {
       showErrorToast(toast, 'There was an error deleting the images.');
@@ -387,6 +399,11 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
       queryClient.invalidateQueries(['images']);
       queryClient.invalidateQueries(['years']);
       refreshCountriesWithPhotos();
+      
+      // Dispatch custom event for global listeners
+      console.log('🗑️ Dispatching photo-delete event for global listeners...');
+      window.dispatchEvent(new CustomEvent('photo-delete'));
+      localStorage.setItem('photo-upload-timestamp', Date.now().toString());
     },
     onError: () => {
       showErrorToast(toast, 'There was an error deleting the album.');
@@ -415,6 +432,11 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
       queryClient.invalidateQueries(['albums']);
       refreshCountriesWithPhotos();
       setSelectedYear(null);
+      
+      // Dispatch custom event for global listeners
+      console.log('🗑️ Dispatching photo-delete event for global listeners...');
+      window.dispatchEvent(new CustomEvent('photo-delete'));
+      localStorage.setItem('photo-upload-timestamp', Date.now().toString());
     },
     onError: (_, { year }) => {
       showErrorToast(toast, `There was an error deleting images from year ${year}.`);
@@ -445,6 +467,11 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
       queryClient.invalidateQueries(['albums']);
       refreshCountriesWithPhotos();
       setShowAllSelected(false);
+      
+      // Dispatch custom event for global listeners
+      console.log('🗑️ Dispatching photo-delete event for global listeners...');
+      window.dispatchEvent(new CustomEvent('photo-delete'));
+      localStorage.setItem('photo-upload-timestamp', Date.now().toString());
     },
     onError: (_, countryId) => {
       showErrorToast(toast, `Error deleting all images of ${countryId?.toUpperCase()}.`);

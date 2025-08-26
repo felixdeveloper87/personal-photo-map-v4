@@ -138,6 +138,13 @@ const CountryDetails = () => {
                 queryClient.invalidateQueries(['albums', countryId]);
                 // Refresh SearchForm data (countries and years)
                 refreshCountriesWithPhotos();
+                
+                // Dispatch custom event for global listeners (photo-upload to match the listener)
+                console.log('📸 Dispatching photo-upload event for global listeners...');
+                window.dispatchEvent(new CustomEvent('photo-upload'));
+                
+                // Update timestamp in storage for cross-tab synchronization
+                localStorage.setItem('photo-upload-timestamp', Date.now().toString());
               }}
             />
           </Box>
