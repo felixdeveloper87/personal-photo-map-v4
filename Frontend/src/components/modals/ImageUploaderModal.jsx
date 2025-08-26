@@ -103,7 +103,7 @@ const ImageUploaderModal = ({ countryId, onUpload, onUploadSuccess, isOpen: exte
   };
 
   const handleImageUpload = async () => {
-    console.log('🚀 handleImageUpload called');
+    console.log('🚀 handleImageUpload called - VERSION 2.0 WITH CALLBACKS');
     console.log('Files:', files);
     console.log('CountryId:', countryId);
     console.log('Year:', year);
@@ -163,6 +163,7 @@ const ImageUploaderModal = ({ countryId, onUpload, onUploadSuccess, isOpen: exte
         throw new Error(`Upload failed: ${response.status} - ${errorText}`);
       }
 
+      console.log('🔥 BEFORE response.json()');
       const result = await response.json();
       console.log('✅ Upload successful:', result);
       console.log('🚀 IMMEDIATELY after upload success log');
