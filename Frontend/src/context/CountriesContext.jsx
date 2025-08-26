@@ -263,18 +263,45 @@ export const CountriesProvider = ({ children }) => {
             if (force) {
                 setLastFetch(0);
                 console.log('🔄 Cache cleared for forced refresh');
+                // Also trigger immediate UI update
+                setUpdateTrigger(prev => prev + 1);
             }
             
             console.log('🔄 Starting parallel data fetch...');
-            await Promise.all([
+            
+            // Use Promise.allSettled for better error handling in production
+            const results = await Promise.allSettled([
                 fetchCounts(), 
                 fetchCountriesWithPhotosDetailed(), 
                 fetchAvailableYears()
             ]);
+            
+            // Log any failed operations for debugging
+            results.forEach((result, index) => {
+                const operation = ['fetchCounts', 'fetchCountriesWithPhotosDetailed', 'fetchAvailableYears'][index];
+                if (result.status === 'rejected') {
+                    console.error(`❌ ${operation} failed:`, result.reason);
+                } else {
+                    console.log(`✅ ${operation} completed successfully`);
+                }
+            });
+            
             setLastFetch(now);
-            console.log('🔄 Data refresh completed successfully at:', new Date(now).toLocaleTimeString());
+            console.log('🔄 Data refresh completed at:', new Date(now).toLocaleTimeString());
+            
+            // Trigger another update after data is loaded
+            if (force) {
+                setUpdateTrigger(prev => prev + 1);
+                // Add a small delay and trigger again for better production reliability
+                setTimeout(() => {
+                    setUpdateTrigger(prev => prev + 1);
+                    console.log('🔄 Secondary trigger executed for production reliability');
+                }, 100);
+            }
         } catch (error) {
-            console.error('Error refreshing data:', error);
+            console.error('❌ Critical error refreshing data:', error);
+            // Even on error, trigger update to ensure UI consistency
+            setUpdateTrigger(prev => prev + 1);
         } finally {
             setLoading(false);
         }
