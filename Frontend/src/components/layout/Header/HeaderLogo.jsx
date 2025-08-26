@@ -45,7 +45,7 @@ const HeaderLogo = ({ styles }) => {
             textShadow: "0 2px 4px rgba(0,0,0,0.15)"
           }}
         >
-          Photomap
+          Photomappp
         </Heading>
         <Text
           color={styles.logoSubtextColor}
@@ -59,7 +59,7 @@ const HeaderLogo = ({ styles }) => {
             textShadow: "0 1px 2px rgba(0,0,0,0.1)"
           }}
         >
-          Your Travel Memories
+          
         </Text>
       </Box>
     </Flex>
