@@ -28,6 +28,9 @@ export const CountriesProvider = ({ children }) => {
     // State for the total number of countries with photos
     const [countryCount, setCountryCount] = useState(0);
     
+    // State for triggering immediate map updates
+    const [updateTrigger, setUpdateTrigger] = useState(0);
+    
     // Cache management
     const [lastFetch, setLastFetch] = useState(0);
     const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
@@ -263,6 +266,8 @@ export const CountriesProvider = ({ children }) => {
             if (force) {
                 setLastFetch(0);
                 console.log('🔄 Cache cleared for forced refresh');
+                // Also trigger immediate UI update
+                setUpdateTrigger(prev => prev + 1);
             }
             
             console.log('🔄 Starting parallel data fetch...');
@@ -273,6 +278,11 @@ export const CountriesProvider = ({ children }) => {
             ]);
             setLastFetch(now);
             console.log('🔄 Data refresh completed successfully at:', new Date(now).toLocaleTimeString());
+            
+            // Trigger another update after data is loaded
+            if (force) {
+                setUpdateTrigger(prev => prev + 1);
+            }
         } catch (error) {
             console.error('Error refreshing data:', error);
         } finally {
@@ -287,7 +297,18 @@ export const CountriesProvider = ({ children }) => {
     const forceRefresh = useCallback(async () => {
         console.log('🔄 Force refresh triggered');
         await refreshCountriesWithPhotos(true);
+        // Trigger immediate UI update
+        setUpdateTrigger(prev => prev + 1);
     }, [refreshCountriesWithPhotos]);
+
+    /**
+     * triggerMapUpdate - Forces an immediate map update without data refresh
+     * Useful when we need to update UI state immediately
+     */
+    const triggerMapUpdate = useCallback(() => {
+        console.log('🗺️ Triggering immediate map update');
+        setUpdateTrigger(prev => prev + 1);
+    }, []);
 
     /**
      * useEffect - Effect for monitoring token changes and triggering data refresh
@@ -327,8 +348,10 @@ export const CountriesProvider = ({ children }) => {
                 photoCount,
                 countryCount,
                 availableYears,
+                updateTrigger,
                 refreshCountriesWithPhotos,
                 forceRefresh, // New method for immediate refresh
+                triggerMapUpdate, // New method for immediate map updates
             }}
         >
             {children}

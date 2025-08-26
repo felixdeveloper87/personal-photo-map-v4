@@ -164,7 +164,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   const toast = useToast();
   const queryClient = useQueryClient();
   const { isPremium } = useContext(AuthContext);
-  const { refreshCountriesWithPhotos } = useContext(CountriesContext);
+  const { refreshCountriesWithPhotos, triggerMapUpdate } = useContext(CountriesContext);
   const navigate = useNavigate();
 
   const [pendingDeleteIds, setPendingDeleteIds] = useState([]);
@@ -207,6 +207,9 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   // Handle upload success
   const handleUploadSuccess = () => {
     console.log('🔄 Upload success - refreshing data...');
+    
+    // Trigger immediate map update for instant visual feedback
+    triggerMapUpdate();
     
     // Force immediate refresh of all data
     refreshCountriesWithPhotos(true);
@@ -327,11 +330,13 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
     },
     onSuccess: (_, ids) => {
       showSuccessToast(toast, `${ids.length} image(s) deleted successfully.`);
+      // Trigger immediate map update
+      triggerMapUpdate();
       // Invalidate relevant queries so React Query refetches fresh data
       queryClient.invalidateQueries(['images']);
       queryClient.invalidateQueries(['years']);
       queryClient.invalidateQueries(['albums']);
-      refreshCountriesWithPhotos();
+      refreshCountriesWithPhotos(true);
       setSelectedImageIds([]);
     },
     onError: () => {
@@ -383,10 +388,12 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
     },
     onSuccess: () => {
       showSuccessToast(toast, 'The album was deleted successfully.');
+      // Trigger immediate map update
+      triggerMapUpdate();
       queryClient.invalidateQueries(['albums']);
       queryClient.invalidateQueries(['images']);
       queryClient.invalidateQueries(['years']);
-      refreshCountriesWithPhotos();
+      refreshCountriesWithPhotos(true);
     },
     onError: () => {
       showErrorToast(toast, 'There was an error deleting the album.');
@@ -410,10 +417,12 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
     },
     onSuccess: (_, { year }) => {
       showSuccessToast(toast, `All images from year ${year} were deleted successfully.`);
+      // Trigger immediate map update
+      triggerMapUpdate();
       queryClient.invalidateQueries(['images']);
       queryClient.invalidateQueries(['years']);
       queryClient.invalidateQueries(['albums']);
-      refreshCountriesWithPhotos();
+      refreshCountriesWithPhotos(true);
       setSelectedYear(null);
     },
     onError: (_, { year }) => {
@@ -440,10 +449,12 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
     },
     onSuccess: () => {
       showSuccessToast(toast, 'All images were deleted successfully.');
+      // Trigger immediate map update
+      triggerMapUpdate();
       queryClient.invalidateQueries(['images']);
       queryClient.invalidateQueries(['years']);
       queryClient.invalidateQueries(['albums']);
-      refreshCountriesWithPhotos();
+      refreshCountriesWithPhotos(true);
       setShowAllSelected(false);
     },
     onError: (_, countryId) => {
@@ -463,12 +474,15 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
     queryClient.invalidateQueries(['years']);
     queryClient.invalidateQueries(['albums']);
 
+    // Trigger immediate map update
+    triggerMapUpdate();
+    
     // Optionally call an onUploadSuccess prop
     if (onUploadSuccess) {
       onUploadSuccess();
     }
     // Refresh countries context
-    refreshCountriesWithPhotos();
+    refreshCountriesWithPhotos(true);
   };
 
   /**
@@ -573,7 +587,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   const allImages = useMemo(() => 
     Array.isArray(allImagesData)
       ? allImagesData.map((image) => ({
-        url: image.filePath.includes('s3.') ? image.filePath : buildApiUrl(image.filePath),
+        url: buildApiUrl(image.filePath),
         id: image.id,
         year: image.year,
       }))
@@ -588,7 +602,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   const images = useMemo(() => 
     Array.isArray(imagesData)
       ? imagesData.map((image) => ({
-        url: image.filePath.includes('s3.') ? image.filePath : buildApiUrl(image.filePath),
+        url: buildApiUrl(image.filePath),
         id: image.id,
         year: image.year,
       }))
