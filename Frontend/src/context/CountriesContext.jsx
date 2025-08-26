@@ -30,6 +30,8 @@ export const CountriesProvider = ({ children }) => {
     
     // Cache management
     const [lastFetch, setLastFetch] = useState(0);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [cacheDisabled, setCacheDisabled] = useState(false);
     const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
 
     /**
@@ -248,22 +250,39 @@ export const CountriesProvider = ({ children }) => {
         console.log('🔄 Current time:', new Date(now).toLocaleTimeString());
         console.log('🔄 Last fetch time:', new Date(lastFetch).toLocaleTimeString());
         console.log('🔄 Cache duration:', CACHE_DURATION, 'ms');
+        console.log('🔄 Is currently refreshing:', isRefreshing);
         
-        // Check if cache is still valid (unless forced refresh)
-        if (!force && (now - lastFetch) < CACHE_DURATION) {
+        // Prevent concurrent refreshes
+        if (isRefreshing) {
+            console.log('🔄 Already refreshing, skipping...');
+            return;
+        }
+        
+        // Check if cache is still valid (unless forced refresh or cache disabled)
+        if (!force && !cacheDisabled && (now - lastFetch) < CACHE_DURATION) {
             console.log('🔄 Using cached data, last fetch:', new Date(lastFetch).toLocaleTimeString());
             return;
         }
+        
+        // For forced refresh, ALWAYS bypass cache regardless of timing
+        if (force) {
+            console.log('🔄 FORCED REFRESH - bypassing all cache checks');
+            // Temporarily disable cache for subsequent operations
+            setCacheDisabled(true);
+            setTimeout(() => {
+                setCacheDisabled(false);
+                console.log('🔄 Cache re-enabled after forced refresh');
+            }, 2000); // Disable cache for 2 seconds
+        }
 
         console.log('🔄 Fetching fresh data...', force ? '(FORCED)' : '');
+        setIsRefreshing(true);
         setLoading(true);
         
         try {
-            // Clear cache if forced refresh
+            // Always trigger immediate UI update for forced refresh
             if (force) {
-                setLastFetch(0);
-                console.log('🔄 Cache cleared for forced refresh');
-                // Also trigger immediate UI update
+                console.log('🔄 Triggering immediate UI update for forced refresh');
                 setUpdateTrigger(prev => prev + 1);
             }
             
@@ -303,9 +322,10 @@ export const CountriesProvider = ({ children }) => {
             // Even on error, trigger update to ensure UI consistency
             setUpdateTrigger(prev => prev + 1);
         } finally {
+            setIsRefreshing(false);
             setLoading(false);
         }
-    }, [lastFetch]);
+    }, []);
 
     /**
      * forceRefresh - Forces a refresh of all data (used after uploads)
@@ -314,6 +334,35 @@ export const CountriesProvider = ({ children }) => {
     const forceRefresh = useCallback(async () => {
         console.log('🔄 Force refresh triggered');
         await refreshCountriesWithPhotos(true);
+        // Trigger immediate map update
+        setUpdateTrigger(prev => prev + 1);
+    }, [refreshCountriesWithPhotos]);
+
+    /**
+     * refreshAfterUpload - Specialized refresh for post-upload scenarios
+     * Completely bypasses cache and forces immediate data refresh
+     */
+    const refreshAfterUpload = useCallback(async () => {
+        console.log('🔄 Upload-specific refresh triggered');
+        
+        // Disable cache temporarily
+        setCacheDisabled(true);
+        
+        // Reset last fetch to force refresh
+        setLastFetch(0);
+        
+        // Trigger immediate UI update
+        setUpdateTrigger(prev => prev + 1);
+        
+        try {
+            await refreshCountriesWithPhotos(true);
+        } finally {
+            // Re-enable cache after a delay
+            setTimeout(() => {
+                setCacheDisabled(false);
+                console.log('🔄 Cache re-enabled after upload refresh');
+            }, 3000);
+        }
     }, [refreshCountriesWithPhotos]);
 
     /**
@@ -354,8 +403,11 @@ export const CountriesProvider = ({ children }) => {
                 photoCount,
                 countryCount,
                 availableYears,
+                updateTrigger,
                 refreshCountriesWithPhotos,
                 forceRefresh, // New method for immediate refresh
+                refreshAfterUpload, // Specialized method for post-upload refresh
+                triggerMapUpdate, // New method for immediate map updates
             }}
         >
             {children}

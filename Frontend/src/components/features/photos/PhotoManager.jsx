@@ -164,7 +164,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   const toast = useToast();
   const queryClient = useQueryClient();
   const { isPremium } = useContext(AuthContext);
-  const { refreshCountriesWithPhotos } = useContext(CountriesContext);
+  const { refreshCountriesWithPhotos, refreshAfterUpload, triggerMapUpdate } = useContext(CountriesContext);
   const navigate = useNavigate();
 
   const [pendingDeleteIds, setPendingDeleteIds] = useState([]);
@@ -212,10 +212,10 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
       // 1. Trigger immediate map update for instant visual feedback
       triggerMapUpdate();
       
-      // 2. Force immediate refresh of all data (wait for completion)
-      console.log('🔄 Starting forced refresh...');
-      await refreshCountriesWithPhotos(true);
-      console.log('✅ Countries context refresh completed');
+      // 2. Use specialized upload refresh that bypasses cache
+      console.log('🔄 Starting upload-specific refresh...');
+      await refreshAfterUpload();
+      console.log('✅ Upload-specific refresh completed');
       
       // 3. Invalidate and refetch React Query cache in parallel for better performance
       console.log('🔄 Starting React Query cache invalidation...');
