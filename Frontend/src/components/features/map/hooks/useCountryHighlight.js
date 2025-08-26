@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { selectHighlightCountries } from '../../../../styles/mapStyles';
+import { selectHighlightedCountries } from '../../../../styles/mapStyles';
 
 export const useCountryHighlight = (isLoggedIn, countriesWithPhotos) => {
   const [highlightedCountries, setHighlightedCountries] = useState([]);
@@ -37,7 +37,7 @@ export const useCountryHighlight = (isLoggedIn, countriesWithPhotos) => {
   // Seleção de países para destacar
   useEffect(() => {
     if (!isLoggedIn && isEffectActive) {
-      const randomCountries = selectHighlightCountries(countriesWithPhotos);
+      const randomCountries = selectHighlightedCountries(countriesWithPhotos);
       setHighlightedCountries(randomCountries);
     } else {
       setHighlightedCountries([]);
