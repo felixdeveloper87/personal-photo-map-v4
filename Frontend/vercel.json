@@ -4,19 +4,10 @@
   
       { "source": "/countries/:countryId", "destination": "/index.html" },
       { "source": "/map/private", "destination": "/index.html" },
-  
       { "source": "/timeline/:year", "destination": "/index.html" },
       { "source": "/timeline", "destination": "/index.html" },
   
       { "source": "/:path*", "destination": "/index.html" }
-    ],
-    "headers": [
-      {
-        "source": "/(.*)",
-        "headers": [
-          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
-        ]
-      }
     ]
   }
   
