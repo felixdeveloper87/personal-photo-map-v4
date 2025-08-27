@@ -45,7 +45,7 @@ const HeaderLogo = ({ styles }) => {
             textShadow: "0 2px 4px rgba(0,0,0,0.15)"
           }}
         >
-          Photomappp
+          Photomap
         </Heading>
         <Text
           color={styles.logoSubtextColor}
