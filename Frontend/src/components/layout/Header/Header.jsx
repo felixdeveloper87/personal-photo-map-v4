@@ -83,8 +83,13 @@ const Header = () => {
       const debugUrl = buildApiUrl('/api/users/make-premium');
       console.log('🔍 Debug URL:', debugUrl);
       console.log('🔍 Debug Token:', token.substring(0, 20) + '...');
+      console.log('🔍 Debug Token Length:', token.length);
+      console.log('🔍 Debug Token Format:', token.startsWith('Bearer ') ? 'Has Bearer prefix' : 'No Bearer prefix');
+      console.log('🔍 Debug Token JWT Format:', token.includes('.') ? 'Looks like JWT' : 'Not JWT format');
 
-      const debugResponse = await fetch(debugUrl, {
+      // Test 1: Try with different HTTP methods
+      console.log('🔍 Test 1: Trying PUT method...');
+      let debugResponse = await fetch(debugUrl, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -92,8 +97,42 @@ const Header = () => {
         },
       });
 
+      if (debugResponse.status === 403) {
+        console.log('🔍 Test 2: PUT failed, trying POST method...');
+        debugResponse = await fetch(debugUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+      }
+
+      if (debugResponse.status === 403) {
+        console.log('🔍 Test 3: POST failed, trying GET method...');
+        debugResponse = await fetch(debugUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+      }
+
+      // Test 4: Try a different endpoint to see if it's an auth issue or endpoint issue
+      if (debugResponse.status === 403) {
+        console.log('🔍 Test 4: All methods failed, testing auth with different endpoint...');
+        const testUrl = buildApiUrl('/api/auth/validate');
+        const testResponse = await fetch(testUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        console.log('🔍 Test 4 Result - /api/auth/validate status:', testResponse.status);
+      }
+
       console.log('🔍 Debug Response Status:', debugResponse.status);
-      console.log('🔍 Debug Response Headers:', Object.fromEntries(debugResponse.entries()));
+      console.log('🔍 Debug Response Headers:', Object.fromEntries(debugResponse.headers.entries()));
 
       if (!debugResponse.ok) {
         const debugErrorText = await debugResponse.text();
