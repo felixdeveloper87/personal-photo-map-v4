@@ -67,7 +67,7 @@ const HeaderLogo = ({ styles }) => {
             textShadow: "0 1px 2px rgba(0,0,0,0.1)"
           }}
         >
-          Journey through photos, learn through cultures.
+          Journey through photos.
         </Text>
       </Box>
     </Flex>
