@@ -108,14 +108,14 @@ const PhotoGallery = memo(function PhotoGallery({
 
   // Handle image selection
   const handleImageSelection = (imageId, event) => {
-    event.stopPropagation();
+    event?.stopPropagation?.();
     
     if (!setSelectedImageIds) return;
     
     const stringId = String(imageId);
     
     // Check if Shift key is pressed for range selection
-    if (event.shiftKey && selectedImageIds.length > 0) {
+    if (event?.shiftKey && selectedImageIds.length > 0) {
       const currentIndex = images.findIndex(img => img.id === imageId);
       const lastSelectedIndex = images.findIndex(img => img.id === selectedImageIds[selectedImageIds.length - 1]);
       
@@ -170,26 +170,26 @@ const PhotoGallery = memo(function PhotoGallery({
 
   const closeModal = () => onClose();
 
-  const showNextImage = (e) => {
-    if (e) e.stopPropagation();
+  const showNextImage = (e, nextIndex) => {
+    e?.stopPropagation?.();
     if (!images?.length) return;
-    const nextIndex = (currentImageIndex + 1) % images.length;
-    setCurrentImageIndex(nextIndex);
+    const targetIndex = nextIndex !== undefined ? nextIndex : (currentImageIndex + 1) % images.length;
+    setCurrentImageIndex(targetIndex);
   };
 
-  const showPrevImage = (e) => {
-    if (e) e.stopPropagation();
+  const showPrevImage = (e, prevIndex) => {
+    e?.stopPropagation?.();
     if (!images?.length) return;
-    const prevIndex = (currentImageIndex - 1 + images.length) % images.length;
-    setCurrentImageIndex(prevIndex);
+    const targetIndex = prevIndex !== undefined ? prevIndex : (currentImageIndex - 1 + images.length) % images.length;
+    setCurrentImageIndex(targetIndex);
   };
 
   // Keyboard navigation for modal
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (event) => {
-      if (event.key === 'ArrowRight') showNextImage();
-      else if (event.key === 'ArrowLeft') showPrevImage();
+      if (event.key === 'ArrowRight') showNextImage(event);
+      else if (event.key === 'ArrowLeft') showPrevImage(event);
       else if (event.key === 'Escape') closeModal();
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -472,10 +472,10 @@ const PhotoGallery = memo(function PhotoGallery({
                              }}
                              transition="all 0.2s ease"
                              onChange={(e) => {
-                               e.stopPropagation();
+                               e?.stopPropagation?.();
                                handleImageSelection(image.id, e);
                              }}
-                             onClick={(e) => e.stopPropagation()}
+                             onClick={(e) => e?.stopPropagation?.()}
                            />
                          </Box>
                        </motion.div>

@@ -71,23 +71,23 @@ const FullImageModal = memo(
       typeof totalCount === 'number' &&
       totalCount > 0;
 
-    const goNext = useCallback(() => {
+    const goNext = useCallback((e) => {
       if (!hasMultiple) return;
       if (canWrap) {
         const next = (currentIndex + 1) % totalCount;
-        onNext && onNext(next);
+        onNext && onNext(e, next);
       } else {
-        onNext && onNext();
+        onNext && onNext(e);
       }
     }, [hasMultiple, canWrap, currentIndex, totalCount, onNext]);
 
-    const goPrev = useCallback(() => {
+    const goPrev = useCallback((e) => {
       if (!hasMultiple) return;
       if (canWrap) {
         const prev = (currentIndex - 1 + totalCount) % totalCount;
-        onPrev && onPrev(prev);
+        onPrev && onPrev(e, prev);
       } else {
-        onPrev && onPrev();
+        onPrev && onPrev(e);
       }
     }, [hasMultiple, canWrap, currentIndex, totalCount, onPrev]);
 
@@ -129,13 +129,13 @@ const FullImageModal = memo(
       const deltaX = Math.abs(touch.clientX - touchStartRef.current.x);
       const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
       
-      // Se o movimento horizontal é maior que o vertical e passou do threshold
-      if (deltaX > deltaY && deltaX > 20) {
-        // Marca como swipe em progresso
-        isSwipingRef.current = true;
-        // Previne scroll apenas se estivermos fazendo swipe horizontal
-        e.preventDefault();
-      }
+              // Se o movimento horizontal é maior que o vertical e passou do threshold
+        if (deltaX > deltaY && deltaX > 20) {
+          // Marca como swipe em progresso
+          isSwipingRef.current = true;
+          // Previne scroll apenas se estivermos fazendo swipe horizontal
+          e?.preventDefault?.();
+        }
     }, [hasMultiple, isMobile]);
 
     const handleTouchEnd = useCallback((e) => {
@@ -155,13 +155,13 @@ const FullImageModal = memo(
                           deltaTime < SWIPE_TIME_THRESHOLD;
       
       if (isValidSwipe) {
-        e.preventDefault();
-        e.stopPropagation();
+        e?.preventDefault?.();
+        e?.stopPropagation?.();
         
         if (deltaX > 0) {
-          goPrev(); // Swipe right = imagem anterior
+          goPrev(e); // Swipe right = imagem anterior
         } else {
-          goNext(); // Swipe left = próxima imagem
+          goNext(e); // Swipe left = próxima imagem
         }
       }
       
@@ -198,11 +198,11 @@ const FullImageModal = memo(
       
       const handleKeyDown = (e) => {
         if (e.key === 'ArrowRight') {
-          e.preventDefault();
-          goNext();
+          e?.preventDefault?.();
+          goNext(e);
         } else if (e.key === 'ArrowLeft') {
-          e.preventDefault();
-          goPrev();
+          e?.preventDefault?.();
+          goPrev(e);
         }
       };
       
@@ -302,9 +302,7 @@ const FullImageModal = memo(
                         <Flex justify="center" wrap="wrap" gap={2} zIndex="40" mb={2}>
                           <IconButton
                             onClick={(e) => {
-                              if (e && typeof e.stopPropagation === 'function') {
-                                e.stopPropagation();
-                              }
+                              e?.stopPropagation?.();
                               handleZoomOut(zoomOut, resetTransform);
                             }}
                             icon={<FiZoomOut />}
@@ -316,9 +314,7 @@ const FullImageModal = memo(
                           />
                           <IconButton
                             onClick={(e) => {
-                              if (e && typeof e.stopPropagation === 'function') {
-                                e.stopPropagation();
-                              }
+                              e?.stopPropagation?.();
                               zoomIn();
                             }}
                             icon={<FiZoomIn />}
@@ -330,9 +326,7 @@ const FullImageModal = memo(
                           />
                           <IconButton
                             onClick={(e) => {
-                              if (e && typeof e.stopPropagation === 'function') {
-                                e.stopPropagation();
-                              }
+                              e?.stopPropagation?.();
                               toggleFullScreen?.();
                               if (!isFullscreen && typeof centerView === 'function') {
                                 centerView();
@@ -440,10 +434,8 @@ const FullImageModal = memo(
                 <IconButton
                   icon={<Text fontSize="3xl" fontWeight="bold">&lsaquo;</Text>}
                   onClick={(e) => {
-                    if (e && typeof e.stopPropagation === 'function') {
-                      e.stopPropagation();
-                    }
-                    goPrev();
+                    e?.stopPropagation?.();
+                    goPrev(e);
                   }}
                   aria-label="Previous image"
                   position="absolute"
@@ -462,10 +454,8 @@ const FullImageModal = memo(
                 <IconButton
                   icon={<Text fontSize="3xl" fontWeight="bold">&rsaquo;</Text>}
                   onClick={(e) => {
-                    if (e && typeof e.stopPropagation === 'function') {
-                      e.stopPropagation();
-                    }
-                    goNext();
+                    e?.stopPropagation?.();
+                    goNext(e);
                   }}
                   aria-label="Next image"
                   position="absolute"

@@ -252,7 +252,7 @@ const Timeline = ({ selectedYear }) => {
                         color={textColor}
                         _hover={{ color: accentColor, bg: 'transparent' }}
                         onClick={(e) => {
-                          e.stopPropagation();
+                          e?.stopPropagation?.();
                           toggleYear(year);
                         }}
                       />
