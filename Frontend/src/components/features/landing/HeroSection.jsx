@@ -78,7 +78,7 @@ const HeroSection = ({ onOpenRegister, onOpenLogin }) => {
               fontSize={{ base: '3xl', md: '4xl', lg: '5xl' }}
               color={headingColor}
             >
-              Discover the world through{' '}
+              Discoverrrr the world through{' '}
               <Text
                 as="span"
                 bgGradient="linear(to-r, yellow.400, orange.400)"
