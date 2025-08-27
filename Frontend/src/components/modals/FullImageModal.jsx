@@ -41,26 +41,30 @@ const FullImageModal = memo(
     toggleFullScreen,
     isFullscreen,
     countryName, // opcional
-    // opcionais para wrap "consciente"
     currentIndex,
     totalCount,
   }) => {
     const [imgLoaded, setImgLoaded] = useState(false);
     const isMobile = useBreakpointValue({ base: true, md: false });
 
-    // ----- SWIPE STATE (mobile) -----
+    // ----- ZOOM / PINCH STATE -----
     const scaleRef = useRef(1);
+    const pinchStartDistanceRef = useRef(null);
+
+    // ----- SWIPE STATE (mobile) -----
     const startX = useRef(0);
     const startY = useRef(0);
     const startTimeRef = useRef(0);
-    const didSwipeRef = useRef(false);
     const lastSwipeAtRef = useRef(0);
 
-    // thresholds
-    const SWIPE_MIN_DIST = 60;   // px: distância mínima no eixo X
-    const V_TOLERANCE = 50;      // px: tolerância no eixo Y (para ser "horizontal")
-    const SWIPE_MAX_TIME = 800;  // ms: tempo máximo do gesto
-    const SWIPE_COOLDOWN = 250;  // ms: evita duplo avanço por tremulação
+    const SWIPE_MIN_DIST = 60;   // px no eixo X
+    const V_TOLERANCE = 50;      // px no eixo Y
+    const SWIPE_MAX_TIME = 800;  // ms
+    const SWIPE_COOLDOWN = 250;  // ms
+
+    // Se o pinch-in começar quando o scale estiver "próximo" do base, fecha
+    const CLOSE_PINCH_SCALE_EPS = 1.02; // tolerância ao redor do scale base (1.0)
+    const PINCH_IN_RATIO = 0.93;        // se a distância entre dedos cair para <93% da inicial => pinch-in
 
     // Cores
     const bgColor = useColorModeValue('white', 'gray.800');
@@ -113,51 +117,75 @@ const FullImageModal = memo(
       }
     }, [isOpen]);
 
-    // ----- TOUCH HANDLERS (mobile) -----
-    const onTouchStart = (e) => {
-      if (!hasMultiple) return;
-      // ignora multi-touch (pinch, etc.)
-      if (!e.touches || e.touches.length !== 1) return;
-      startX.current = e.touches[0].clientX;
-      startY.current = e.touches[0].clientY;
-      startTimeRef.current = Date.now();
-      didSwipeRef.current = false;
+    // ---------- TOUCH OVERLAY (captura swipe e pinch-in para fechar) ----------
+    const handleTouchStart = (e) => {
+      if (!e.touches || e.touches.length === 0) return;
+
+      // Multi-touch => preparar pinch distance
+      if (e.touches.length === 2) {
+        const d = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        pinchStartDistanceRef.current = d;
+        return;
+      }
+
+      // Single touch => swipe
+      if (e.touches.length === 1) {
+        startX.current = e.touches[0].clientX;
+        startY.current = e.touches[0].clientY;
+        startTimeRef.current = Date.now();
+      }
     };
 
-    // não decidimos no move; só bloqueamos se zoomado
-    const onTouchMove = (e) => {
-      if (scaleRef.current > 1.05) return; // se estiver com zoom, não navega por swipe
-      // quando o gesto é candidato a swipe horizontal, podemos opcionalmente evitar rolagem:
-      // e.preventDefault(); // cuidado: só se necessário
+    const handleTouchMove = (e) => {
+      // Pinch-in para fechar (apenas se scale ~ 1)
+      if (e.touches && e.touches.length === 2) {
+        if (scaleRef.current > CLOSE_PINCH_SCALE_EPS) return; // se já está maior que base, ignore
+        if (pinchStartDistanceRef.current == null) return;
+
+        const dNow = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+
+        // Se a distância atual é bem menor que a inicial => pinch-in
+        if (dNow < pinchStartDistanceRef.current * PINCH_IN_RATIO) {
+          // Fecha como "zoom out para sair"
+          onClose();
+          pinchStartDistanceRef.current = null;
+        }
+      }
     };
 
-    const onTouchEnd = (e) => {
-      if (!hasMultiple) return;
-      if (didSwipeRef.current) return; // já processado
-      if (scaleRef.current > 1.05) return; // com zoom, não navega
-      const dt = Date.now() - startTimeRef.current;
-      if (dt > SWIPE_MAX_TIME) return; // gesto lento demais
+    const handleTouchEnd = (e) => {
+      // reset pinch
+      if (e.touches && e.touches.length === 0) {
+        pinchStartDistanceRef.current = null;
+      }
+
+      // Swipe só com um dedo, sem zoom
+      if (!isMobile || !hasMultiple) return;
+      if (scaleRef.current > 1.05) return;
 
       const touch = e.changedTouches && e.changedTouches[0];
       if (!touch) return;
 
+      const dt = Date.now() - startTimeRef.current;
+      if (dt > SWIPE_MAX_TIME) return;
+
       const dx = touch.clientX - startX.current;
       const dy = touch.clientY - startY.current;
 
-      // checa cooldown
+      // cooldown
       if (Date.now() - lastSwipeAtRef.current < SWIPE_COOLDOWN) return;
 
-      // precisa ser horizontal e com distância mínima
+      // horizontal e com distância mínima
       if (Math.abs(dx) >= SWIPE_MIN_DIST && Math.abs(dy) <= V_TOLERANCE) {
-        didSwipeRef.current = true;
         lastSwipeAtRef.current = Date.now();
-        if (dx < 0) {
-          // esquerda -> próxima
-          goNext();
-        } else {
-          // direita -> anterior
-          goPrev();
-        }
+        if (dx < 0) goNext();
+        else goPrev();
       }
     };
 
@@ -217,12 +245,25 @@ const FullImageModal = memo(
               onClick={onClose}
             />
 
-            <Box ref={fullscreenRef}>
+            <Box ref={fullscreenRef} position="relative">
+              {/* Overlay de toque (captura swipe/pinch) */}
+              <Box
+                position="absolute"
+                inset={0}
+                zIndex={30}
+                // Evita interferência com scroll/gestos do navegador
+                style={{ touchAction: 'none' }}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              />
+
               <VStack spacing={{ base: 2, md: 4 }} align="stretch">
                 <TransformWrapper
                   initialScale={1}
-                  minScale={0.5}
+                  minScale={1}              // <<< não permite zoom-out abaixo do "fit"
                   maxScale={3}
+                  limitToBounds
                   wheel={{ step: 0.2 }}
                   doubleClick={{ disabled: true }}
                   pinch={{ step: 5 }}
@@ -245,11 +286,13 @@ const FullImageModal = memo(
                     <>
                       {/* Controles de zoom/fullscreen apenas no desktop */}
                       {!isMobile && (
-                        <Flex justify="center" wrap="wrap" gap={2} zIndex="40" mb={2}>
+                        <Flex justify="center" wrap="wrap" gap={2} zIndex="20" mb={2}>
                           <IconButton
                             onClick={(e) => {
                               e.stopPropagation();
-                              zoomOut();
+                              // Se já está no mínimo, interpretamos como “zoom-out para sair”
+                              if ((scaleRef.current ?? 1) <= 1.001) onClose();
+                              else zoomOut();
                             }}
                             icon={<FiZoomOut />}
                             aria-label="Zoom out"
@@ -313,15 +356,7 @@ const FullImageModal = memo(
                           alignItems: 'center',
                         }}
                       >
-                        <Box
-                          w="100%"
-                          h="100%"
-                          // importante para reduzir interferência com scroll
-                          style={{ touchAction: 'none' }}
-                          onTouchStart={isMobile ? onTouchStart : undefined}
-                          onTouchMove={isMobile ? onTouchMove : undefined}
-                          onTouchEnd={isMobile ? onTouchEnd : undefined}
-                        >
+                        <Box w="100%" h="100%">
                           {!imgLoaded && (
                             <Center w="100%" h="100%">
                               <Spinner size="xl" thickness="4px" />
@@ -344,6 +379,8 @@ const FullImageModal = memo(
                             onLoad={() => setImgLoaded(true)}
                             style={{
                               display: imgLoaded ? 'block' : 'none',
+                              userSelect: 'none',
+                              WebkitUserDrag: 'none',
                             }}
                           />
                         </Box>
