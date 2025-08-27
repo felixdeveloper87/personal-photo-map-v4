@@ -40,31 +40,22 @@ const FullImageModal = memo(
     fullscreenRef,
     toggleFullScreen,
     isFullscreen,
-    countryName, // opcional
+    countryName,
     currentIndex,
     totalCount,
   }) => {
     const [imgLoaded, setImgLoaded] = useState(false);
     const isMobile = useBreakpointValue({ base: true, md: false });
+    
+    // Referências para controle do swipe e zoom
+    const transformWrapperRef = useRef(null);
+    const touchStartRef = useRef(null);
+    const isSwipingRef = useRef(false);
+    const initialScaleRef = useRef(1);
 
-    // ----- ZOOM / PINCH STATE -----
-    const scaleRef = useRef(1);
-    const pinchStartDistanceRef = useRef(null);
-
-    // ----- SWIPE STATE (mobile) -----
-    const startX = useRef(0);
-    const startY = useRef(0);
-    const startTimeRef = useRef(0);
-    const lastSwipeAtRef = useRef(0);
-
-    const SWIPE_MIN_DIST = 60;   // px no eixo X
-    const V_TOLERANCE = 50;      // px no eixo Y
-    const SWIPE_MAX_TIME = 800;  // ms
-    const SWIPE_COOLDOWN = 250;  // ms
-
-    // Se o pinch-in começar quando o scale estiver "próximo" do base, fecha
-    const CLOSE_PINCH_SCALE_EPS = 1.02; // tolerância ao redor do scale base (1.0)
-    const PINCH_IN_RATIO = 0.93;        // se a distância entre dedos cair para <93% da inicial => pinch-in
+    // Configurações de swipe
+    const SWIPE_THRESHOLD = 50;
+    const SWIPE_TIME_THRESHOLD = 300;
 
     // Cores
     const bgColor = useColorModeValue('white', 'gray.800');
@@ -100,16 +91,80 @@ const FullImageModal = memo(
       }
     }, [hasMultiple, canWrap, currentIndex, totalCount, onPrev]);
 
-    const handleFullscreenChange = useCallback(
-      (resetTransform, centerView) => {
-        if (isFullscreen) {
-          resetTransform();
-          centerView();
-        }
-      },
-      [isFullscreen]
-    );
+    // Função para lidar com zoom out que fecha o modal
+    const handleZoomOut = useCallback((zoomOut, resetTransform) => {
+      const currentState = transformWrapperRef.current?.instance?.transformState;
+      if (currentState && currentState.scale <= initialScaleRef.current + 0.1) {
+        // Se já está no tamanho inicial ou próximo, fecha o modal
+        onClose();
+      } else {
+        // Se não, faz zoom out normal
+        zoomOut();
+      }
+    }, [onClose]);
 
+    // Controle de swipe para mobile
+    const handleTouchStart = useCallback((e) => {
+      if (!hasMultiple || !isMobile) return;
+      
+      const touch = e.touches[0];
+      touchStartRef.current = {
+        x: touch.clientX,
+        y: touch.clientY,
+        time: Date.now(),
+      };
+      isSwipingRef.current = false;
+    }, [hasMultiple, isMobile]);
+
+    const handleTouchMove = useCallback((e) => {
+      if (!touchStartRef.current || !hasMultiple || !isMobile) return;
+      
+      // Previne scroll se estivermos fazendo swipe horizontal
+      const touch = e.touches[0];
+      const deltaX = Math.abs(touch.clientX - touchStartRef.current.x);
+      const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
+      
+      if (deltaX > deltaY && deltaX > 20) {
+        e.preventDefault();
+        isSwipingRef.current = true;
+      }
+    }, [hasMultiple, isMobile]);
+
+    const handleTouchEnd = useCallback((e) => {
+      if (!touchStartRef.current || !hasMultiple || !isMobile) return;
+      
+      const touch = e.changedTouches[0];
+      const deltaX = touch.clientX - touchStartRef.current.x;
+      const deltaY = touch.clientY - touchStartRef.current.y;
+      const deltaTime = Date.now() - touchStartRef.current.time;
+      
+      // Verifica se é um swipe horizontal válido
+      if (
+        Math.abs(deltaX) > SWIPE_THRESHOLD &&
+        Math.abs(deltaY) < Math.abs(deltaX) &&
+        deltaTime < SWIPE_TIME_THRESHOLD &&
+        isSwipingRef.current
+      ) {
+        if (deltaX > 0) {
+          goPrev(); // Swipe right = imagem anterior
+        } else {
+          goNext(); // Swipe left = próxima imagem
+        }
+      }
+      
+      touchStartRef.current = null;
+      isSwipingRef.current = false;
+    }, [hasMultiple, isMobile, goNext, goPrev]);
+
+    // Reset quando a imagem muda
+    useEffect(() => {
+      setImgLoaded(false);
+      if (transformWrapperRef.current?.instance) {
+        transformWrapperRef.current.instance.resetTransform();
+      }
+    }, [imageUrl]);
+
+    // Focus management
     useEffect(() => {
       if (isOpen) {
         const focusable = document.querySelector('[aria-label="Close modal"]');
@@ -117,77 +172,23 @@ const FullImageModal = memo(
       }
     }, [isOpen]);
 
-    // ---------- TOUCH OVERLAY (captura swipe e pinch-in para fechar) ----------
-    const handleTouchStart = (e) => {
-      if (!e.touches || e.touches.length === 0) return;
-
-      // Multi-touch => preparar pinch distance
-      if (e.touches.length === 2) {
-        const d = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
-        pinchStartDistanceRef.current = d;
-        return;
-      }
-
-      // Single touch => swipe
-      if (e.touches.length === 1) {
-        startX.current = e.touches[0].clientX;
-        startY.current = e.touches[0].clientY;
-        startTimeRef.current = Date.now();
-      }
-    };
-
-    const handleTouchMove = (e) => {
-      // Pinch-in para fechar (apenas se scale ~ 1)
-      if (e.touches && e.touches.length === 2) {
-        if (scaleRef.current > CLOSE_PINCH_SCALE_EPS) return; // se já está maior que base, ignore
-        if (pinchStartDistanceRef.current == null) return;
-
-        const dNow = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
-
-        // Se a distância atual é bem menor que a inicial => pinch-in
-        if (dNow < pinchStartDistanceRef.current * PINCH_IN_RATIO) {
-          // Fecha como "zoom out para sair"
-          onClose();
-          pinchStartDistanceRef.current = null;
+    // Keyboard navigation
+    useEffect(() => {
+      if (!isOpen || !hasMultiple) return;
+      
+      const handleKeyDown = (e) => {
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          goNext();
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          goPrev();
         }
-      }
-    };
-
-    const handleTouchEnd = (e) => {
-      // reset pinch
-      if (e.touches && e.touches.length === 0) {
-        pinchStartDistanceRef.current = null;
-      }
-
-      // Swipe só com um dedo, sem zoom
-      if (!isMobile || !hasMultiple) return;
-      if (scaleRef.current > 1.05) return;
-
-      const touch = e.changedTouches && e.changedTouches[0];
-      if (!touch) return;
-
-      const dt = Date.now() - startTimeRef.current;
-      if (dt > SWIPE_MAX_TIME) return;
-
-      const dx = touch.clientX - startX.current;
-      const dy = touch.clientY - startY.current;
-
-      // cooldown
-      if (Date.now() - lastSwipeAtRef.current < SWIPE_COOLDOWN) return;
-
-      // horizontal e com distância mínima
-      if (Math.abs(dx) >= SWIPE_MIN_DIST && Math.abs(dy) <= V_TOLERANCE) {
-        lastSwipeAtRef.current = Date.now();
-        if (dx < 0) goNext();
-        else goPrev();
-      }
-    };
+      };
+      
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, hasMultiple, goNext, goPrev]);
 
     return (
       <Modal isOpen={isOpen} onClose={onClose} size={modalSize} motionPreset="scale" isCentered>
@@ -208,6 +209,9 @@ const FullImageModal = memo(
             p={{ base: 0, md: 4 }}
             position="relative"
             pb={{ base: 'calc(env(safe-area-inset-bottom) + 56px)', md: 4 }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
             {/* Logo / Marca d'água */}
             <Flex
@@ -245,57 +249,44 @@ const FullImageModal = memo(
               onClick={onClose}
             />
 
-            <Box ref={fullscreenRef} position="relative">
-              {/* Overlay de toque (captura swipe/pinch) */}
-              <Box
-                position="absolute"
-                inset={0}
-                zIndex={30}
-                // Evita interferência com scroll/gestos do navegador
-                style={{ touchAction: 'none' }}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-              />
-
+            <Box ref={fullscreenRef}>
               <VStack spacing={{ base: 2, md: 4 }} align="stretch">
                 <TransformWrapper
+                  ref={transformWrapperRef}
                   initialScale={1}
-                  minScale={1}              // <<< não permite zoom-out abaixo do "fit"
+                  minScale={1} // Não permite zoom out abaixo do tamanho inicial
                   maxScale={3}
-                  limitToBounds
                   wheel={{ step: 0.2 }}
-                  doubleClick={{ disabled: true }}
+                  doubleClick={{ disabled: false, mode: 'zoomIn' }}
                   pinch={{ step: 5 }}
                   centerOnInit
                   centerZoomedOut
-                  onInit={(state) => {
-                    if (isFullscreen) state.centerView();
+                  limitToBounds={false}
+                  onInit={(ref, state) => {
+                    initialScaleRef.current = state.scale;
+                    if (isFullscreen) {
+                      ref.centerView();
+                    }
                   }}
-                  onStateChange={(state) =>
-                    handleFullscreenChange(state.resetTransform, state.centerView)
-                  }
-                  onZoomStop={({ state }) => {
-                    scaleRef.current = state.scale ?? 1;
-                  }}
-                  onPanningStop={({ state }) => {
-                    scaleRef.current = state.scale ?? 1;
+                  onZoomStop={(ref, state) => {
+                    // Se tentar fazer zoom out abaixo do inicial, fecha o modal
+                    if (state.scale < initialScaleRef.current) {
+                      onClose();
+                    }
                   }}
                 >
-                  {({ zoomIn, zoomOut, centerView }) => (
+                  {({ zoomIn, zoomOut, resetTransform, centerView }) => (
                     <>
                       {/* Controles de zoom/fullscreen apenas no desktop */}
                       {!isMobile && (
-                        <Flex justify="center" wrap="wrap" gap={2} zIndex="20" mb={2}>
+                        <Flex justify="center" wrap="wrap" gap={2} zIndex="40" mb={2}>
                           <IconButton
                             onClick={(e) => {
                               e.stopPropagation();
-                              // Se já está no mínimo, interpretamos como “zoom-out para sair”
-                              if ((scaleRef.current ?? 1) <= 1.001) onClose();
-                              else zoomOut();
+                              handleZoomOut(zoomOut, resetTransform);
                             }}
                             icon={<FiZoomOut />}
-                            aria-label="Zoom out"
+                            aria-label="Zoom out or close"
                             size="md"
                             bg={buttonBg}
                             color={textColor}
@@ -356,10 +347,25 @@ const FullImageModal = memo(
                           alignItems: 'center',
                         }}
                       >
-                        <Box w="100%" h="100%">
+                        <Box
+                          w="100%"
+                          h="100%"
+                          display="flex"
+                          justifyContent="center"
+                          alignItems="center"
+                          style={{ 
+                            touchAction: isMobile ? 'pan-x pan-y' : 'auto'
+                          }}
+                        >
                           {!imgLoaded && (
-                            <Center w="100%" h="100%">
-                              <Spinner size="xl" thickness="4px" />
+                            <Center 
+                              position="absolute"
+                              top="50%"
+                              left="50%"
+                              transform="translate(-50%, -50%)"
+                              zIndex="10"
+                            >
+                              <Spinner size="xl" thickness="4px" color={accentColor} />
                             </Center>
                           )}
                           <Image
@@ -369,18 +375,24 @@ const FullImageModal = memo(
                                 ? `Full-size image from ${countryName}`
                                 : 'Full-size image'
                             }
-                            maxWidth={isFullscreen ? '95vw' : isMobile ? '100%' : '90%'}
-                            maxHeight={isFullscreen ? '90vh' : isMobile ? '100%' : '60vh'}
+                            maxWidth="100%"
+                            maxHeight="100%"
                             width="auto"
                             height="auto"
                             objectFit="contain"
                             borderRadius={{ base: 0, md: 'md' }}
                             boxShadow={{ base: 'none', md: 'lg' }}
-                            onLoad={() => setImgLoaded(true)}
+                            onLoad={() => {
+                              setImgLoaded(true);
+                              // Garantir que a imagem fique centralizada após carregar
+                              setTimeout(() => {
+                                if (transformWrapperRef.current?.instance) {
+                                  transformWrapperRef.current.instance.centerView();
+                                }
+                              }, 100);
+                            }}
                             style={{
                               display: imgLoaded ? 'block' : 'none',
-                              userSelect: 'none',
-                              WebkitUserDrag: 'none',
                             }}
                           />
                         </Box>
@@ -391,11 +403,11 @@ const FullImageModal = memo(
               </VStack>
             </Box>
 
-            {/* Setas: só desktop; no mobile o swipe cuida */}
+            {/* Setas de navegação - apenas desktop */}
             {hasMultiple && !isMobile && (
               <>
                 <IconButton
-                  icon={<Text fontSize={{ base: '2xl', md: '3xl' }}>&lsaquo;</Text>}
+                  icon={<Text fontSize="3xl" fontWeight="bold">&lsaquo;</Text>}
                   onClick={(e) => {
                     e.stopPropagation();
                     goPrev();
@@ -403,16 +415,19 @@ const FullImageModal = memo(
                   aria-label="Previous image"
                   position="absolute"
                   top="50%"
-                  left={{ base: '6px', md: '20px' }}
+                  left="20px"
                   transform="translateY(-50%)"
                   zIndex="40"
                   variant="ghost"
                   size="lg"
                   color={textColor}
+                  bg="rgba(255,255,255,0.1)"
+                  backdropFilter="blur(10px)"
                   _hover={{ bg: accentColor, color: 'white' }}
+                  borderRadius="full"
                 />
                 <IconButton
-                  icon={<Text fontSize={{ base: '2xl', md: '3xl' }}>&rsaquo;</Text>}
+                  icon={<Text fontSize="3xl" fontWeight="bold">&rsaquo;</Text>}
                   onClick={(e) => {
                     e.stopPropagation();
                     goNext();
@@ -420,15 +435,35 @@ const FullImageModal = memo(
                   aria-label="Next image"
                   position="absolute"
                   top="50%"
-                  right={{ base: '6px', md: '20px' }}
+                  right="20px"
                   transform="translateY(-50%)"
                   zIndex="40"
                   variant="ghost"
                   size="lg"
                   color={textColor}
+                  bg="rgba(255,255,255,0.1)"
+                  backdropFilter="blur(10px)"
                   _hover={{ bg: accentColor, color: 'white' }}
+                  borderRadius="full"
                 />
               </>
+            )}
+
+            {/* Indicador de navegação por swipe no mobile */}
+            {hasMultiple && isMobile && (
+              <Box
+                position="absolute"
+                bottom="20px"
+                left="50%"
+                transform="translateX(-50%)"
+                zIndex="40"
+                opacity="0.6"
+                pointerEvents="none"
+              >
+                <Text fontSize="xs" color={textColor} textAlign="center">
+                  Deslize para navegar
+                </Text>
+              </Box>
             )}
           </ModalBody>
         </ModalContent>
