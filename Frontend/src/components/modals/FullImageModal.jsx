@@ -94,10 +94,10 @@ const FullImageModal = memo(
     // Função para lidar com zoom out que fecha o modal
     const handleZoomOut = useCallback((zoomOut, resetTransform) => {
       const currentState = transformWrapperRef.current?.instance?.transformState;
-      if (currentState && currentState.scale <= initialScaleRef.current + 0.1) {
+      if (currentState?.scale && currentState.scale <= initialScaleRef.current + 0.1) {
         // Se já está no tamanho inicial ou próximo, fecha o modal
         onClose();
-      } else {
+      } else if (zoomOut) {
         // Se não, faz zoom out normal
         zoomOut();
       }
@@ -106,6 +106,9 @@ const FullImageModal = memo(
     // Controle de swipe para mobile
     const handleTouchStart = useCallback((e) => {
       if (!hasMultiple || !isMobile) return;
+      
+      // Só processa se for um toque único
+      if (e.touches.length !== 1) return;
       
       const touch = e.touches[0];
       touchStartRef.current = {
@@ -119,32 +122,42 @@ const FullImageModal = memo(
     const handleTouchMove = useCallback((e) => {
       if (!touchStartRef.current || !hasMultiple || !isMobile) return;
       
-      // Previne scroll se estivermos fazendo swipe horizontal
+      // Só processa se for um toque único
+      if (e.touches.length !== 1) return;
+      
       const touch = e.touches[0];
       const deltaX = Math.abs(touch.clientX - touchStartRef.current.x);
       const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
       
+      // Se o movimento horizontal é maior que o vertical e passou do threshold
       if (deltaX > deltaY && deltaX > 20) {
-        e.preventDefault();
+        // Marca como swipe em progresso
         isSwipingRef.current = true;
+        // Previne scroll apenas se estivermos fazendo swipe horizontal
+        e.preventDefault();
       }
     }, [hasMultiple, isMobile]);
 
     const handleTouchEnd = useCallback((e) => {
       if (!touchStartRef.current || !hasMultiple || !isMobile) return;
       
+      // Só processa se for um toque único
+      if (e.changedTouches.length !== 1) return;
+      
       const touch = e.changedTouches[0];
       const deltaX = touch.clientX - touchStartRef.current.x;
-      const deltaY = touch.clientY - touchStartRef.current.y;
+      const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
       const deltaTime = Date.now() - touchStartRef.current.time;
       
       // Verifica se é um swipe horizontal válido
-      if (
-        Math.abs(deltaX) > SWIPE_THRESHOLD &&
-        Math.abs(deltaY) < Math.abs(deltaX) &&
-        deltaTime < SWIPE_TIME_THRESHOLD &&
-        isSwipingRef.current
-      ) {
+      const isValidSwipe = Math.abs(deltaX) > SWIPE_THRESHOLD && 
+                          deltaY < Math.abs(deltaX) && 
+                          deltaTime < SWIPE_TIME_THRESHOLD;
+      
+      if (isValidSwipe) {
+        e.preventDefault();
+        e.stopPropagation();
+        
         if (deltaX > 0) {
           goPrev(); // Swipe right = imagem anterior
         } else {
@@ -152,9 +165,10 @@ const FullImageModal = memo(
         }
       }
       
+      // Reset
       touchStartRef.current = null;
       isSwipingRef.current = false;
-    }, [hasMultiple, isMobile, goNext, goPrev]);
+    }, [hasMultiple, isMobile, goNext, goPrev, SWIPE_THRESHOLD, SWIPE_TIME_THRESHOLD]);
 
     // Reset quando a imagem muda
     useEffect(() => {
@@ -263,14 +277,14 @@ const FullImageModal = memo(
                   centerZoomedOut
                   limitToBounds={false}
                   onInit={(ref, state) => {
-                    initialScaleRef.current = state.scale;
-                    if (isFullscreen) {
+                    initialScaleRef.current = state?.scale || 1;
+                    if (isFullscreen && ref?.centerView) {
                       ref.centerView();
                     }
                   }}
                   onZoomStop={(ref, state) => {
                     // Se tentar fazer zoom out abaixo do inicial, fecha o modal
-                    if (state.scale < initialScaleRef.current) {
+                    if (state?.scale && state.scale < initialScaleRef.current) {
                       onClose();
                     }
                   }}
