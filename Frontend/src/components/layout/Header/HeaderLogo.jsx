@@ -19,10 +19,10 @@ const HeaderLogo = ({ styles }) => {
       {...logoStyles(styles)}
       onClick={handleLogoClick}
     >
-      <Image 
-        src={logo} 
-        alt="Photomap Logo" 
-        h="52px" 
+      <Image
+        src={logo}
+        alt="Photomap Logo"
+        h="52px"
         mr={4}
         filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
         transition="all 0.3s ease"
@@ -59,7 +59,7 @@ const HeaderLogo = ({ styles }) => {
             textShadow: "0 1px 2px rgba(0,0,0,0.1)"
           }}
         >
-          
+          Journey through photos, learn through cultures.
         </Text>
       </Box>
     </Flex>
