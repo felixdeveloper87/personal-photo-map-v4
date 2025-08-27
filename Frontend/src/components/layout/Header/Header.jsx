@@ -61,9 +61,9 @@ const Header = () => {
   return (
     <Box as="header" w="100%" position="relative" zIndex={100}>
       <Container maxW="container.xl" {...headerContainerStyles(styles)}>
-        <Flex align="center" justify="space-between" w="100%" gap={4}>
-          {/* ESQUERDA: Logo + Map Button + (opcional) toggle no desktop */}
-          <HStack spacing={3} align="center">
+        <Flex align="center" justify="space-between" w="100%" h="auto" gap={6}>
+          {/* ESQUERDA: Logo (canto esquerdo) */}
+          <HStack spacing={4} align="center" flex="0 0 auto">
             {/* Botão Hamburguer (mobile) */}
             <IconButton
               aria-label={mobileMenu.isOpen ? "Close menu" : "Open menu"}
@@ -76,24 +76,25 @@ const Header = () => {
               p={2}
             />
             <HeaderLogo styles={styles} onClick={() => navigate("/")} />
+          </HStack>
 
-            {/* Botão Map - sempre visível */}
+          {/* CENTRO: Navegação e ações principais */}
+          <HStack
+            spacing={6}
+            align="center"
+            flex="1"
+            justify="center"
+            display={{ base: "none", lg: "flex" }}
+            maxW="800px"
+          >
+            {/* Botão Map - posicionado harmonicamente */}
             <ModernMapButton
               isLoggedIn={isLoggedIn}
               onClick={() => isLoggedIn ? navigate("/map/private") : navigate("/map")}
               size="md"
               aria-label="Go to Map"
             />
-          </HStack>
 
-          {/* CENTRO: escondido no mobile para não “quebrar” quando logado */}
-          <HStack
-            spacing={6}
-            align="center"
-            flex={1}
-            justify="center"
-            display={{ base: "none", lg: "flex" }} // ⬅️ importante
-          >
             {isLoggedIn && (
               <HeaderUser
                 styles={styles}
@@ -120,8 +121,8 @@ const Header = () => {
             )}
           </HStack>
 
-          {/* DIREITA: Auth / Toggle / Logout etc. (desktop) */}
-          <HStack spacing={8} align="center" display={{ base: "none", lg: "flex" }}>
+          {/* DIREITA: Theme Toggle + Auth/Logout (canto direito) */}
+          <HStack spacing={4} align="center" flex="0 0 auto" display={{ base: "none", lg: "flex" }}>
             <ModernThemeToggleButton
               colorMode={colorMode}
               toggleColorMode={toggleColorMode}

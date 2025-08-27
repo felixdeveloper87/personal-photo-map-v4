@@ -18,16 +18,22 @@ const HeaderLogo = ({ styles }) => {
     <Flex
       {...logoStyles(styles)}
       onClick={handleLogoClick}
+      align="center"
+      cursor="pointer"
+      userSelect="none"
+      _hover={{ transform: "translateY(-1px)" }}
+      transition="all 0.3s ease"
     >
       <Image
         src={logo}
         alt="Photomap Logo"
-        h="52px"
-        mr={4}
+        h="48px"
+        w="48px"
+        mr={3}
         filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
         transition="all 0.3s ease"
         _hover={{
-          transform: "scale(1.02)",
+          transform: "scale(1.05)",
           filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))"
         }}
       />
@@ -38,6 +44,7 @@ const HeaderLogo = ({ styles }) => {
           color={styles.logoTextColor}
           fontWeight="800"
           letterSpacing="tight"
+          lineHeight="1.2"
           filter="drop-shadow(0 1px 2px rgba(0,0,0,0.1))"
           transition="all 0.3s ease"
           _hover={{
@@ -49,9 +56,10 @@ const HeaderLogo = ({ styles }) => {
         </Heading>
         <Text
           color={styles.logoSubtextColor}
-          fontSize="sm"
+          fontSize="xs"
           fontWeight="500"
           letterSpacing="wide"
+          lineHeight="1.1"
           filter="drop-shadow(0 1px 1px rgba(0,0,0,0.1))"
           transition="all 0.3s ease"
           _hover={{
