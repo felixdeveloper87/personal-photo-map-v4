@@ -41,24 +41,26 @@ const FullImageModal = memo(
     toggleFullScreen,
     isFullscreen,
     countryName, // opcional
-    // NOVO: índices para wrap-around local (opcional)
+    // opcionais para wrap "consciente"
     currentIndex,
     totalCount,
   }) => {
     const [imgLoaded, setImgLoaded] = useState(false);
     const isMobile = useBreakpointValue({ base: true, md: false });
 
-      // refs para swipe - implementação estilo Photos da Apple
-  const currentScaleRef = useRef(1);
-  const touchStartXRef = useRef(0);
-  const touchStartYRef = useRef(0);
-  const touchCurrentXRef = useRef(0);
-  const swipedRef = useRef(false);
-  const isDraggingRef = useRef(false);
-  const [swipeOffset, setSwipeOffset] = useState(0);
-  const SWIPE_THRESHOLD = 80; // threshold mais baixo
-  const VELOCITY_THRESHOLD = 0.3; // velocidade mínima para swipe
-  const VSWIPE_TOLERANCE = 100; // tolerância vertical maior
+    // ----- SWIPE STATE (mobile) -----
+    const scaleRef = useRef(1);
+    const startX = useRef(0);
+    const startY = useRef(0);
+    const startTimeRef = useRef(0);
+    const didSwipeRef = useRef(false);
+    const lastSwipeAtRef = useRef(0);
+
+    // thresholds
+    const SWIPE_MIN_DIST = 60;   // px: distância mínima no eixo X
+    const V_TOLERANCE = 50;      // px: tolerância no eixo Y (para ser "horizontal")
+    const SWIPE_MAX_TIME = 800;  // ms: tempo máximo do gesto
+    const SWIPE_COOLDOWN = 250;  // ms: evita duplo avanço por tremulação
 
     // Cores
     const bgColor = useColorModeValue('white', 'gray.800');
@@ -68,7 +70,7 @@ const FullImageModal = memo(
 
     const modalSize = useBreakpointValue({ base: 'full', md: '5xl', lg: '6xl' });
 
-    // Helpers para navegação com wrap local (se indexes informados)
+    // Wrap helpers
     const canWrap =
       typeof currentIndex === 'number' &&
       typeof totalCount === 'number' &&
@@ -78,11 +80,11 @@ const FullImageModal = memo(
       if (!hasMultiple) return;
       if (canWrap) {
         const next = (currentIndex + 1) % totalCount;
-        onNext && onNext(next); // parent pode ignorar o índice se quiser
+        onNext && onNext(next);
       } else {
         onNext && onNext();
       }
-    }, [canWrap, currentIndex, totalCount, onNext, hasMultiple]);
+    }, [hasMultiple, canWrap, currentIndex, totalCount, onNext]);
 
     const goPrev = useCallback(() => {
       if (!hasMultiple) return;
@@ -92,7 +94,7 @@ const FullImageModal = memo(
       } else {
         onPrev && onPrev();
       }
-    }, [canWrap, currentIndex, totalCount, onPrev, hasMultiple]);
+    }, [hasMultiple, canWrap, currentIndex, totalCount, onPrev]);
 
     const handleFullscreenChange = useCallback(
       (resetTransform, centerView) => {
@@ -111,77 +113,53 @@ const FullImageModal = memo(
       }
     }, [isOpen]);
 
-    // Reset swipe offset quando a imagem muda
-    useEffect(() => {
-      setSwipeOffset(0);
-      setImgLoaded(false);
-    }, [imageUrl]);
+    // ----- TOUCH HANDLERS (mobile) -----
+    const onTouchStart = (e) => {
+      if (!hasMultiple) return;
+      // ignora multi-touch (pinch, etc.)
+      if (!e.touches || e.touches.length !== 1) return;
+      startX.current = e.touches[0].clientX;
+      startY.current = e.touches[0].clientY;
+      startTimeRef.current = Date.now();
+      didSwipeRef.current = false;
+    };
 
-    // Swipe estilo Photos da Apple
-    const onTouchStart = useCallback((e) => {
-      if (!e.touches?.[0] || !hasMultiple || currentScaleRef.current > 1.05) return;
-      
-      touchStartXRef.current = e.touches[0].clientX;
-      touchStartYRef.current = e.touches[0].clientY;
-      touchCurrentXRef.current = e.touches[0].clientX;
-      swipedRef.current = false;
-      isDraggingRef.current = false;
-      setSwipeOffset(0);
-    }, [hasMultiple]);
+    // não decidimos no move; só bloqueamos se zoomado
+    const onTouchMove = (e) => {
+      if (scaleRef.current > 1.05) return; // se estiver com zoom, não navega por swipe
+      // quando o gesto é candidato a swipe horizontal, podemos opcionalmente evitar rolagem:
+      // e.preventDefault(); // cuidado: só se necessário
+    };
 
-    const onTouchMove = useCallback((e) => {
-      if (!e.touches?.[0] || !hasMultiple || currentScaleRef.current > 1.05) return;
-      
-      const currentX = e.touches[0].clientX;
-      const currentY = e.touches[0].clientY;
-      const deltaX = currentX - touchStartXRef.current;
-      const deltaY = currentY - touchStartYRef.current;
-      
-      // Verifica se é um movimento horizontal
-      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
-        isDraggingRef.current = true;
-        
-        // Previne o scroll da página
-        e.preventDefault();
-        
-        // Atualiza o offset para feedback visual
-        const resistance = Math.abs(deltaX) > 100 ? 0.3 : 1; // resistência nas bordas
-        setSwipeOffset(deltaX * resistance);
-        
-        touchCurrentXRef.current = currentX;
-      }
-    }, [hasMultiple]);
+    const onTouchEnd = (e) => {
+      if (!hasMultiple) return;
+      if (didSwipeRef.current) return; // já processado
+      if (scaleRef.current > 1.05) return; // com zoom, não navega
+      const dt = Date.now() - startTimeRef.current;
+      if (dt > SWIPE_MAX_TIME) return; // gesto lento demais
 
-    const onTouchEnd = useCallback((e) => {
-      if (!hasMultiple || !isDraggingRef.current) {
-        setSwipeOffset(0);
-        return;
-      }
-      
-      const deltaX = touchCurrentXRef.current - touchStartXRef.current;
-      const deltaY = (e.changedTouches?.[0]?.clientY || 0) - touchStartYRef.current;
-      
-      // Calcula velocidade (pixels por ms)
-      const touchDuration = Date.now() - (e.timeStamp || Date.now());
-      const velocity = Math.abs(deltaX) / Math.max(touchDuration, 1);
-      
-      // Determina se deve fazer swipe baseado na distância ou velocidade
-      const shouldSwipe = Math.abs(deltaX) > SWIPE_THRESHOLD || velocity > VELOCITY_THRESHOLD;
-      const isHorizontal = Math.abs(deltaY) < VSWIPE_TOLERANCE;
-      
-      if (shouldSwipe && isHorizontal) {
-        swipedRef.current = true;
-        if (deltaX > 0) {
-          goPrev();
-        } else {
+      const touch = e.changedTouches && e.changedTouches[0];
+      if (!touch) return;
+
+      const dx = touch.clientX - startX.current;
+      const dy = touch.clientY - startY.current;
+
+      // checa cooldown
+      if (Date.now() - lastSwipeAtRef.current < SWIPE_COOLDOWN) return;
+
+      // precisa ser horizontal e com distância mínima
+      if (Math.abs(dx) >= SWIPE_MIN_DIST && Math.abs(dy) <= V_TOLERANCE) {
+        didSwipeRef.current = true;
+        lastSwipeAtRef.current = Date.now();
+        if (dx < 0) {
+          // esquerda -> próxima
           goNext();
+        } else {
+          // direita -> anterior
+          goPrev();
         }
       }
-      
-      // Reset
-      setSwipeOffset(0);
-      isDraggingRef.current = false;
-    }, [hasMultiple, goNext, goPrev]);
+    };
 
     return (
       <Modal isOpen={isOpen} onClose={onClose} size={modalSize} motionPreset="scale" isCentered>
@@ -203,7 +181,7 @@ const FullImageModal = memo(
             position="relative"
             pb={{ base: 'calc(env(safe-area-inset-bottom) + 56px)', md: 4 }}
           >
-            {/* Marca d'água / Logo */}
+            {/* Logo / Marca d'água */}
             <Flex
               position="absolute"
               top={{ base: '8px', md: '10px' }}
@@ -225,7 +203,7 @@ const FullImageModal = memo(
               </Heading>
             </Flex>
 
-            {/* Botão fechar */}
+            {/* Fechar */}
             <IconButton
               icon={<FiX />}
               aria-label="Close modal"
@@ -257,10 +235,10 @@ const FullImageModal = memo(
                     handleFullscreenChange(state.resetTransform, state.centerView)
                   }
                   onZoomStop={({ state }) => {
-                    currentScaleRef.current = state.scale ?? 1;
+                    scaleRef.current = state.scale ?? 1;
                   }}
                   onPanningStop={({ state }) => {
-                    currentScaleRef.current = state.scale ?? 1;
+                    scaleRef.current = state.scale ?? 1;
                   }}
                 >
                   {({ zoomIn, zoomOut, centerView }) => (
@@ -295,7 +273,7 @@ const FullImageModal = memo(
                           <IconButton
                             onClick={(e) => {
                               e.stopPropagation();
-                              toggleFullScreen();
+                              toggleFullScreen?.();
                               if (!isFullscreen) centerView();
                             }}
                             icon={<FiMaximize />}
@@ -327,21 +305,22 @@ const FullImageModal = memo(
                           alignItems: 'center',
                           overflow: 'hidden',
                         }}
+                        contentStyle={{
+                          width: '100%',
+                          height: '100%',
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}
                       >
                         <Box
                           w="100%"
                           h="100%"
-                          position="relative"
-                          display="flex"
-                          justifyContent="center"
-                          alignItems="center"
+                          // importante para reduzir interferência com scroll
+                          style={{ touchAction: 'none' }}
                           onTouchStart={isMobile ? onTouchStart : undefined}
                           onTouchMove={isMobile ? onTouchMove : undefined}
                           onTouchEnd={isMobile ? onTouchEnd : undefined}
-                          style={isMobile ? {
-                            transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : undefined,
-                            transition: isDraggingRef.current ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                          } : undefined}
                         >
                           {!imgLoaded && (
                             <Center w="100%" h="100%">
@@ -350,7 +329,11 @@ const FullImageModal = memo(
                           )}
                           <Image
                             src={imageUrl}
-                            alt={countryName ? `Full-size image from ${countryName}` : 'Full-size image'}
+                            alt={
+                              countryName
+                                ? `Full-size image from ${countryName}`
+                                : 'Full-size image'
+                            }
                             maxWidth={isFullscreen ? '95vw' : isMobile ? '100%' : '90%'}
                             maxHeight={isFullscreen ? '90vh' : isMobile ? '100%' : '60vh'}
                             width="auto"
@@ -361,7 +344,6 @@ const FullImageModal = memo(
                             onLoad={() => setImgLoaded(true)}
                             style={{
                               display: imgLoaded ? 'block' : 'none',
-                              margin: isMobile ? undefined : 'auto',
                             }}
                           />
                         </Box>
@@ -372,32 +354,7 @@ const FullImageModal = memo(
               </VStack>
             </Box>
 
-            {/* Indicador de múltiplas fotos no mobile - estilo Photos */}
-            {hasMultiple && isMobile && (
-              <Flex
-                position="absolute"
-                bottom="20px"
-                left="50%"
-                transform="translateX(-50%)"
-                zIndex="45"
-                align="center"
-                gap={1}
-              >
-                {Array.from({ length: Math.min(totalCount || 3, 5) }, (_, i) => (
-                  <Box
-                    key={i}
-                    w="6px"
-                    h="6px"
-                    borderRadius="full"
-                    bg={i === (currentIndex ?? 0) ? 'white' : 'whiteAlpha.500'}
-                    transition="all 0.2s"
-                    boxShadow="0 1px 3px rgba(0,0,0,0.3)"
-                  />
-                ))}
-              </Flex>
-            )}
-
-            {/* Setas de navegação: apenas desktop */}
+            {/* Setas: só desktop; no mobile o swipe cuida */}
             {hasMultiple && !isMobile && (
               <>
                 <IconButton
@@ -454,7 +411,6 @@ FullImageModal.propTypes = {
   toggleFullScreen: PropTypes.func,
   isFullscreen: PropTypes.bool,
   countryName: PropTypes.string,
-  // NOVOS (opcionais) para wrap-around local
   currentIndex: PropTypes.number,
   totalCount: PropTypes.number,
 };
