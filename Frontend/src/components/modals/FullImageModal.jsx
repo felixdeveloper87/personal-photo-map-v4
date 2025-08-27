@@ -40,7 +40,10 @@ const FullImageModal = memo(
     fullscreenRef,
     toggleFullScreen,
     isFullscreen,
-    countryName, // recebido mas não exibido (pin/localização removidos)
+    countryName, // opcional
+    // NOVO: índices para wrap-around local (opcional)
+    currentIndex,
+    totalCount,
   }) => {
     const [imgLoaded, setImgLoaded] = useState(false);
     const isMobile = useBreakpointValue({ base: true, md: false });
@@ -60,6 +63,32 @@ const FullImageModal = memo(
     const buttonBg = useColorModeValue('gray.100', 'gray.700');
 
     const modalSize = useBreakpointValue({ base: 'full', md: '5xl', lg: '6xl' });
+
+    // Helpers para navegação com wrap local (se indexes informados)
+    const canWrap =
+      typeof currentIndex === 'number' &&
+      typeof totalCount === 'number' &&
+      totalCount > 0;
+
+    const goNext = useCallback(() => {
+      if (!hasMultiple) return;
+      if (canWrap) {
+        const next = (currentIndex + 1) % totalCount;
+        onNext && onNext(next); // parent pode ignorar o índice se quiser
+      } else {
+        onNext && onNext();
+      }
+    }, [canWrap, currentIndex, totalCount, onNext, hasMultiple]);
+
+    const goPrev = useCallback(() => {
+      if (!hasMultiple) return;
+      if (canWrap) {
+        const prev = (currentIndex - 1 + totalCount) % totalCount;
+        onPrev && onPrev(prev);
+      } else {
+        onPrev && onPrev();
+      }
+    }, [canWrap, currentIndex, totalCount, onPrev, hasMultiple]);
 
     const handleFullscreenChange = useCallback(
       (resetTransform, centerView) => {
@@ -87,13 +116,14 @@ const FullImageModal = memo(
     };
     const onTouchMove = (e) => {
       if (!e.touches?.[0]) return;
+      if (!hasMultiple) return;
       if (currentScaleRef.current > 1.05) return;
       const dx = e.touches[0].clientX - touchStartXRef.current;
       const dy = e.touches[0].clientY - touchStartYRef.current;
       if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dy) < VSWIPE_TOLERANCE) {
         swipedRef.current = true;
-        if (dx < 0 && onNext) onNext();
-        if (dx > 0 && onPrev) onPrev();
+        if (dx < 0) goNext();
+        if (dx > 0) goPrev();
       }
     };
 
@@ -179,7 +209,7 @@ const FullImageModal = memo(
                 >
                   {({ zoomIn, zoomOut, centerView }) => (
                     <>
-                      {/* Controles: só no desktop (mobile: removidos zoom/FS) */}
+                      {/* Controles de zoom/fullscreen apenas no desktop */}
                       {!isMobile && (
                         <Flex justify="center" wrap="wrap" gap={2} zIndex="40" mb={2}>
                           <IconButton
@@ -256,7 +286,7 @@ const FullImageModal = memo(
                           )}
                           <Image
                             src={imageUrl}
-                            alt="Full-size image"
+                            alt={countryName ? `Full-size image from ${countryName}` : 'Full-size image'}
                             maxWidth={isFullscreen ? '95vw' : isMobile ? '100%' : '90%'}
                             maxHeight={isFullscreen ? '90vh' : isMobile ? '100%' : '60vh'}
                             width="auto"
@@ -277,14 +307,14 @@ const FullImageModal = memo(
               </VStack>
             </Box>
 
-            {/* Setas de navegação */}
-            {hasMultiple && (
+            {/* Setas de navegação: apenas desktop */}
+            {hasMultiple && !isMobile && (
               <>
                 <IconButton
                   icon={<Text fontSize={{ base: '2xl', md: '3xl' }}>&lsaquo;</Text>}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onPrev && onPrev();
+                    goPrev();
                   }}
                   aria-label="Previous image"
                   position="absolute"
@@ -301,7 +331,7 @@ const FullImageModal = memo(
                   icon={<Text fontSize={{ base: '2xl', md: '3xl' }}>&rsaquo;</Text>}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onNext && onNext();
+                    goNext();
                   }}
                   aria-label="Next image"
                   position="absolute"
@@ -333,7 +363,10 @@ FullImageModal.propTypes = {
   fullscreenRef: PropTypes.object,
   toggleFullScreen: PropTypes.func,
   isFullscreen: PropTypes.bool,
-  countryName: PropTypes.string, // mantido por compatibilidade, mas não exibido
+  countryName: PropTypes.string,
+  // NOVOS (opcionais) para wrap-around local
+  currentIndex: PropTypes.number,
+  totalCount: PropTypes.number,
 };
 
 export default FullImageModal;
