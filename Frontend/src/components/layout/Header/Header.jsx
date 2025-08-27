@@ -217,6 +217,7 @@ const Header = () => {
 
       {/* MENU MOBILE (aparece somente no base…lg) */}
       <HeaderMobile
+  isCompact={isCompact}
         isOpen={mobileMenu.isOpen}
         styles={styles}
         colorMode={colorMode}

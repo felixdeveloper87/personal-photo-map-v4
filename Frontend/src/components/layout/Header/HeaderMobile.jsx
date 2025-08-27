@@ -18,7 +18,6 @@ import {
   ModernLoginButton, 
   ModernRegisterButton,
   ModernPhotoStorageButton,
-  ModernMapButton,
   ModernCountriesVisitedButton,
   ModernSearchButton,
   ModernTimelineButton
@@ -39,6 +38,7 @@ import { useNavigate } from "react-router-dom";
  */
 const HeaderMobile = ({
   isOpen,
+  isCompact,
   styles,
   colorMode,
   toggleColorMode,
@@ -66,7 +66,7 @@ const HeaderMobile = ({
   console.log('📱 HeaderMobile - isLoggedIn:', isLoggedIn);
 
   return (
-    <Box display={{ base: "block", lg: "none" }}>
+    <Box display={isCompact ? "block" : "none"}>
       <Collapse in={isOpen} animateOpacity>
         <Box
           {...mobileMenuStyles(styles)}
