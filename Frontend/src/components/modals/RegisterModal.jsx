@@ -158,6 +158,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
       });
 
       console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
         let errorMessage = 'Registration failed';
@@ -176,12 +177,40 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
         } catch (readError) {
           console.error('❌ Error reading response:', readError);
         }
+        
+        // Handle specific HTTP status codes
+        if (response.status === 409) {
+          // 409 Conflict means the email is already in use
+          errorMessage = 'An account with this email already exists. Please use a different email or try logging in.';
+        } else if (response.status === 400) {
+          errorMessage = 'Invalid registration data. Please check your information and try again.';
+        } else if (response.status >= 500) {
+          errorMessage = 'Server error. Please try again later.';
+        }
+        
         console.error('❌ Registration error:', errorMessage);
         throw new Error(errorMessage);
       }
 
-      const data = await response.json();
-      console.log('✅ Registration successful:', data);
+      // Handle the response - it might be JSON or plain text
+      let data;
+      try {
+        const responseText = await response.text();
+        console.log('🔍 Success response text:', responseText);
+        
+        // Try to parse as JSON first
+        try {
+          data = JSON.parse(responseText);
+          console.log('✅ Registration successful (JSON):', data);
+        } catch {
+          // If not JSON, treat as plain text success message
+          data = { message: responseText };
+          console.log('✅ Registration successful (text):', responseText);
+        }
+      } catch (readError) {
+        console.error('❌ Error reading success response:', readError);
+        data = { message: 'Registration successful' };
+      }
       
       toast({
         title: "Account created successfully! 🎉",

@@ -234,13 +234,41 @@ export const AuthProvider = ({ children }) => {
       console.log('📡 Register response status:', response.status);
 
       if (!response.ok) {
-        const errorText = await response.text();
+        let errorText = await response.text();
         console.error('❌ Register error response:', errorText);
+        
+        // Handle specific HTTP status codes
+        if (response.status === 409) {
+          // 409 Conflict means the email is already in use
+          errorText = 'An account with this email already exists. Please use a different email or try logging in.';
+        } else if (response.status === 400) {
+          errorText = 'Invalid registration data. Please check your information and try again.';
+        } else if (response.status >= 500) {
+          errorText = 'Server error. Please try again later.';
+        }
+        
         throw new Error(errorText || 'Registration failed');
       }
 
-      const data = await response.json();
-      console.log('✅ Register success data:', data);
+      // Handle the response - it might be JSON or plain text
+      let data;
+      try {
+        const responseText = await response.text();
+        console.log('🔍 Success response text:', responseText);
+        
+        // Try to parse as JSON first
+        try {
+          data = JSON.parse(responseText);
+          console.log('✅ Register success data (JSON):', data);
+        } catch {
+          // If not JSON, treat as plain text success message
+          data = { message: responseText };
+          console.log('✅ Register success data (text):', responseText);
+        }
+      } catch (readError) {
+        console.error('❌ Error reading success response:', readError);
+        data = { message: 'Registration successful' };
+      }
       
       // Auto-login after successful registration
       if (data.token) {
