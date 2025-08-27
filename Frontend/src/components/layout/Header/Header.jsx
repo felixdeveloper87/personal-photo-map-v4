@@ -129,6 +129,36 @@ const Header = () => {
           },
         });
         console.log('🔍 Test 4 Result - /api/auth/validate status:', testResponse.status);
+        
+              // Test 5: Get user details to see what permissions they have
+      if (testResponse.ok) {
+        try {
+          const userData = await testResponse.json();
+          console.log('🔍 Test 5: User data from /api/auth/validate:', userData);
+        } catch (parseError) {
+          console.log('🔍 Test 5: Could not parse user data:', parseError);
+        }
+      }
+
+      // Test 6: Try to access a different protected endpoint to see if it's a general issue
+      console.log('🔍 Test 6: Testing access to other protected endpoints...');
+      try {
+        const usersUrl = buildApiUrl('/api/auth/users');
+        const usersResponse = await fetch(usersUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        console.log('🔍 Test 6 Result - /api/auth/users status:', usersResponse.status);
+      } catch (testError) {
+        console.log('🔍 Test 6 Error:', testError);
+      }
+
+      // Test 7: Check if user is already premium (this could cause 403)
+      console.log('🔍 Test 7: Checking current premium status...');
+      console.log('🔍 Current isPremium state:', isPremium);
+      console.log('🔍 Current localStorage premium value:', localStorage.getItem('premium'));
       }
 
       console.log('🔍 Debug Response Status:', debugResponse.status);
