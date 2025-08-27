@@ -173,8 +173,14 @@ const FullImageModal = memo(
     // Reset quando a imagem muda
     useEffect(() => {
       setImgLoaded(false);
-      if (transformWrapperRef.current?.instance) {
-        transformWrapperRef.current.instance.resetTransform();
+      // Reset mais seguro usando o transformWrapperRef
+      if (transformWrapperRef.current?.resetTransform) {
+        try {
+          transformWrapperRef.current.resetTransform();
+        } catch (error) {
+          // Se falhar, apenas log sem quebrar
+          console.warn('Reset transform failed:', error);
+        }
       }
     }, [imageUrl]);
 
@@ -278,7 +284,7 @@ const FullImageModal = memo(
                   limitToBounds={false}
                   onInit={(ref, state) => {
                     initialScaleRef.current = state?.scale || 1;
-                    if (isFullscreen && ref?.centerView) {
+                    if (isFullscreen && ref && typeof ref.centerView === 'function') {
                       ref.centerView();
                     }
                   }}
@@ -296,7 +302,9 @@ const FullImageModal = memo(
                         <Flex justify="center" wrap="wrap" gap={2} zIndex="40" mb={2}>
                           <IconButton
                             onClick={(e) => {
-                              e.stopPropagation();
+                              if (e && typeof e.stopPropagation === 'function') {
+                                e.stopPropagation();
+                              }
                               handleZoomOut(zoomOut, resetTransform);
                             }}
                             icon={<FiZoomOut />}
@@ -308,7 +316,9 @@ const FullImageModal = memo(
                           />
                           <IconButton
                             onClick={(e) => {
-                              e.stopPropagation();
+                              if (e && typeof e.stopPropagation === 'function') {
+                                e.stopPropagation();
+                              }
                               zoomIn();
                             }}
                             icon={<FiZoomIn />}
@@ -320,9 +330,13 @@ const FullImageModal = memo(
                           />
                           <IconButton
                             onClick={(e) => {
-                              e.stopPropagation();
+                              if (e && typeof e.stopPropagation === 'function') {
+                                e.stopPropagation();
+                              }
                               toggleFullScreen?.();
-                              if (!isFullscreen) centerView();
+                              if (!isFullscreen && typeof centerView === 'function') {
+                                centerView();
+                              }
                             }}
                             icon={<FiMaximize />}
                             aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
@@ -401,7 +415,10 @@ const FullImageModal = memo(
                               // Garantir que a imagem fique centralizada após carregar
                               setTimeout(() => {
                                 if (transformWrapperRef.current?.instance) {
-                                  transformWrapperRef.current.instance.centerView();
+                                  const { centerView } = transformWrapperRef.current.instance;
+                                  if (typeof centerView === 'function') {
+                                    centerView();
+                                  }
                                 }
                               }, 100);
                             }}
@@ -423,7 +440,9 @@ const FullImageModal = memo(
                 <IconButton
                   icon={<Text fontSize="3xl" fontWeight="bold">&lsaquo;</Text>}
                   onClick={(e) => {
-                    e.stopPropagation();
+                    if (e && typeof e.stopPropagation === 'function') {
+                      e.stopPropagation();
+                    }
                     goPrev();
                   }}
                   aria-label="Previous image"
@@ -443,7 +462,9 @@ const FullImageModal = memo(
                 <IconButton
                   icon={<Text fontSize="3xl" fontWeight="bold">&rsaquo;</Text>}
                   onClick={(e) => {
-                    e.stopPropagation();
+                    if (e && typeof e.stopPropagation === 'function') {
+                      e.stopPropagation();
+                    }
                     goNext();
                   }}
                   aria-label="Next image"
