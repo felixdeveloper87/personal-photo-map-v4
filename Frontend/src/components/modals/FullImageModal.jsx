@@ -332,13 +332,16 @@ const FullImageModal = memo(
                           w="100%"
                           h="100%"
                           position="relative"
+                          display="flex"
+                          justifyContent="center"
+                          alignItems="center"
                           onTouchStart={isMobile ? onTouchStart : undefined}
                           onTouchMove={isMobile ? onTouchMove : undefined}
                           onTouchEnd={isMobile ? onTouchEnd : undefined}
-                          style={{
-                            transform: isMobile && swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : undefined,
+                          style={isMobile ? {
+                            transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : undefined,
                             transition: isDraggingRef.current ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                          }}
+                          } : undefined}
                         >
                           {!imgLoaded && (
                             <Center w="100%" h="100%">
@@ -358,6 +361,7 @@ const FullImageModal = memo(
                             onLoad={() => setImgLoaded(true)}
                             style={{
                               display: imgLoaded ? 'block' : 'none',
+                              margin: isMobile ? undefined : 'auto',
                             }}
                           />
                         </Box>
