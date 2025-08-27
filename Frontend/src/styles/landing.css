@@ -88,16 +88,6 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Animação para loading spinner */
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
 /* Estilos para o badge de nova versão */
 .new-version-badge {
   animation: pulse 2s infinite;

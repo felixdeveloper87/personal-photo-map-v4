@@ -9,20 +9,20 @@ import {
   Flex,
   VStack,
   Image,
-  Text,
   Box,
   useColorModeValue,
   useBreakpointValue,
   Heading,
   Spinner,
   Center,
+  Text,
 } from '@chakra-ui/react';
 import { FiX, FiZoomIn, FiZoomOut, FiMaximize } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import logo from '../../assets/logo.png';
 
-// Animation variants for modal content
+// Animation variants
 const modalVariants = {
   hidden: { opacity: 0, scale: 0.95 },
   visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
@@ -40,29 +40,27 @@ const FullImageModal = memo(
     fullscreenRef,
     toggleFullScreen,
     isFullscreen,
-    countryName,
+    countryName, // recebido mas não exibido (pin/localização removidos)
   }) => {
     const [imgLoaded, setImgLoaded] = useState(false);
     const isMobile = useBreakpointValue({ base: true, md: false });
 
-    // guarda scale atual para decidir se swipe deve navegar (apenas sem zoom)
+    // refs para swipe
     const currentScaleRef = useRef(1);
     const touchStartXRef = useRef(0);
     const touchStartYRef = useRef(0);
     const swipedRef = useRef(false);
-    const SWIPE_THRESHOLD = 50; // px
-    const VSWIPE_TOLERANCE = 40; // px
+    const SWIPE_THRESHOLD = 50;
+    const VSWIPE_TOLERANCE = 40;
 
-    // Color scheme
+    // Cores
     const bgColor = useColorModeValue('white', 'gray.800');
     const textColor = useColorModeValue('gray.800', 'white');
     const accentColor = useColorModeValue('teal.500', 'teal.300');
     const buttonBg = useColorModeValue('gray.100', 'gray.700');
 
-    // Responsive modal size
     const modalSize = useBreakpointValue({ base: 'full', md: '5xl', lg: '6xl' });
 
-    // Reset transform quando entra/sai do fullscreen
     const handleFullscreenChange = useCallback(
       (resetTransform, centerView) => {
         if (isFullscreen) {
@@ -73,7 +71,6 @@ const FullImageModal = memo(
       [isFullscreen]
     );
 
-    // Focus management para acessibilidade
     useEffect(() => {
       if (isOpen) {
         const focusable = document.querySelector('[aria-label="Close modal"]');
@@ -81,17 +78,16 @@ const FullImageModal = memo(
       }
     }, [isOpen]);
 
-    // Swipe handlers (apenas navega se não estiver com zoom)
+    // Swipe
     const onTouchStart = (e) => {
       if (!e.touches?.[0]) return;
       touchStartXRef.current = e.touches[0].clientX;
       touchStartYRef.current = e.touches[0].clientY;
       swipedRef.current = false;
     };
-
     const onTouchMove = (e) => {
       if (!e.touches?.[0]) return;
-      if (currentScaleRef.current > 1.05) return; // desabilita navegação por swipe se tiver zoom
+      if (currentScaleRef.current > 1.05) return;
       const dx = e.touches[0].clientX - touchStartXRef.current;
       const dy = e.touches[0].clientY - touchStartYRef.current;
       if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dy) < VSWIPE_TOLERANCE) {
@@ -99,10 +95,6 @@ const FullImageModal = memo(
         if (dx < 0 && onNext) onNext();
         if (dx > 0 && onPrev) onPrev();
       }
-    };
-
-    const onTouchEnd = () => {
-      // noop
     };
 
     return (
@@ -125,7 +117,7 @@ const FullImageModal = memo(
             position="relative"
             pb={{ base: 'calc(env(safe-area-inset-bottom) + 56px)', md: 4 }}
           >
-            {/* Watermark Logo - Top Left */}
+            {/* Marca d'água / Logo */}
             <Flex
               position="absolute"
               top={{ base: '8px', md: '10px' }}
@@ -133,9 +125,6 @@ const FullImageModal = memo(
               zIndex="45"
               align="center"
               opacity={0.7}
-              _hover={{ opacity: 0.9 }}
-              transition="opacity 0.3s ease"
-              cursor="default"
               pointerEvents="none"
             >
               <Image src={logo} alt="Photomap Logo" h={{ base: '24px', md: '32px' }} mr={2} />
@@ -144,13 +133,13 @@ const FullImageModal = memo(
                 color={textColor}
                 fontWeight="800"
                 letterSpacing="tight"
-                textShadow="0 1px 2px rgba(0, 0, 0, 0.3)"
+                textShadow="0 1px 2px rgba(0,0,0,0.3)"
               >
                 Photomap
               </Heading>
             </Flex>
 
-            {/* Close Button */}
+            {/* Botão fechar */}
             <IconButton
               icon={<FiX />}
               aria-label="Close modal"
@@ -161,8 +150,6 @@ const FullImageModal = memo(
               variant="solid"
               size="lg"
               zIndex="50"
-              _hover={{ bg: 'red.600', color: 'white' }}
-              transition="all 0.2s ease"
               onClick={onClose}
             />
 
@@ -180,7 +167,9 @@ const FullImageModal = memo(
                   onInit={(state) => {
                     if (isFullscreen) state.centerView();
                   }}
-                  onStateChange={(state) => handleFullscreenChange(state.resetTransform, state.centerView)}
+                  onStateChange={(state) =>
+                    handleFullscreenChange(state.resetTransform, state.centerView)
+                  }
                   onZoomStop={({ state }) => {
                     currentScaleRef.current = state.scale ?? 1;
                   }}
@@ -190,88 +179,67 @@ const FullImageModal = memo(
                 >
                   {({ zoomIn, zoomOut, centerView }) => (
                     <>
-                      {/* Controles: top (desktop) / dock bottom (mobile) */}
-                      <Flex
-                        justify="center"
-                        wrap="wrap"
-                        gap={2}
-                        zIndex="40"
-                        position={{ base: 'absolute', md: 'static' }}
-                        bottom={{ base: 0, md: 'auto' }}
-                        left={{ base: 0, md: 'auto' }}
-                        right={{ base: 0, md: 'auto' }}
-                        bg={{ base: 'rgba(0,0,0,0.35)', md: 'transparent' }}
-                        px={{ base: 3, md: 0 }}
-                        py={{ base: 2, md: 0 }}
-                        style={{ backdropFilter: isMobile ? 'blur(6px)' : undefined }}
-                      >
-                        <IconButton
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            zoomOut();
-                          }}
-                          icon={<FiZoomOut />}
-                          aria-label="Zoom out"
-                          size={isMobile ? 'lg' : 'md'}
-                          bg={buttonBg}
-                          color={textColor}
-                          _hover={{ bg: accentColor, color: 'white' }}
-                          transition="all 0.2s ease"
-                        />
-                        <IconButton
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            zoomIn();
-                          }}
-                          icon={<FiZoomIn />}
-                          aria-label="Zoom in"
-                          size={isMobile ? 'lg' : 'md'}
-                          bg={buttonBg}
-                          color={textColor}
-                          _hover={{ bg: accentColor, color: 'white' }}
-                          transition="all 0.2s ease"
-                        />
-                        <IconButton
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleFullScreen();
-                            if (!isFullscreen) centerView();
-                          }}
-                          icon={<FiMaximize />}
-                          aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-                          size={isMobile ? 'lg' : 'md'}
-                          bg={buttonBg}
-                          color={textColor}
-                          _hover={{ bg: accentColor, color: 'white' }}
-                          transition="all 0.2s ease"
-                        />
-                      </Flex>
+                      {/* Controles: só no desktop (mobile: removidos zoom/FS) */}
+                      {!isMobile && (
+                        <Flex justify="center" wrap="wrap" gap={2} zIndex="40" mb={2}>
+                          <IconButton
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              zoomOut();
+                            }}
+                            icon={<FiZoomOut />}
+                            aria-label="Zoom out"
+                            size="md"
+                            bg={buttonBg}
+                            color={textColor}
+                            _hover={{ bg: accentColor, color: 'white' }}
+                          />
+                          <IconButton
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              zoomIn();
+                            }}
+                            icon={<FiZoomIn />}
+                            aria-label="Zoom in"
+                            size="md"
+                            bg={buttonBg}
+                            color={textColor}
+                            _hover={{ bg: accentColor, color: 'white' }}
+                          />
+                          <IconButton
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleFullScreen();
+                              if (!isFullscreen) centerView();
+                            }}
+                            icon={<FiMaximize />}
+                            aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                            size="md"
+                            bg={buttonBg}
+                            color={textColor}
+                            _hover={{ bg: accentColor, color: 'white' }}
+                          />
+                        </Flex>
+                      )}
 
-                      {/* Image Container */}
+                      {/* Área da imagem */}
                       <TransformComponent
                         wrapperStyle={{
                           width: '100%',
                           height: isFullscreen
                             ? '100vh'
                             : isMobile
-                              ? 'calc(100vh - 112px)'
-                              : '70vh',
+                            ? 'calc(100vh - 112px)'
+                            : '70vh',
                           maxHeight: isFullscreen
                             ? '100vh'
                             : isMobile
-                              ? 'calc(100vh - 112px)'
-                              : '70vh',
+                            ? 'calc(100vh - 112px)'
+                            : '70vh',
                           display: 'flex',
                           justifyContent: 'center',
                           alignItems: 'center',
                           overflow: 'hidden',
-                        }}
-                        contentStyle={{
-                          width: '100%',
-                          height: '100%',
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
                         }}
                       >
                         <Box
@@ -279,7 +247,7 @@ const FullImageModal = memo(
                           h="100%"
                           onTouchStart={onTouchStart}
                           onTouchMove={onTouchMove}
-                          onTouchEnd={onTouchEnd}
+                          onTouchEnd={() => {}}
                         >
                           {!imgLoaded && (
                             <Center w="100%" h="100%">
@@ -288,7 +256,7 @@ const FullImageModal = memo(
                           )}
                           <Image
                             src={imageUrl}
-                            alt={`Full-size image from ${countryName || 'Unknown'}`}
+                            alt="Full-size image"
                             maxWidth={isFullscreen ? '95vw' : isMobile ? '100%' : '90%'}
                             maxHeight={isFullscreen ? '90vh' : isMobile ? '100%' : '60vh'}
                             width="auto"
@@ -296,13 +264,8 @@ const FullImageModal = memo(
                             objectFit="contain"
                             borderRadius={{ base: 0, md: 'md' }}
                             boxShadow={{ base: 'none', md: 'lg' }}
-                            loading="lazy"
-                            fallbackSrc="https://via.placeholder.com/800"
                             onLoad={() => setImgLoaded(true)}
                             style={{
-                              maxWidth: isFullscreen ? '95vw' : isMobile ? '100%' : '90%',
-                              maxHeight: isFullscreen ? '90vh' : isMobile ? '100%' : '60vh',
-                              objectFit: 'contain',
                               display: imgLoaded ? 'block' : 'none',
                             }}
                           />
@@ -311,27 +274,10 @@ const FullImageModal = memo(
                     </>
                   )}
                 </TransformWrapper>
-
-                {/* Image Metadata */}
-                {countryName && (
-                  <Flex justify="center" mt={2}>
-                    <Text
-                      fontSize={{ base: 'sm', md: 'md' }}
-                      fontWeight="medium"
-                      color={textColor}
-                      bg="rgba(0, 0, 0, 0.6)"
-                      px={3}
-                      py={1}
-                      borderRadius="md"
-                    >
-                      {countryName}
-                    </Text>
-                  </Flex>
-                )}
               </VStack>
             </Box>
 
-            {/* Navigation Arrows */}
+            {/* Setas de navegação */}
             {hasMultiple && (
               <>
                 <IconButton
@@ -350,7 +296,6 @@ const FullImageModal = memo(
                   size="lg"
                   color={textColor}
                   _hover={{ bg: accentColor, color: 'white' }}
-                  transition="all 0.2s ease"
                 />
                 <IconButton
                   icon={<Text fontSize={{ base: '2xl', md: '3xl' }}>&rsaquo;</Text>}
@@ -368,7 +313,6 @@ const FullImageModal = memo(
                   size="lg"
                   color={textColor}
                   _hover={{ bg: accentColor, color: 'white' }}
-                  transition="all 0.2s ease"
                 />
               </>
             )}
@@ -389,7 +333,7 @@ FullImageModal.propTypes = {
   fullscreenRef: PropTypes.object,
   toggleFullScreen: PropTypes.func,
   isFullscreen: PropTypes.bool,
-  countryName: PropTypes.string,
+  countryName: PropTypes.string, // mantido por compatibilidade, mas não exibido
 };
 
 export default FullImageModal;
