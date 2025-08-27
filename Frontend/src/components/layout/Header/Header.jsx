@@ -17,6 +17,7 @@ import { HamburgerIcon, CloseIcon } from "@chakra-ui/icons";
 
 import { AuthContext } from "../../../context/AuthContext";
 import { CountriesContext } from "../../../context/CountriesContext";
+import { buildApiUrl } from "../../../utils/apiConfig";
 
 // Estilos centralizados
 import {
@@ -72,7 +73,42 @@ const Header = () => {
   const handlePremiumUpgrade = async () => {
     setIsUpgrading(true);
     try {
-      await upgradeToPremium();
+      // Try direct API call first to debug the issue
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      console.log('🔍 Debug: Trying direct API call...');
+      const debugUrl = buildApiUrl('/api/users/make-premium');
+      console.log('🔍 Debug URL:', debugUrl);
+      console.log('🔍 Debug Token:', token.substring(0, 20) + '...');
+
+      const debugResponse = await fetch(debugUrl, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('🔍 Debug Response Status:', debugResponse.status);
+      console.log('🔍 Debug Response Headers:', Object.fromEntries(debugResponse.entries()));
+
+      if (!debugResponse.ok) {
+        const debugErrorText = await debugResponse.text();
+        console.log('🔍 Debug Error Text:', debugErrorText);
+        
+        // Try the context function as fallback
+        console.log('🔄 Trying context function as fallback...');
+        await upgradeToPremium();
+      } else {
+        console.log('✅ Direct API call successful!');
+        // Update premium status manually
+        localStorage.setItem('premium', 'true');
+        window.location.reload(); // Refresh to update UI
+      }
+
       toast({
         title: "Premium Upgrade Successful! 🎉",
         description: "Welcome to Premium! You now have access to all premium features.",
@@ -83,9 +119,24 @@ const Header = () => {
       });
       premiumModal.onClose();
     } catch (error) {
+      console.error('💥 Header upgrade error:', error);
+      
+      let errorMessage = error.message || "Please try again later.";
+      
+      // Handle specific error cases
+      if (error.message.includes('session has expired') || error.message.includes('log in again')) {
+        errorMessage = "Your session has expired. Please log in again to continue.";
+        // Optionally redirect to login
+        setTimeout(() => {
+          loginModal.onOpen();
+        }, 2000);
+      } else if (error.message.includes('Access forbidden')) {
+        errorMessage = "You don't have permission to upgrade. Please contact support.";
+      }
+      
       toast({
         title: "Upgrade Failed",
-        description: error.message || "Please try again later.",
+        description: errorMessage,
         status: "error",
         duration: 5000,
         isClosable: true,

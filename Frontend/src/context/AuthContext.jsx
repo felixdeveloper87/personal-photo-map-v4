@@ -311,9 +311,45 @@ export const AuthProvider = ({ children }) => {
         throw new Error('No authentication token found');
       }
 
+      // Check token format
+      if (!token.startsWith('Bearer ') && !token.includes('.')) {
+        console.log('⚠️ Token format seems incorrect:', token.substring(0, 50));
+        // Try to fix token format if it's missing 'Bearer '
+        const formattedToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+        console.log('🔧 Formatted token:', formattedToken.substring(0, 50));
+      }
+
+      console.log('🔑 Token found:', token.substring(0, 20) + '...');
+
+      // Validate token first
+      try {
+        const validateUrl = import.meta.env.VITE_BACKEND_URL 
+          ? `${import.meta.env.VITE_BACKEND_URL}/api/auth/validate`
+          : '/api/auth/validate';
+
+        const validateResponse = await fetch(validateUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!validateResponse.ok) {
+          console.log('⚠️ Token validation failed, status:', validateResponse.status);
+          throw new Error('Your session has expired. Please log in again.');
+        }
+
+        console.log('✅ Token validation successful');
+      } catch (validationError) {
+        console.error('❌ Token validation error:', validationError);
+        throw new Error('Authentication failed. Please log in again.');
+      }
+
       const url = import.meta.env.VITE_BACKEND_URL 
         ? `${import.meta.env.VITE_BACKEND_URL}/api/users/make-premium`
         : '/api/users/make-premium';
+
+      console.log('🌐 Making request to:', url);
 
       const response = await fetch(url, {
         method: 'PUT',
@@ -324,11 +360,29 @@ export const AuthProvider = ({ children }) => {
       });
 
       console.log('📡 Upgrade response status:', response.status);
+      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Upgrade error response:', errorText);
-        throw new Error(errorText || 'Upgrade to premium failed');
+        let errorText = '';
+        try {
+          errorText = await response.text();
+          console.error('❌ Upgrade error response text:', errorText);
+        } catch (readError) {
+          console.error('❌ Could not read error response:', readError);
+        }
+
+        // Handle specific HTTP status codes
+        if (response.status === 403) {
+          throw new Error('Access forbidden. Your session may have expired. Please log in again.');
+        } else if (response.status === 401) {
+          throw new Error('Unauthorized. Please log in again.');
+        } else if (response.status === 404) {
+          throw new Error('Premium upgrade endpoint not found.');
+        } else if (response.status >= 500) {
+          throw new Error('Server error. Please try again later.');
+        } else {
+          throw new Error(errorText || `Upgrade failed with status ${response.status}`);
+        }
       }
 
       const data = await response.json();
