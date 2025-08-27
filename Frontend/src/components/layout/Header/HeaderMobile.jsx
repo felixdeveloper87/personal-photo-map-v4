@@ -174,23 +174,6 @@ const HeaderMobile = ({
                     gap={2}
                   />
 
-                  {/* Map Button */}
-                  <ModernMapButton
-                    onClick={() => {
-                      if (isLoggedIn) navigate('/map/private');
-                      else navigate('/map');
-                      onClose?.();
-                    }}
-                    w="full"
-                    h="80px"
-                    size="md"
-                    borderRadius="xl"
-                    display="flex"
-                    flexDirection="column"
-                    alignItems="center"
-                    justifyContent="center"
-                    gap={2}
-                  />
 
                   {/* Countries Visited Button */}
                   <ModernCountriesVisitedButton
@@ -300,14 +283,7 @@ const HeaderMobile = ({
                   Welcome to Photomap
                 </Text>
               </HStack>
-              <ModernMapButton
-                onClick={() => {
-                  navigate('/map');
-                  onClose?.();
-                }}
-                w="full"
-                size="md"
-              />
+              {/* Map button is rendered next to the logo in Header.jsx for compact layouts */}
               <ModernLoginButton
                 onClick={onLoginClick}
                 w="full"

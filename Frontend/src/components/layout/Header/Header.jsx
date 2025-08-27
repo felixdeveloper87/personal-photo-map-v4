@@ -6,6 +6,7 @@ import {
   useDisclosure,
   useToast,
   IconButton,
+  useMediaQuery,
   useColorMode,
   useBreakpointValue,
   Container,
@@ -88,6 +89,9 @@ const Header = () => {
     "2xl": "1140px",
   });
 
+  // Mostrar versão compacta (hamburger + logo map button) em larguras <= 1380px
+  const [isCompact] = useMediaQuery("(max-width: 1380px)");
+
   return (
     <Box as="header" w="100%" position="relative" zIndex={100}>
       <Container maxW="container.xl" {...headerContainerStyles(styles)}>
@@ -101,13 +105,23 @@ const Header = () => {
               onClick={
                 mobileMenu.isOpen ? mobileMenu.onClose : mobileMenu.onOpen
               }
-              display={{ base: "inline-flex", lg: "none" }}
+              display={isCompact ? "inline-flex" : "none"}
               variant="ghost"
               color={styles.textColor}
               fontSize="2.2rem"
               p={2}
             />
             <HeaderLogo styles={styles} onClick={() => navigate("/")} />
+            {/* Map button next to logo for compact layouts */}
+            <ModernMapButton
+              isLoggedIn={isLoggedIn}
+              onClick={() =>
+                isLoggedIn ? navigate("/map/private") : navigate("/map")
+              }
+              size={buttonSize}
+              aria-label="Go to Map"
+              display={isCompact ? "inline-flex" : "none"}
+            />
           </HStack>
 
           {/* CENTRO: Navegação e ações principais (desktop) */}
@@ -116,7 +130,7 @@ const Header = () => {
             align="center"
             flex="1"
             justify="center"
-            display={{ base: "none", lg: "flex" }}
+            display={isCompact ? "none" : "flex"}
             maxW={centerMaxW}
           >
             {/* Botão Map - responsivo */}
@@ -165,7 +179,7 @@ const Header = () => {
             spacing={stackSpacing}
             align="center"
             flex="0 0 auto"
-            display={{ base: "none", lg: "flex" }}
+            display={isCompact ? "none" : "flex"}
           >
             <ModernThemeToggleButton
               colorMode={colorMode}
