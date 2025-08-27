@@ -284,6 +284,56 @@ export const AuthProvider = ({ children }) => {
   }, [login]);
 
   /**
+   * upgradeToPremium
+   * Upgrades the current user to premium status by calling the backend API.
+   *
+   * @returns {Promise<Object>} - Promise that resolves with the upgrade response
+   */
+  const upgradeToPremium = useCallback(async () => {
+    console.log('🚀 Upgrading user to premium...');
+    
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const url = import.meta.env.VITE_BACKEND_URL 
+        ? `${import.meta.env.VITE_BACKEND_URL}/api/users/make-premium`
+        : '/api/users/make-premium';
+
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('📡 Upgrade response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Upgrade error response:', errorText);
+        throw new Error(errorText || 'Upgrade to premium failed');
+      }
+
+      const data = await response.json();
+      console.log('✅ Upgrade successful:', data);
+      
+      // Update premium status in state and localStorage
+      if (data.premium === true) {
+        updatePremiumStatus(true);
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('💥 Upgrade function error:', error);
+      throw error;
+    }
+  }, [updatePremiumStatus]);
+
+  /**
    * updatePremiumStatus
    * Updates the premium status in both localStorage and the component state.
    *
@@ -309,7 +359,8 @@ export const AuthProvider = ({ children }) => {
         email, 
         login, 
         logout, 
-        updatePremiumStatus 
+        updatePremiumStatus,
+        upgradeToPremium
       }}
     >
       {children}

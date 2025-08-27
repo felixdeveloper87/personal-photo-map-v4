@@ -25,7 +25,7 @@ import ModalButton from "./ModalButton";
  * Professional Premium Benefits Modal
  * Showcases premium features with attractive design
  */
-const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, isLoading, isPremium = false }) => {
+const PremiumBenefitsModal = ({ isOpen, onClose, onUpgrade, isLoading = false, isPremium = false }) => {
   const textColor = useColorModeValue("gray.700", "gray.200");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const bgColor = useColorModeValue("gray.50", "gray.700");

@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -50,7 +50,7 @@ const Header = () => {
   const { colorMode, toggleColorMode } = useColorMode();
 
   // Contextos
-  const { isLoggedIn, fullname, isPremium, logout } = useContext(AuthContext);
+  const { isLoggedIn, fullname, isPremium, logout, upgradeToPremium } = useContext(AuthContext);
   const { countriesWithPhotos, photoCount, countryCount } =
     useContext(CountriesContext);
 
@@ -63,7 +63,38 @@ const Header = () => {
   const loginModal = useDisclosure();
   const registerModal = useDisclosure();
 
+  // States
+  const [isUpgrading, setIsUpgrading] = useState(false);
+
   const styles = useHeaderStyles(colorMode);
+
+  // Handle premium upgrade
+  const handlePremiumUpgrade = async () => {
+    setIsUpgrading(true);
+    try {
+      await upgradeToPremium();
+      toast({
+        title: "Premium Upgrade Successful! 🎉",
+        description: "Welcome to Premium! You now have access to all premium features.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "top-right",
+      });
+      premiumModal.onClose();
+    } catch (error) {
+      toast({
+        title: "Upgrade Failed",
+        description: error.message || "Please try again later.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top-right",
+      });
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
 
   // ====== Responsividade (somente desktop) ======
   // Tamanhos de botões aumentam conforme os breakpoints (lg, xl, 2xl)
@@ -284,6 +315,8 @@ const Header = () => {
       <PremiumBenefitsModal
         isOpen={premiumModal.isOpen}
         onClose={premiumModal.onClose}
+        onUpgrade={handlePremiumUpgrade}
+        isLoading={isUpgrading}
       />
       <PhotoStorageModal
         isOpen={photoStorageModal.isOpen}
