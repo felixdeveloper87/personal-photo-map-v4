@@ -48,13 +48,17 @@ const FullImageModal = memo(
     const [imgLoaded, setImgLoaded] = useState(false);
     const isMobile = useBreakpointValue({ base: true, md: false });
 
-    // refs para swipe
-    const currentScaleRef = useRef(1);
-    const touchStartXRef = useRef(0);
-    const touchStartYRef = useRef(0);
-    const swipedRef = useRef(false);
-    const SWIPE_THRESHOLD = 50;
-    const VSWIPE_TOLERANCE = 40;
+      // refs para swipe - implementação estilo Photos da Apple
+  const currentScaleRef = useRef(1);
+  const touchStartXRef = useRef(0);
+  const touchStartYRef = useRef(0);
+  const touchCurrentXRef = useRef(0);
+  const swipedRef = useRef(false);
+  const isDraggingRef = useRef(false);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const SWIPE_THRESHOLD = 80; // threshold mais baixo
+  const VELOCITY_THRESHOLD = 0.3; // velocidade mínima para swipe
+  const VSWIPE_TOLERANCE = 100; // tolerância vertical maior
 
     // Cores
     const bgColor = useColorModeValue('white', 'gray.800');
@@ -107,25 +111,77 @@ const FullImageModal = memo(
       }
     }, [isOpen]);
 
-    // Swipe
-    const onTouchStart = (e) => {
-      if (!e.touches?.[0]) return;
+    // Reset swipe offset quando a imagem muda
+    useEffect(() => {
+      setSwipeOffset(0);
+      setImgLoaded(false);
+    }, [imageUrl]);
+
+    // Swipe estilo Photos da Apple
+    const onTouchStart = useCallback((e) => {
+      if (!e.touches?.[0] || !hasMultiple || currentScaleRef.current > 1.05) return;
+      
       touchStartXRef.current = e.touches[0].clientX;
       touchStartYRef.current = e.touches[0].clientY;
+      touchCurrentXRef.current = e.touches[0].clientX;
       swipedRef.current = false;
-    };
-    const onTouchMove = (e) => {
-      if (!e.touches?.[0]) return;
-      if (!hasMultiple) return;
-      if (currentScaleRef.current > 1.05) return;
-      const dx = e.touches[0].clientX - touchStartXRef.current;
-      const dy = e.touches[0].clientY - touchStartYRef.current;
-      if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dy) < VSWIPE_TOLERANCE) {
-        swipedRef.current = true;
-        if (dx < 0) goNext();
-        if (dx > 0) goPrev();
+      isDraggingRef.current = false;
+      setSwipeOffset(0);
+    }, [hasMultiple]);
+
+    const onTouchMove = useCallback((e) => {
+      if (!e.touches?.[0] || !hasMultiple || currentScaleRef.current > 1.05) return;
+      
+      const currentX = e.touches[0].clientX;
+      const currentY = e.touches[0].clientY;
+      const deltaX = currentX - touchStartXRef.current;
+      const deltaY = currentY - touchStartYRef.current;
+      
+      // Verifica se é um movimento horizontal
+      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
+        isDraggingRef.current = true;
+        
+        // Previne o scroll da página
+        e.preventDefault();
+        
+        // Atualiza o offset para feedback visual
+        const resistance = Math.abs(deltaX) > 100 ? 0.3 : 1; // resistência nas bordas
+        setSwipeOffset(deltaX * resistance);
+        
+        touchCurrentXRef.current = currentX;
       }
-    };
+    }, [hasMultiple]);
+
+    const onTouchEnd = useCallback((e) => {
+      if (!hasMultiple || !isDraggingRef.current) {
+        setSwipeOffset(0);
+        return;
+      }
+      
+      const deltaX = touchCurrentXRef.current - touchStartXRef.current;
+      const deltaY = (e.changedTouches?.[0]?.clientY || 0) - touchStartYRef.current;
+      
+      // Calcula velocidade (pixels por ms)
+      const touchDuration = Date.now() - (e.timeStamp || Date.now());
+      const velocity = Math.abs(deltaX) / Math.max(touchDuration, 1);
+      
+      // Determina se deve fazer swipe baseado na distância ou velocidade
+      const shouldSwipe = Math.abs(deltaX) > SWIPE_THRESHOLD || velocity > VELOCITY_THRESHOLD;
+      const isHorizontal = Math.abs(deltaY) < VSWIPE_TOLERANCE;
+      
+      if (shouldSwipe && isHorizontal) {
+        swipedRef.current = true;
+        if (deltaX > 0) {
+          goPrev();
+        } else {
+          goNext();
+        }
+      }
+      
+      // Reset
+      setSwipeOffset(0);
+      isDraggingRef.current = false;
+    }, [hasMultiple, goNext, goPrev]);
 
     return (
       <Modal isOpen={isOpen} onClose={onClose} size={modalSize} motionPreset="scale" isCentered>
@@ -275,9 +331,14 @@ const FullImageModal = memo(
                         <Box
                           w="100%"
                           h="100%"
-                          onTouchStart={onTouchStart}
-                          onTouchMove={onTouchMove}
-                          onTouchEnd={() => {}}
+                          position="relative"
+                          onTouchStart={isMobile ? onTouchStart : undefined}
+                          onTouchMove={isMobile ? onTouchMove : undefined}
+                          onTouchEnd={isMobile ? onTouchEnd : undefined}
+                          style={{
+                            transform: isMobile && swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : undefined,
+                            transition: isDraggingRef.current ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                          }}
                         >
                           {!imgLoaded && (
                             <Center w="100%" h="100%">
@@ -306,6 +367,31 @@ const FullImageModal = memo(
                 </TransformWrapper>
               </VStack>
             </Box>
+
+            {/* Indicador de múltiplas fotos no mobile - estilo Photos */}
+            {hasMultiple && isMobile && (
+              <Flex
+                position="absolute"
+                bottom="20px"
+                left="50%"
+                transform="translateX(-50%)"
+                zIndex="45"
+                align="center"
+                gap={1}
+              >
+                {Array.from({ length: Math.min(totalCount || 3, 5) }, (_, i) => (
+                  <Box
+                    key={i}
+                    w="6px"
+                    h="6px"
+                    borderRadius="full"
+                    bg={i === (currentIndex ?? 0) ? 'white' : 'whiteAlpha.500'}
+                    transition="all 0.2s"
+                    boxShadow="0 1px 3px rgba(0,0,0,0.3)"
+                  />
+                ))}
+              </Flex>
+            )}
 
             {/* Setas de navegação: apenas desktop */}
             {hasMultiple && !isMobile && (

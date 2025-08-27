@@ -552,6 +552,8 @@ const PhotoGallery = memo(function PhotoGallery({
           countryName={
             countries.getName(images[currentImageIndex].countryId?.toUpperCase(), 'en') || 'Unknown'
           }
+          currentIndex={currentImageIndex}
+          totalCount={images.length}
         />
       )}
     </Box>
