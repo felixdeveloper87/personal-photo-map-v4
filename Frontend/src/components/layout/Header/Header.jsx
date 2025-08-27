@@ -7,6 +7,7 @@ import {
   useToast,
   IconButton,
   useColorMode,
+  useBreakpointValue,
   Container,
   HStack,
   Text,
@@ -28,7 +29,11 @@ import HeaderActions from "./HeaderActions";
 import HeaderAuth from "./HeaderAuth";
 import HeaderUser from "./HeaderUser";
 import HeaderMobile from "./HeaderMobile";
-import { ModernThemeToggleButton, ModernLogoutButton, ModernMapButton } from "../../ui/buttons/HeaderButtons";
+import {
+  ModernThemeToggleButton,
+  ModernLogoutButton,
+  ModernMapButton,
+} from "../../ui/buttons/HeaderButtons";
 
 // Modais
 import UserProfileModal from "../../modals/UserProfileModal";
@@ -45,7 +50,8 @@ const Header = () => {
 
   // Contextos
   const { isLoggedIn, fullname, isPremium, logout } = useContext(AuthContext);
-  const { countriesWithPhotos, photoCount, countryCount } = useContext(CountriesContext);
+  const { countriesWithPhotos, photoCount, countryCount } =
+    useContext(CountriesContext);
 
   // Disclosures
   const mobileMenu = useDisclosure();
@@ -58,6 +64,30 @@ const Header = () => {
 
   const styles = useHeaderStyles(colorMode);
 
+  // ====== Responsividade (somente desktop) ======
+  // Tamanhos de botões aumentam conforme os breakpoints (lg, xl, 2xl)
+  const buttonSize = useBreakpointValue({
+    base: "sm", // não afeta pois desktop está oculto no base, mas mantém coerência
+    lg: "sm",
+    xl: "md",
+    "2xl": "lg",
+  });
+
+  // Espaçamento dos HStacks em desktop
+  const stackSpacing = useBreakpointValue({
+    base: 4, // idem acima
+    lg: 4,
+    xl: 6,
+    "2xl": 8,
+  });
+
+  // Largura máxima da área central em desktop
+  const centerMaxW = useBreakpointValue({
+    lg: "800px",
+    xl: "960px",
+    "2xl": "1140px",
+  });
+
   return (
     <Box as="header" w="100%" position="relative" zIndex={100}>
       <Container maxW="container.xl" {...headerContainerStyles(styles)}>
@@ -68,7 +98,9 @@ const Header = () => {
             <IconButton
               aria-label={mobileMenu.isOpen ? "Close menu" : "Open menu"}
               icon={mobileMenu.isOpen ? <CloseIcon /> : <HamburgerIcon />}
-              onClick={mobileMenu.isOpen ? mobileMenu.onClose : mobileMenu.onOpen}
+              onClick={
+                mobileMenu.isOpen ? mobileMenu.onClose : mobileMenu.onOpen
+              }
               display={{ base: "inline-flex", lg: "none" }}
               variant="ghost"
               color={styles.textColor}
@@ -78,20 +110,22 @@ const Header = () => {
             <HeaderLogo styles={styles} onClick={() => navigate("/")} />
           </HStack>
 
-          {/* CENTRO: Navegação e ações principais */}
+          {/* CENTRO: Navegação e ações principais (desktop) */}
           <HStack
-            spacing={6}
+            spacing={stackSpacing}
             align="center"
             flex="1"
             justify="center"
             display={{ base: "none", lg: "flex" }}
-            maxW="800px"
+            maxW={centerMaxW}
           >
-            {/* Botão Map - posicionado harmonicamente */}
+            {/* Botão Map - responsivo */}
             <ModernMapButton
               isLoggedIn={isLoggedIn}
-              onClick={() => isLoggedIn ? navigate("/map/private") : navigate("/map")}
-              size="md"
+              onClick={() =>
+                isLoggedIn ? navigate("/map/private") : navigate("/map")
+              }
+              size={buttonSize}
               aria-label="Go to Map"
             />
 
@@ -115,30 +149,44 @@ const Header = () => {
                 onPhotoStorageClick={photoStorageModal.onOpen}
                 onCountriesClick={userStatisticsModal.onOpen}
                 countriesWithPhotos={countriesWithPhotos}
-                onSearch={(p) => navigate(`/countries/${p.country}?year=${p.year}`)}
+                onSearch={(p) =>
+                  navigate(`/countries/${p.country}?year=${p.year}`)
+                }
                 onTimelineClick={() => navigate("/timeline")}
+                // Prop opcional para componentes internos adotarem tamanho
+                buttonSize={buttonSize}
+                // Você pode também passar paddings/margens responsivos, se necessário
               />
             )}
           </HStack>
 
-          {/* DIREITA: Theme Toggle + Auth/Logout (canto direito) */}
-          <HStack spacing={4} align="center" flex="0 0 auto" display={{ base: "none", lg: "flex" }}>
+          {/* DIREITA: Theme Toggle + Auth/Logout (desktop) */}
+          <HStack
+            spacing={stackSpacing}
+            align="center"
+            flex="0 0 auto"
+            display={{ base: "none", lg: "flex" }}
+          >
             <ModernThemeToggleButton
               colorMode={colorMode}
               toggleColorMode={toggleColorMode}
               styles={styles}
+              size={buttonSize}
             />
+
             {!isLoggedIn ? (
               <HeaderAuth
                 styles={styles}
                 onLoginClick={loginModal.onOpen}
                 onRegisterClick={registerModal.onOpen}
+                // Caso o componente repasse para botões internos
+                size={buttonSize}
               />
             ) : (
               <ModernLogoutButton
                 onClick={() => {
                   logout();
-                  navigate('/'); // Redireciona para a landing page após logout
+                  navigate("/"); // Redireciona para a landing page após logout
                   toast({
                     title: "Logged out",
                     status: "info",
@@ -146,7 +194,7 @@ const Header = () => {
                     isClosable: true,
                   });
                 }}
-                size="md"
+                size={buttonSize}
               />
             )}
           </HStack>
@@ -196,7 +244,7 @@ const Header = () => {
         }}
         onLogout={() => {
           logout();
-          navigate('/'); // Redireciona para a landing page após logout
+          navigate("/"); // Redireciona para a landing page após logout
           mobileMenu.onClose();
           toast({
             title: "Logged out",
@@ -218,9 +266,18 @@ const Header = () => {
         countryCount={countryCount}
         isPremium={isPremium}
       />
-      <PremiumBenefitsModal isOpen={premiumModal.isOpen} onClose={premiumModal.onClose} />
-      <PhotoStorageModal isOpen={photoStorageModal.isOpen} onClose={photoStorageModal.onClose} />
-      <UserStatisticsModal isOpen={userStatisticsModal.isOpen} onClose={userStatisticsModal.onClose} />
+      <PremiumBenefitsModal
+        isOpen={premiumModal.isOpen}
+        onClose={premiumModal.onClose}
+      />
+      <PhotoStorageModal
+        isOpen={photoStorageModal.isOpen}
+        onClose={photoStorageModal.onClose}
+      />
+      <UserStatisticsModal
+        isOpen={userStatisticsModal.isOpen}
+        onClose={userStatisticsModal.onClose}
+      />
       <LoginModal
         isOpen={loginModal.isOpen}
         onClose={loginModal.onClose}
