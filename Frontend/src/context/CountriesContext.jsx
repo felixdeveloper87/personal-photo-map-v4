@@ -32,6 +32,8 @@ export const CountriesProvider = ({ children }) => {
     const [lastFetch, setLastFetch] = useState(0);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [cacheDisabled, setCacheDisabled] = useState(false);
+    // State for triggering map updates
+    const [updateTrigger, setUpdateTrigger] = useState(0);
     const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
 
     /**
@@ -325,7 +327,7 @@ export const CountriesProvider = ({ children }) => {
             setIsRefreshing(false);
             setLoading(false);
         }
-    }, []);
+    }, [lastFetch, isRefreshing, cacheDisabled]);
 
     /**
      * forceRefresh - Forces a refresh of all data (used after uploads)
@@ -364,6 +366,15 @@ export const CountriesProvider = ({ children }) => {
             }, 3000);
         }
     }, [refreshCountriesWithPhotos]);
+
+    /**
+     * triggerMapUpdate - Triggers an immediate map update by incrementing updateTrigger
+     * This function is used to notify map components that they should refresh their display
+     */
+    const triggerMapUpdate = useCallback(() => {
+        console.log('🗺️ Triggering map update...');
+        setUpdateTrigger(prev => prev + 1);
+    }, []);
 
     /**
      * useEffect - Effect for monitoring token changes and triggering data refresh
