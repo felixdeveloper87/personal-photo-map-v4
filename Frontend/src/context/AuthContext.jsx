@@ -284,6 +284,19 @@ export const AuthProvider = ({ children }) => {
   }, [login]);
 
   /**
+   * updatePremiumStatus
+   * Updates the premium status in both localStorage and the component state.
+   *
+   * @param {boolean|string} status - The new premium status to be set. Can be a boolean or a string.
+   */
+  const updatePremiumStatus = useCallback((status) => {
+    const statusStr = String(status);
+    localStorage.setItem('premium', statusStr);
+    setIsPremium(statusStr === 'true');
+    console.log("Premium status updated to:", statusStr);
+  }, []);
+
+  /**
    * upgradeToPremium
    * Upgrades the current user to premium status by calling the backend API.
    *
@@ -332,19 +345,6 @@ export const AuthProvider = ({ children }) => {
       throw error;
     }
   }, [updatePremiumStatus]);
-
-  /**
-   * updatePremiumStatus
-   * Updates the premium status in both localStorage and the component state.
-   *
-   * @param {boolean|string} status - The new premium status to be set. Can be a boolean or a string.
-   */
-  const updatePremiumStatus = useCallback((status) => {
-    const statusStr = String(status);
-    localStorage.setItem('premium', statusStr);
-    setIsPremium(statusStr === 'true');
-    console.log("Premium status updated to:", statusStr);
-  }, []);
 
   /**
    * Render a Provider that makes all state variables and functions
