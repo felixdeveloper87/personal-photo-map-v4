@@ -332,7 +332,9 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
             gap={infoBoxGap}
             w="full"
             alignItems="stretch"
+            justifyItems="center"
             gridAutoRows="1fr"
+            placeItems="center"
           >
 
             {/* Primeira linha: 4 infoboxes principais */}

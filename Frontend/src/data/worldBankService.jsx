@@ -114,8 +114,6 @@ export const fetchWorldBankIndicators = async (isoCode) => {
                 break;
         }
     }
-    console.log("World Bank indicators:", formatted);
-
     return formatted;
 };
 

@@ -16,7 +16,7 @@ const InfoBox = ({ icon, label, value, colorScheme = "blue", onClick, size = "de
       labelFontSize: "3xs",
       valueFontSize: "2xs",
       spacing: 1,
-       minH: "120px"
+      minH: "120px"
     },
     default: {
       minW: "100px",
@@ -25,7 +25,8 @@ const InfoBox = ({ icon, label, value, colorScheme = "blue", onClick, size = "de
       iconSize: 4,
       labelFontSize: "2xs",
       valueFontSize: "xs",
-      spacing: 1
+      spacing: 1,
+      minH: "100px"
     },
     large: {
       minW: "140px",
@@ -34,7 +35,8 @@ const InfoBox = ({ icon, label, value, colorScheme = "blue", onClick, size = "de
       iconSize: 5,
       labelFontSize: "xs",
       valueFontSize: "sm",
-      spacing: 2
+      spacing: 2,
+      minH: "140px"
     }
   };
 
@@ -43,6 +45,7 @@ const InfoBox = ({ icon, label, value, colorScheme = "blue", onClick, size = "de
   return (
     <Box
       minW={currentSize.minW}
+      minH={currentSize.minH}
       textAlign="center"
       p={currentSize.p}
       bg={bgColor}
@@ -56,18 +59,56 @@ const InfoBox = ({ icon, label, value, colorScheme = "blue", onClick, size = "de
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       onClick={onClick}
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      justifyContent="center"
       _hover={{
         transform: onClick ? "translateY(-2px) scale(1.01)" : "translateY(-2px)",
         boxShadow: "0 6px 16px rgba(0, 0, 0, 0.15)"
       }}
       _active={onClick ? { transform: "translateY(0) scale(0.99)" } : undefined}
     >
-      <VStack spacing={currentSize.spacing}>
-        <Icon as={icon} boxSize={currentSize.iconSize} color={`${colorScheme}.500`} />
-        <Text fontSize={currentSize.labelFontSize} color={labelColor} textTransform="uppercase" fontWeight="bold" letterSpacing="wide">
+      <VStack 
+        spacing={currentSize.spacing} 
+        align="center" 
+        justify="center"
+        w="100%"
+        h="100%"
+        textAlign="center"
+      >
+        <Icon 
+          as={icon} 
+          boxSize={currentSize.iconSize} 
+          color={`${colorScheme}.500`} 
+          flexShrink={0}
+          display="block"
+          mx="auto"
+        />
+        <Text 
+          fontSize={currentSize.labelFontSize} 
+          color={labelColor} 
+          textTransform="uppercase" 
+          fontWeight="bold" 
+          letterSpacing="wide"
+          textAlign="center"
+          w="100%"
+          display="block"
+          mx="auto"
+        >
           {label}
         </Text>
-        <Text fontSize={currentSize.valueFontSize} fontWeight="semibold" color={textColor} noOfLines={2}>
+        <Text 
+          fontSize={currentSize.valueFontSize} 
+          fontWeight="semibold" 
+          color={textColor} 
+          noOfLines={2}
+          textAlign="center"
+          w="100%"
+          lineHeight="1.2"
+          display="block"
+          mx="auto"
+        >
           {value || 'N/A'}
         </Text>
       </VStack>
