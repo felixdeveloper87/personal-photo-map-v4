@@ -76,8 +76,6 @@ const InfoBox = ({ icon, label, value, colorScheme = "blue", onClick, size = "de
         w="100%"
         h="100%"
         textAlign="center"
-        flex="1"
-        minH="0"
       >
         <Icon 
           as={icon} 
@@ -86,7 +84,6 @@ const InfoBox = ({ icon, label, value, colorScheme = "blue", onClick, size = "de
           flexShrink={0}
           display="block"
           mx="auto"
-          my="auto"
         />
         <Text 
           fontSize={currentSize.labelFontSize} 
@@ -98,8 +95,6 @@ const InfoBox = ({ icon, label, value, colorScheme = "blue", onClick, size = "de
           w="100%"
           display="block"
           mx="auto"
-          my="auto"
-          flexShrink={0}
         >
           {label}
         </Text>
@@ -113,8 +108,6 @@ const InfoBox = ({ icon, label, value, colorScheme = "blue", onClick, size = "de
           lineHeight="1.2"
           display="block"
           mx="auto"
-          my="auto"
-          flexShrink={0}
         >
           {value || 'N/A'}
         </Text>
