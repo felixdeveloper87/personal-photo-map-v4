@@ -61,10 +61,6 @@ const HeaderMobile = ({
 }) => {
   const navigate = useNavigate();
 
-  // Debug: Log the data received
-  console.log('📱 HeaderMobile - countriesWithPhotos:', countriesWithPhotos);
-  console.log('📱 HeaderMobile - isLoggedIn:', isLoggedIn);
-
   return (
     <Box display={isCompact ? "block" : "none"}>
       <Collapse in={isOpen} animateOpacity>

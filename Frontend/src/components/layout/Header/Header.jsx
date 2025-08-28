@@ -79,10 +79,9 @@ const Header = () => {
         throw new Error('No authentication token found');
       }
 
-      console.log('🚀 Attempting premium upgrade...');
-      const upgradeUrl = buildApiUrl('/api/auth/users/make-premium');
-      console.log('🌐 Upgrade URL:', upgradeUrl);
-      console.log('🔑 Token found:', token.substring(0, 20) + '...');
+
+      const upgradeUrl = buildApiUrl('/api/users/make-premium');
+
 
       // Use only PUT method as defined in the backend controller
       const response = await fetch(upgradeUrl, {
@@ -93,16 +92,13 @@ const Header = () => {
         },
       });
 
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
-
       if (!response.ok) {
         let errorText = '';
         try {
           errorText = await response.text();
-          console.log('❌ Error response text:', errorText);
+
         } catch (readError) {
-          console.log('❌ Could not read error response:', readError);
+
         }
 
         // Handle specific HTTP status codes
@@ -121,11 +117,10 @@ const Header = () => {
 
       // Success! Parse response and update premium status
       const data = await response.json();
-      console.log('✅ Upgrade successful:', data);
-      
+
       // Update premium status in localStorage and reload
       localStorage.setItem('premium', 'true');
-      
+
       toast({
         title: "Premium Upgrade Successful! 🎉",
         description: "Welcome to Premium! You now have access to all premium features.",
@@ -134,17 +129,16 @@ const Header = () => {
         isClosable: true,
         position: "top-right",
       });
-      
+
       premiumModal.onClose();
-      
+
       // Refresh page to update UI
       window.location.reload();
-      
+
     } catch (error) {
-      console.error('💥 Header upgrade error:', error);
-      
+
       let errorMessage = error.message || "Please try again later.";
-      
+
       // Handle specific error cases
       if (error.message.includes('Access denied') || error.message.includes('restricted')) {
         errorMessage = "Premium upgrade is currently restricted. This feature may require admin approval or may not be available for self-service. Please contact support for assistance.";
@@ -158,7 +152,7 @@ const Header = () => {
       } else if (error.message.includes('Access forbidden')) {
         errorMessage = "You don't have permission to upgrade. Please contact support.";
       }
-      
+
       toast({
         title: "Upgrade Failed",
         description: errorMessage,
@@ -276,7 +270,7 @@ const Header = () => {
                 onTimelineClick={() => navigate("/timeline")}
                 // Prop opcional para componentes internos adotarem tamanho
                 buttonSize={buttonSize}
-                // Você pode também passar paddings/margens responsivos, se necessário
+              // Você pode também passar paddings/margens responsivos, se necessário
               />
             )}
           </HStack>
@@ -324,7 +318,7 @@ const Header = () => {
 
       {/* MENU MOBILE (aparece somente no base…lg) */}
       <HeaderMobile
-  isCompact={isCompact}
+        isCompact={isCompact}
         isOpen={mobileMenu.isOpen}
         styles={styles}
         colorMode={colorMode}

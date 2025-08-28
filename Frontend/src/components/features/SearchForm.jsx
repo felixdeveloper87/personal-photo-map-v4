@@ -48,10 +48,6 @@ export default function SearchForm({ onSearch, onClose: externalOnClose }) {
   // Retrieve country data and available years from context
   const { countriesWithPhotos, availableYears } = useContext(CountriesContext);
 
-  // Debug: Log the data received
-  console.log('🔍 SearchForm - countriesWithPhotos:', countriesWithPhotos);
-  console.log('🔍 SearchForm - availableYears:', availableYears);
-
   // Local states for selected country and year
   const [selectedCountry, setSelectedCountry] = useState('');
   const [selectedYear, setSelectedYear] = useState('');

@@ -74,16 +74,6 @@ const Map = () => {
   // Hook customizado para gerenciar destaque de países
   const { highlightedCountries, isEffectActive, highlightIntensity } = useCountryHighlight(isLoggedIn, countriesWithPhotos);
 
-  // Debug logging
-  console.log('🗺️ Map component state:', {
-    isLoggedIn,
-    countriesWithPhotosLength: countriesWithPhotos?.length || 0,
-    countriesWithPhotos: countriesWithPhotos,
-    highlightedCountries,
-    isEffectActive,
-    highlightIntensity
-  });
-
   // Country styling function - agora usando a função centralizada
   const countryStyle = useCallback(
     createCountryStyleBase(colors, countriesWithPhotos, highlightedCountries, isLoggedIn, isEffectActive, highlightIntensity, colorMode),

@@ -97,13 +97,6 @@ const CountryDetails = () => {
     return () => clearInterval(interval);
   }, [weatherData?.timezone]);
 
-  // Debug indicators data
-  useEffect(() => {
-    if (indicatorsData) {
-      console.log('Economic/Social indicators loaded for', countryId, indicatorsData);
-    }
-  }, [indicatorsData, countryId]);
-
   if (countryLoading) return <LoadingState mutedTextColor={mutedTextColor} />;
   if (countryError) return null;
 
@@ -132,13 +125,10 @@ const CountryDetails = () => {
               borderColor={borderColor}
               countryId={countryId}
               onUploadSuccess={() => {
-                console.log('🔄 CountryDetails onUploadSuccess called!');
                 // Refresh data after upload
                 queryClient.invalidateQueries(['allImages', countryId]);
                 queryClient.invalidateQueries(['years', countryId]);
                 queryClient.invalidateQueries(['albums', countryId]);
-                // Force refresh SearchForm data (countries and years) to bypass cache
-                console.log('🔄 Calling refreshCountriesWithPhotos with force=true');
                 refreshCountriesWithPhotos(true);
               }}
             />

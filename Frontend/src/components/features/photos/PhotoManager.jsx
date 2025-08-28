@@ -47,15 +47,6 @@ import {
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
   
-  // Debug logging
-  if (token) {
-    console.log('🔑 Token found in localStorage, length:', token.length);
-    console.log('🔑 Token preview:', token.substring(0, 20) + '...');
-  } else {
-    console.warn('⚠️ No token found in localStorage');
-  }
-  
-  return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
 /**
@@ -205,21 +196,14 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   } = useDisclosure();
 
   // Handle upload success
-  const handleUploadSuccess = async () => {
-    console.log('🔄 Upload success - refreshing data... (VERSION 3.0 WITH ASYNC FIX)');
-    console.log('🔄 handleUploadSuccess function called - countryId:', countryId);
-    
+  const handleUploadSuccess = async () => {   
     try {
       // 1. Trigger immediate map update for instant visual feedback
       triggerMapUpdate();
       
       // 2. Use specialized upload refresh that bypasses cache
-      console.log('🔄 Starting upload-specific refresh...');
       await refreshAfterUpload();
-      console.log('✅ Upload-specific refresh completed');
-      
-      // 3. Invalidate and refetch React Query cache in parallel for better performance
-      console.log('🔄 Starting React Query cache invalidation...');
+  
       await Promise.all([
         queryClient.invalidateQueries(['allImages', countryId]),
         queryClient.invalidateQueries(['years', countryId]),
@@ -227,12 +211,9 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
         queryClient.refetchQueries(['allImages', countryId]),
         queryClient.refetchQueries(['years', countryId]),
         queryClient.refetchQueries(['albums', countryId])
-      ]);
-      console.log('✅ React Query cache refresh completed');
-      
+      ]);      
       // 4. Final trigger for any remaining UI updates
       triggerMapUpdate();
-      console.log('✅ Upload success processing completed');
       
     } catch (error) {
       console.error('❌ Error during upload success processing:', error);
@@ -250,13 +231,6 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
 
   /** Stores the IDs of images the user has selected for deletion/album creation */
   const [selectedImageIds, setSelectedImageIds] = useState([]);
-
-  // Debug: Monitor selectedImageIds changes in PhotoManager
-  useEffect(() => {
-    console.log('=== PHOTO MANAGER: SELECTED IMAGE IDS CHANGED ===');
-    console.log('New selectedImageIds:', selectedImageIds);
-    console.log('Length:', selectedImageIds?.length || 0);
-  }, [selectedImageIds]);
 
   /** Check if the user is logged in */
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -530,9 +504,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
    * Called after a successful image upload from ImageUploader.
    * Optionally invalidates queries or triggers re-fetch to show new images.
    */
-  const handleUpload = async (newImages, year) => {
-    console.log('🔄 handleUpload called - processing upload...');
-    
+  const handleUpload = async (newImages, year) => {   
     try {
       // 1. Trigger immediate map update for instant visual feedback
       triggerMapUpdate();
@@ -555,7 +527,6 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
       // 5. Final trigger for any remaining UI updates
       triggerMapUpdate();
       
-      console.log('✅ handleUpload processing completed');
     } catch (error) {
       console.error('❌ Error in handleUpload:', error);
       showErrorToast(toast, 'Upload completed but refresh failed. Please refresh the page.');
