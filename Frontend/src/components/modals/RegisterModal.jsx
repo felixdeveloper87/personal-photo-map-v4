@@ -130,17 +130,13 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    console.log('🔍 Register form data:', formData);
-    
+      
     if (!validateForm()) {
-      console.log('❌ Form validation failed');
       return;
     }
 
     setIsLoading(true);
     try {
-      console.log('📝 Registering user...');
       // Use o proxy do Vite quando VITE_BACKEND_URL não estiver definido
       const url = import.meta.env.VITE_BACKEND_URL 
         ? `${import.meta.env.VITE_BACKEND_URL}/api/auth/register`
@@ -157,14 +153,11 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
         }),
       });
 
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
         let errorMessage = 'Registration failed';
         try {
           const responseText = await response.text();
-          console.log('🔍 Error response text:', responseText);
           
           // Try to parse as JSON
           try {
@@ -195,17 +188,13 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
       // Handle the response - it might be JSON or plain text
       let data;
       try {
-        const responseText = await response.text();
-        console.log('🔍 Success response text:', responseText);
-        
+        const responseText = await response.text();        
         // Try to parse as JSON first
         try {
           data = JSON.parse(responseText);
-          console.log('✅ Registration successful (JSON):', data);
         } catch {
           // If not JSON, treat as plain text success message
           data = { message: responseText };
-          console.log('✅ Registration successful (text):', responseText);
         }
       } catch (readError) {
         console.error('❌ Error reading success response:', readError);

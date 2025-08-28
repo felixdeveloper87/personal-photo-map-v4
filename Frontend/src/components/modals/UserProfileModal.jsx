@@ -33,7 +33,6 @@ const UserProfileModal = ({ isOpen, onClose, fullname, email, photoCount, countr
           variant="outline"
           onClick={() => {
             // TODO: Implement upgrade to premium
-            console.log("Upgrade to premium clicked");
           }}
           w="full"
         >

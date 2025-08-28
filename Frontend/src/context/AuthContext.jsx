@@ -174,8 +174,6 @@ export const AuthProvider = ({ children }) => {
    * @param {boolean|string} data.premium - Indicates whether the user is a premium member.
    */
   const login = useCallback((data) => {
-    console.log("Data received in login function:", data);
-
     if (typeof data !== "object") {
       console.error("Error: login data is not a valid object!", data);
       return;
@@ -198,8 +196,6 @@ export const AuthProvider = ({ children }) => {
     setEmail(email);
     setIsPremium(isPremiumUser);
 
-    console.log("Premium status on the frontend after login:", isPremiumUser);
-
     // Dispatch a storage event to notify other browser tabs or components
     window.dispatchEvent(new Event('storage'));
   }, []);
@@ -215,7 +211,6 @@ export const AuthProvider = ({ children }) => {
    * @returns {Promise} - Promise that resolves with the response or rejects with an error
    */
   const register = useCallback(async (userData) => {
-    console.log('🚀 Register function called with:', userData);
     
     try {
       // Use o proxy do Vite quando VITE_BACKEND_URL não estiver definido
@@ -230,8 +225,6 @@ export const AuthProvider = ({ children }) => {
         },
         body: JSON.stringify(userData),
       });
-
-      console.log('📡 Register response status:', response.status);
 
       if (!response.ok) {
         let errorText = await response.text();
@@ -254,16 +247,13 @@ export const AuthProvider = ({ children }) => {
       let data;
       try {
         const responseText = await response.text();
-        console.log('🔍 Success response text:', responseText);
         
         // Try to parse as JSON first
         try {
           data = JSON.parse(responseText);
-          console.log('✅ Register success data (JSON):', data);
         } catch {
           // If not JSON, treat as plain text success message
           data = { message: responseText };
-          console.log('✅ Register success data (text):', responseText);
         }
       } catch (readError) {
         console.error('❌ Error reading success response:', readError);
@@ -272,13 +262,11 @@ export const AuthProvider = ({ children }) => {
       
       // Auto-login after successful registration
       if (data.token) {
-        console.log('🔑 Auto-login with token');
         login(data);
       }
       
       return data;
     } catch (error) {
-      console.error('💥 Register function error:', error);
       throw error;
     }
   }, [login]);
@@ -293,7 +281,6 @@ export const AuthProvider = ({ children }) => {
     const statusStr = String(status);
     localStorage.setItem('premium', statusStr);
     setIsPremium(statusStr === 'true');
-    console.log("Premium status updated to:", statusStr);
   }, []);
 
   /**
@@ -303,7 +290,6 @@ export const AuthProvider = ({ children }) => {
    * @returns {Promise<Object>} - Promise that resolves with the upgrade response
    */
   const upgradeToPremium = useCallback(async () => {
-    console.log('🚀 Upgrading user to premium...');
     
     try {
       const token = localStorage.getItem('token');
@@ -311,7 +297,6 @@ export const AuthProvider = ({ children }) => {
         throw new Error('No authentication token found');
       }
 
-      console.log('🔑 Token found:', token.substring(0, 20) + '...');
 
       // Validate token first
       try {
@@ -327,11 +312,9 @@ export const AuthProvider = ({ children }) => {
         });
 
         if (!validateResponse.ok) {
-          console.log('⚠️ Token validation failed, status:', validateResponse.status);
           throw new Error('Your session has expired. Please log in again.');
         }
 
-        console.log('✅ Token validation successful');
       } catch (validationError) {
         console.error('❌ Token validation error:', validationError);
         throw new Error('Authentication failed. Please log in again.');
@@ -341,7 +324,6 @@ export const AuthProvider = ({ children }) => {
         ? `${import.meta.env.VITE_BACKEND_URL}/api/auth/users/make-premium`
         : '/api/users/make-premium';
 
-      console.log('🌐 Making request to:', url);
 
       // Use only PUT method as defined in the backend controller
       const response = await fetch(url, {
@@ -351,9 +333,6 @@ export const AuthProvider = ({ children }) => {
           'Content-Type': 'application/json',
         },
       });
-
-      console.log('📡 Upgrade response status:', response.status);
-      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
         let errorText = '';
@@ -379,7 +358,6 @@ export const AuthProvider = ({ children }) => {
       }
 
       const data = await response.json();
-      console.log('✅ Upgrade successful:', data);
       
       // Update premium status in state and localStorage
       if (data.premium === true) {

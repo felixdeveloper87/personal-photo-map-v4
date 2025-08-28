@@ -103,11 +103,7 @@ const ImageUploaderModal = ({ countryId, onUpload, onUploadSuccess, isOpen: exte
   };
 
   const handleImageUpload = async () => {
-    console.log('🚀 handleImageUpload called - VERSION 2.0 WITH CALLBACKS');
-    console.log('Files:', files);
-    console.log('CountryId:', countryId);
-    console.log('Year:', year);
-    
+   
     if (files.length === 0) {
       showErrorToast(toast, 'Please select at least one image.');
       return;
@@ -138,22 +134,13 @@ const ImageUploaderModal = ({ countryId, onUpload, onUploadSuccess, isOpen: exte
       // Debug: Log the request details
       const uploadUrl = buildApiUrl('/api/images/upload');
       const authHeaders = getAuthHeaders();
-      console.log('🚀 Upload Request Debug:');
-      console.log('URL:', uploadUrl);
-      console.log('Headers:', authHeaders);
-      console.log('CountryId:', countryId);
-
-      console.log('🌐 Making fetch request to:', uploadUrl);
-      console.log('📤 Request headers:', authHeaders);
-      console.log('📦 FormData contents:', Array.from(formData.entries()));
       
       const response = await fetch(uploadUrl, {
         method: 'POST',
         headers: authHeaders,
         body: formData,
       });
-      
-      console.log('📥 Response received:', response.status, response.statusText);
+
 
       setUploadProgress(75);
 
@@ -162,30 +149,17 @@ const ImageUploaderModal = ({ countryId, onUpload, onUploadSuccess, isOpen: exte
         console.error('Upload failed. Status:', response.status, 'Response:', errorText);
         throw new Error(`Upload failed: ${response.status} - ${errorText}`);
       }
-
-      console.log('🔥 BEFORE response.json()');
       const result = await response.json();
-      console.log('✅ Upload successful:', result);
-      console.log('🚀 IMMEDIATELY after upload success log');
 
-      console.log('🚀 About to setUploadProgress(100)');
       setUploadProgress(100);
-      console.log('🚀 setUploadProgress(100) completed');
-      console.log('🎯 About to show success toast...');
       
       try {
-        console.log('🎯 ENTERING post-upload try block...');
         showSuccessToast(toast, `Successfully uploaded ${files.length} image(s)!`);
-        console.log('🎯 Success toast shown, proceeding to callbacks...');
 
         // Call the success callback if provided
-        console.log('🔄 ImageUploaderModal: onUploadSuccess callback exists?', !!onUploadSuccess);
-        console.log('🔄 ImageUploaderModal: onUploadSuccess type:', typeof onUploadSuccess);
         if (onUploadSuccess) {
-          console.log('🔄 ImageUploaderModal: Calling onUploadSuccess callback');
           try {
             await onUploadSuccess();
-            console.log('🔄 ImageUploaderModal: onUploadSuccess callback completed successfully');
           } catch (callbackError) {
             console.error('💥 Error in onUploadSuccess callback:', callbackError);
             console.error('💥 Callback error stack:', callbackError.stack);
@@ -195,21 +169,15 @@ const ImageUploaderModal = ({ countryId, onUpload, onUploadSuccess, isOpen: exte
         }
 
         // Also dispatch global event as backup
-        console.log('📸 Dispatching global photo-upload event...');
         window.dispatchEvent(new CustomEvent('photo-upload'));
         localStorage.setItem('photo-upload-timestamp', Date.now().toString());
-        console.log('📸 Global event dispatched successfully');
 
         // Reset form
-        console.log('🧹 Resetting form...');
         setFiles([]);
         setYear(currentYear);
         if (fileInputRef.current) fileInputRef.current.value = null;
-        console.log('🧹 Form reset completed');
         
-        console.log('🚪 Closing modal...');
         finalOnClose(); // Close modal after successful upload
-        console.log('🚪 Modal close called');
         
       } catch (postUploadError) {
         console.error('💥 Error in post-upload processing:', postUploadError);
