@@ -8,29 +8,19 @@ const InfoBox = ({ icon, label, value, colorScheme = "blue", onClick, size = "de
 
   // Tamanhos padronizados para garantir consistência
   const sizes = {
-    small: {
-      minW: "120px",
-      minH: "120px",
-      p: 3,
-      borderRadius: "12px",
-      iconSize: 4,
-      labelFontSize: "xs",
-      valueFontSize: "sm",
-      spacing: 2
-    },
     default: {
       minW: "140px",
       minH: "140px",
       p: 4,
       borderRadius: "12px",
-      iconSize: 5,
+      iconSize: 8,
       labelFontSize: "sm",
       valueFontSize: "md",
       spacing: 2
     },
     large: {
-      minW: "160px",
-      minH: "160px",
+      minW: "100px",
+      minH: "180px",
       p: 5,
       borderRadius: "16px",
       iconSize: 6,

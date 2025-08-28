@@ -68,18 +68,14 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   // Responsive values
-  const headerPadding = useBreakpointValue({ base: 2, sm: 3, md: 4, lg: 5 });
-  const headerBorderRadius = useBreakpointValue({ base: "16px", sm: "18px", md: "20px", lg: "24px" });
-  const countryNameSize = useBreakpointValue({ base: "lg", sm: "xl", md: "2xl", lg: "3xl" });
-  const nativeNameSize = useBreakpointValue({ base: "sm", sm: "md", md: "lg", lg: "xl" });
-  const capitalTextSize = useBreakpointValue({ base: "sm", sm: "md", md: "lg", lg: "xl" });
+  const headerPadding = useBreakpointValue({ base: 1, sm: 2, md: 3, lg: 3 });
+  const headerBorderRadius = useBreakpointValue({ base: "10px", sm: "12px", md: "14px", lg: "16px" });
+  const countryNameSize = useBreakpointValue({ base: "md", sm: "lg", md: "xl", lg: "2xl" });
+  const capitalTextSize = useBreakpointValue({ base: "xs", sm: "sm", md: "md", lg: "md" });
   const flagHeight = useBreakpointValue({ base: "200px", sm: "250px", md: "300px", lg: "350px", xl: "400px" });
   const flagBorderRadius = useBreakpointValue({ base: "12px", sm: "16px", md: "20px", lg: "24px" });
   const infoBoxGap = useBreakpointValue({ base: 1, sm: 2, md: 3, lg: 4 });
   const sectionGap = useBreakpointValue({ base: 3, sm: 4, md: 5, lg: 6 });
-  const buttonPadding = useBreakpointValue({ base: 2, sm: 3, md: 4, lg: 5 });
-  const buttonTextSize = useBreakpointValue({ base: "sm", sm: "md", md: "lg", lg: "xl" });
-  const buttonSubTextSize = useBreakpointValue({ base: "xs", sm: "sm", md: "md", lg: "lg" });
 
   return (
     <Box mb={4} position="relative">
@@ -270,9 +266,9 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
         mx="auto"
         minW="0"
       >
-        {/* Lado Esquerdo: Bandeira (1/3 do espaço) */}
+        {/* Lado Esquerdo: Bandeira (50% do espaço) */}
         <Box
-          width={{ base: "100%", lg: "33.333%" }}
+          width={{ base: "100%", lg: "50%" }}
           display="flex"
           flexDirection="column"
           alignItems="center"
@@ -311,23 +307,24 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
           </Box>
         </Box>
 
-        {/* Lado Direito: Infoboxes e botões (2/3 do espaço) */}
+        {/* Lado Direito: Infoboxes e botões (50% do espaço) */}
         <Box
-          flex="2"
+          flex="1"
           display="flex"
           flexDirection="column"
           gap={infoBoxGap}
           minW="0"
-          w={{ base: "100%", lg: "66.667%" }}
+          w={{ base: "100%", lg: "50%" }}
         >
           {/* Grid dinâmico de infoboxes - organizados automaticamente */}
           <Box
             display="grid"
             gridTemplateColumns={{
-              base: "repeat(2, 1fr)",
+              base: "repeat(1, 1fr)",
               sm: "repeat(2, 1fr)",
-              md: "repeat(3, 1fr)",
-              lg: "repeat(4, 1fr)"
+              md: "repeat(2, 1fr)",
+              lg: "repeat(2, 1fr)",
+              xl: "repeat(3, 1fr)"
             }}
             gap={infoBoxGap}
             w="full"
@@ -335,14 +332,10 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
             gridAutoRows="1fr"
           >
 
-            {/* Primeira linha: 4 infoboxes principais */}
+            {/* InfoBoxes principais */}
             <InfoBox icon={FaLanguage} label="Language" value={countryInfo?.officialLanguage} colorScheme="orange" size="large" />
             <InfoBox icon={FaUsers} label="Population" value={countryInfo?.population ? formatPopulation(countryInfo.population) : undefined} colorScheme="green" size="large" />
             <InfoBox icon={FaThermometerHalf} label="Temperature" value={weatherData?.temperature ? `${weatherData.temperature}°C` : undefined} colorScheme="red" size="large" />
-            <InfoBox icon={FaPercent} label="Inflation Rate" value={indicatorsData?.inflationCPI ? `${indicatorsData.inflationCPI.value}%` : undefined} colorScheme="orange" size="large" />
-
-            {/* Segunda linha: 1 infobox */}
-            <InfoBox icon={FaUsers} label="Net Migration" value={indicatorsData?.netMigration ? `${indicatorsData.netMigration.value}` : undefined} colorScheme="cyan" size="large" />
 
 
 
@@ -376,8 +369,6 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
               <Text fontSize="sm" opacity={0.8}>More indicators</Text>
             </Box>
 
-
-            {/* Quarta linha: Check Flights & Accommodation com fundos destacados */}
             {/* Check Flights com fundo destacado */}
             <Box
               p={4}
@@ -464,6 +455,8 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
       {/* Modal com os demais indicadores */}
       <BaseModal isOpen={isOpen} onClose={onClose} title="More Indicators">
         <Flex wrap="wrap" gap={3}>
+          <InfoBox icon={FaPercent} label="Inflation Rate" value={indicatorsData?.inflationCPI ? `${indicatorsData.inflationCPI.value}%` : undefined} colorScheme="orange" />
+          <InfoBox icon={FaUsers} label="Net Migration" value={indicatorsData?.netMigration ? `${indicatorsData.netMigration.value}` : undefined} colorScheme="cyan" />
           <InfoBox icon={FaSun} label="Weather" value={weatherData?.description ? weatherData.description : undefined} colorScheme="yellow" />
           <InfoBox icon={FaCity} label="Capital" value={countryInfo?.capital} colorScheme="purple" />
           <InfoBox icon={FaDollarSign} label="Exchange Rate" value={exchangeRate ? `1 USD = ${exchangeRate} ${countryInfo?.currencies?.[0] || 'USD'}` : undefined} colorScheme="yellow" />
