@@ -73,23 +73,19 @@ const Header = () => {
   const handlePremiumUpgrade = async () => {
     setIsUpgrading(true);
     try {
-      // Try direct API call first to debug the issue
+      // Get authentication token
       const token = localStorage.getItem('token');
       if (!token) {
         throw new Error('No authentication token found');
       }
 
-      console.log('🔍 Debug: Trying direct API call...');
-      const debugUrl = buildApiUrl('/api/users/make-premium');
-      console.log('🔍 Debug URL:', debugUrl);
-      console.log('🔍 Debug Token:', token.substring(0, 20) + '...');
-      console.log('🔍 Debug Token Length:', token.length);
-      console.log('🔍 Debug Token Format:', token.startsWith('Bearer ') ? 'Has Bearer prefix' : 'No Bearer prefix');
-      console.log('🔍 Debug Token JWT Format:', token.includes('.') ? 'Looks like JWT' : 'Not JWT format');
+      console.log('🚀 Attempting premium upgrade...');
+      const upgradeUrl = buildApiUrl('/api/users/make-premium');
+      console.log('🌐 Upgrade URL:', upgradeUrl);
+      console.log('🔑 Token found:', token.substring(0, 20) + '...');
 
-      // Test 1: Try with different HTTP methods
-      console.log('🔍 Test 1: Trying PUT method...');
-      let debugResponse = await fetch(debugUrl, {
+      // Use only PUT method as defined in the backend controller
+      const response = await fetch(upgradeUrl, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -97,101 +93,53 @@ const Header = () => {
         },
       });
 
-      if (debugResponse.status === 403) {
-        console.log('🔍 Test 2: PUT failed, trying POST method...');
-        debugResponse = await fetch(debugUrl, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-      }
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
 
-      if (debugResponse.status === 403) {
-        console.log('🔍 Test 3: POST failed, trying GET method...');
-        debugResponse = await fetch(debugUrl, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-      }
-
-      // Test 4: Try a different endpoint to see if it's an auth issue or endpoint issue
-      if (debugResponse.status === 403) {
-        console.log('🔍 Test 4: All methods failed, testing auth with different endpoint...');
-        const testUrl = buildApiUrl('/api/auth/validate');
-        const testResponse = await fetch(testUrl, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-        console.log('🔍 Test 4 Result - /api/auth/validate status:', testResponse.status);
-        
-        // Test 5: Get user details to see what permissions they have
-        if (testResponse.ok) {
-          try {
-            const userData = await testResponse.json();
-            console.log('🔍 Test 5: User data from /api/auth/validate:', userData);
-          } catch (parseError) {
-            console.log('🔍 Test 5: Could not parse user data:', parseError);
-          }
-        }
-
-        // Test 6: Try to access a different protected endpoint to see if it's a general issue
-        console.log('🔍 Test 6: Testing access to other protected endpoints...');
+      if (!response.ok) {
+        let errorText = '';
         try {
-          const usersUrl = buildApiUrl('/api/auth/users');
-          const usersResponse = await fetch(usersUrl, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          });
-          console.log('🔍 Test 6 Result - /api/auth/users status:', usersResponse.status);
-        } catch (testError) {
-          console.log('🔍 Test 6 Error:', testError);
+          errorText = await response.text();
+          console.log('❌ Error response text:', errorText);
+        } catch (readError) {
+          console.log('❌ Could not read error response:', readError);
         }
 
-        // Test 7: Check if user is already premium (this could cause 403)
-        console.log('🔍 Test 7: Checking current premium status...');
-        console.log('🔍 Current isPremium state:', isPremium);
-        console.log('🔍 Current localStorage premium value:', localStorage.getItem('premium'));
-      }
-
-      console.log('🔍 Debug Response Status:', debugResponse.status);
-      console.log('🔍 Debug Response Headers:', Object.fromEntries(debugResponse.headers.entries()));
-
-      if (!debugResponse.ok) {
-        const debugErrorText = await debugResponse.text();
-        console.log('🔍 Debug Error Text:', debugErrorText);
-        
-        // Handle 403 Forbidden specifically - this means user is authenticated but lacks permission
-        if (debugResponse.status === 403) {
+        // Handle specific HTTP status codes
+        if (response.status === 403) {
           throw new Error('Access denied. Premium upgrade is currently restricted. This feature may require admin approval or may not be available for self-service. Please contact support for assistance.');
+        } else if (response.status === 401) {
+          throw new Error('Unauthorized. Please log in again.');
+        } else if (response.status === 404) {
+          throw new Error('Premium upgrade endpoint not found.');
+        } else if (response.status >= 500) {
+          throw new Error('Server error. Please try again later.');
+        } else {
+          throw new Error(errorText || `Upgrade failed with status ${response.status}`);
         }
-        
-        // Try the context function as fallback for other errors
-        console.log('🔄 Trying context function as fallback...');
-        await upgradeToPremium();
-      } else {
-        console.log('✅ Direct API call successful!');
-        // Update premium status manually
-        localStorage.setItem('premium', 'true');
-        window.location.reload(); // Refresh to update UI
       }
 
+      // Success! Parse response and update premium status
+      const data = await response.json();
+      console.log('✅ Upgrade successful:', data);
+      
+      // Update premium status in localStorage and reload
+      localStorage.setItem('premium', 'true');
+      
       toast({
         title: "Premium Upgrade Successful! 🎉",
         description: "Welcome to Premium! You now have access to all premium features.",
         status: "success",
-        duration: 5000,
+        duration: 8000,
         isClosable: true,
         position: "top-right",
       });
+      
       premiumModal.onClose();
+      
+      // Refresh page to update UI
+      window.location.reload();
+      
     } catch (error) {
       console.error('💥 Header upgrade error:', error);
       
@@ -199,14 +147,14 @@ const Header = () => {
       
       // Handle specific error cases
       if (error.message.includes('Access denied') || error.message.includes('restricted')) {
-        errorMessage = "Premium upgrade is currently restricted. Please contact support for assistance.";
+        errorMessage = "Premium upgrade is currently restricted. This feature may require admin approval or may not be available for self-service. Please contact support for assistance.";
         // Don't redirect to login for permission issues
       } else if (error.message.includes('session has expired') || error.message.includes('log in again')) {
         errorMessage = "Your session has expired. Please log in again to continue.";
         // Only redirect to login for actual authentication issues
         setTimeout(() => {
           loginModal.onOpen();
-        }, 2000);
+        }, 3000);
       } else if (error.message.includes('Access forbidden')) {
         errorMessage = "You don't have permission to upgrade. Please contact support.";
       }
@@ -215,17 +163,10 @@ const Header = () => {
         title: "Upgrade Failed",
         description: errorMessage,
         status: "error",
-        duration: 8000, // Longer duration for important messages
+        duration: 8000,
         isClosable: true,
         position: "top-right",
       });
-      
-      // Only show login modal for actual authentication issues, not permission issues
-      if (error.message.includes('session has expired') || error.message.includes('log in again')) {
-        setTimeout(() => {
-          loginModal.onOpen();
-        }, 3000);
-      }
     } finally {
       setIsUpgrading(false);
     }

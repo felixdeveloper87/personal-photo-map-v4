@@ -311,14 +311,6 @@ export const AuthProvider = ({ children }) => {
         throw new Error('No authentication token found');
       }
 
-      // Check token format
-      if (!token.startsWith('Bearer ') && !token.includes('.')) {
-        console.log('⚠️ Token format seems incorrect:', token.substring(0, 50));
-        // Try to fix token format if it's missing 'Bearer '
-        const formattedToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-        console.log('🔧 Formatted token:', formattedToken.substring(0, 50));
-      }
-
       console.log('🔑 Token found:', token.substring(0, 20) + '...');
 
       // Validate token first
@@ -351,6 +343,7 @@ export const AuthProvider = ({ children }) => {
 
       console.log('🌐 Making request to:', url);
 
+      // Use only PUT method as defined in the backend controller
       const response = await fetch(url, {
         method: 'PUT',
         headers: {
