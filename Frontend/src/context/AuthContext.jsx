@@ -373,7 +373,7 @@ export const AuthProvider = ({ children }) => {
 
         // Handle specific HTTP status codes
         if (response.status === 403) {
-          throw new Error('Access forbidden. Your session may have expired. Please log in again.');
+          throw new Error('Access denied. Premium upgrade is currently restricted. This feature may require admin approval or may not be available for self-service. Please contact support for assistance.');
         } else if (response.status === 401) {
           throw new Error('Unauthorized. Please log in again.');
         } else if (response.status === 404) {
