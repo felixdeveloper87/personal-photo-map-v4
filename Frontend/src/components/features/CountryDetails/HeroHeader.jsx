@@ -1,5 +1,5 @@
-import { Box, Flex, Heading, Text, IconButton, useColorModeValue, useDisclosure, Icon, useBreakpointValue } from '@chakra-ui/react';
-import { ArrowBackIcon } from '@chakra-ui/icons';
+import { Box, Flex, Heading, Text, IconButton, useColorModeValue, useDisclosure, Icon, useBreakpointValue, Collapse, Button } from '@chakra-ui/react';
+import { ArrowBackIcon, ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
 import countries from 'i18n-iso-countries';
 import moment from 'moment-timezone';
 import {
@@ -66,19 +66,22 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
 
   // Modal control
   const { isOpen, onOpen, onClose } = useDisclosure();
+  
+  // Collapse control for HeroHeader
+  const { isOpen: isExpanded, onToggle } = useDisclosure({ defaultIsOpen: true });
 
   // Responsive values
-  const headerPadding = useBreakpointValue({ base: 1, sm: 2, md: 3, lg: 3 });
-  const headerBorderRadius = useBreakpointValue({ base: "10px", sm: "12px", md: "14px", lg: "16px" });
-  const countryNameSize = useBreakpointValue({ base: "md", sm: "lg", md: "xl", lg: "2xl" });
-  const capitalTextSize = useBreakpointValue({ base: "xs", sm: "sm", md: "md", lg: "md" });
+  const headerPadding = useBreakpointValue({ base: 1, sm: 1, md: 2, lg: 2 });
+  const headerBorderRadius = useBreakpointValue({ base: "8px", sm: "10px", md: "12px", lg: "14px" });
+  const countryNameSize = useBreakpointValue({ base: "sm", sm: "md", md: "lg", lg: "xl" });
+  const capitalTextSize = useBreakpointValue({ base: "xs", sm: "xs", md: "sm", lg: "sm" });
   const flagHeight = useBreakpointValue({ base: "200px", sm: "250px", md: "300px", lg: "350px", xl: "400px" });
   const flagBorderRadius = useBreakpointValue({ base: "12px", sm: "16px", md: "20px", lg: "24px" });
   const infoBoxGap = useBreakpointValue({ base: 1, sm: 2, md: 3, lg: 4 });
   const sectionGap = useBreakpointValue({ base: 3, sm: 4, md: 5, lg: 6 });
 
   return (
-    <Box mb={4} position="relative">
+    <Box mb={2} position="relative">
       {/* Header: Nome do país, capital e botão de voltar alinhados */}
       <Box
         bg={useColorModeValue('rgba(255,255,255,0.9)', 'rgba(0,0,0,0.8)')}
@@ -88,7 +91,7 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
         flexDirection="row"
         alignItems="center"
         justifyContent="space-between"
-        mb={4}
+        mb={2}
         position="relative"
         border={useColorModeValue('1px solid rgba(0,0,0,0.1)', '1px solid rgba(255,255,255,0.1)')}
         width="100%"
@@ -102,7 +105,7 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
           icon={<ArrowBackIcon />}
           onClick={() => navigate('/')}
           variant="outline"
-          size={{ base: "xs", sm: "sm", md: "md", lg: "lg" }}
+          size={{ base: "xs", sm: "sm", md: "sm", lg: "md" }}
           colorScheme="teal"
           bg={useColorModeValue('white', 'gray.700')}
           color={useColorModeValue('teal.500', 'teal.300')}
@@ -123,17 +126,17 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
           direction="column"
           align="center"
           justify="center"
-          gap={{ base: 1, sm: 2, md: 3, lg: 4 }}
+          gap={{ base: 1, sm: 1, md: 2, lg: 2 }}
           textAlign="center"
           flex="1"
-          px={{ base: 2, sm: 4, md: 6, lg: 8 }}
+          px={{ base: 1, sm: 2, md: 3, lg: 4 }}
         >
           {/* Nome do país em inglês, nome local e capital lado a lado */}
           <Flex
             direction={{ base: "column", sm: "row" }}
             align="center"
             justify="center"
-            gap={{ base: 2, sm: 4, md: 6, lg: 8 }}
+            gap={{ base: 1, sm: 2, md: 3, lg: 4 }}
             flexWrap="wrap"
           >
             <Heading
@@ -146,7 +149,7 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
               wordBreak="break-word"
               whiteSpace="normal"
               maxW="100%"
-              lineHeight={{ base: "1.2", sm: "1.3", md: "1.4", lg: "1.5" }}
+              lineHeight={{ base: "1.1", sm: "1.2", md: "1.3", lg: "1.4" }}
             >
               {countries.getName(countryId.toUpperCase(), 'en') || countryId.toUpperCase()}
               {countryInfo?.nativeName && countryInfo.nativeName !== countries.getName(countryId.toUpperCase(), 'en') && (
@@ -174,7 +177,7 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
                 direction={{ base: "column", sm: "row" }}
                 align="center"
                 justify="center"
-                gap={{ base: 1, sm: 2, md: 3, lg: 4 }}
+                gap={{ base: 1, sm: 1, md: 2, lg: 2 }}
                 flexWrap="wrap"
               >
                 <Text
@@ -187,8 +190,8 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
                   letterSpacing="wide"
                   textAlign="center"
                   bg={useColorModeValue('blue.50', 'blue.900')}
-                  px={{ base: 2, sm: 3, md: 4, lg: 5 }}
-                  py={{ base: 1, sm: 1, md: 2, lg: 2 }}
+                  px={{ base: 2, sm: 2, md: 3, lg: 3 }}
+                  py={{ base: 1, sm: 1, md: 1, lg: 1 }}
                   borderRadius="full"
                   border="1px solid"
                   borderColor={useColorModeValue('blue.200', 'blue.700')}
@@ -207,8 +210,8 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
                   letterSpacing="wide"
                   textAlign="center"
                   bg={useColorModeValue('teal.50', 'teal.900')}
-                  px={{ base: 2, sm: 3, md: 4, lg: 5 }}
-                  py={{ base: 1, sm: 1, md: 2, lg: 2 }}
+                  px={{ base: 2, sm: 2, md: 3, lg: 3 }}
+                  py={{ base: 1, sm: 1, md: 1, lg: 1 }}
                   borderRadius="full"
                   border="1px solid"
                   borderColor={useColorModeValue('teal.200', 'teal.700')}
@@ -233,8 +236,8 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
                   letterSpacing="wide"
                   textAlign="center"
                   bg={useColorModeValue('gray.50', 'gray.900')}
-                  px={{ base: 2, sm: 3, md: 4, lg: 5 }}
-                  py={{ base: 1, sm: 1, md: 2, lg: 2 }}
+                  px={{ base: 2, sm: 2, md: 3, lg: 3 }}
+                  py={{ base: 1, sm: 1, md: 1, lg: 1 }}
                   borderRadius="full"
                   border="1px solid"
                   borderColor={useColorModeValue('gray.200', 'gray.700')}
@@ -253,19 +256,68 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
           </Flex>
         </Flex>
 
-        {/* Espaçador invisível para manter o botão de voltar à esquerda */}
-        <Box w={{ base: "40px", sm: "50px", md: "60px", lg: "70px" }} />
+        {/* Botão de colapso/expansão */}
+        <Button
+          onClick={onToggle}
+          variant="outline"
+          size={{ base: "xs", sm: "sm", md: "sm", lg: "md" }}
+          colorScheme="blue"
+          bg={useColorModeValue('white', 'gray.700')}
+          color={useColorModeValue('blue.500', 'blue.300')}
+          borderColor={useColorModeValue('blue.200', 'blue.600')}
+          borderRadius="20px"
+          boxShadow={useColorModeValue("0 4px 12px rgba(0, 0, 0, 0.15)", "none")}
+          _hover={{
+            transform: 'scale(1.05)',
+            bg: useColorModeValue("blue.50", "blue.900"),
+            borderColor: useColorModeValue("blue.300", "blue.400"),
+            boxShadow: useColorModeValue("0 6px 20px rgba(0, 0, 0, 0.25)", "none")
+          }}
+          _active={{
+            transform: 'scale(0.95)'
+          }}
+          transition="all 0.2s ease-in-out"
+          leftIcon={isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
+          iconSpacing={{ base: 1, sm: 2, md: 3 }}
+          px={{ base: 2, sm: 3, md: 4, lg: 4 }}
+          py={{ base: 1, sm: 2, md: 2 }}
+          fontWeight="semibold"
+          aria-label={isExpanded ? "Hide details" : "Show details"}
+        >
+          <Text fontSize={{ base: "sm", sm: "sm", md: "md" }} display={{ base: "none", sm: "block" }}>
+            {isExpanded ? 'Hide Details' : 'Show Details'}
+          </Text>
+        </Button>
       </Box>
 
-      {/* Layout principal: esquerda (bandeira 1/3) vs direita (infoboxes 2/3) */}
-      <Flex
-        direction={{ base: "column", lg: "row" }}
-        gap={sectionGap}
-        align="flex-start"
-        maxW="1600px"
-        mx="auto"
-        minW="0"
+      {/* Conteúdo colapsável */}
+      <Collapse 
+        in={isExpanded} 
+        animateOpacity 
+        transition={{
+          enter: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
+          exit: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }
+        }}
       >
+        <Box
+          mt={2}
+          borderRadius="xl"
+          overflow="hidden"
+          bg={useColorModeValue('rgba(255,255,255,0.5)', 'rgba(0,0,0,0.3)')}
+          backdropFilter="blur(10px)"
+          border="1px solid"
+          borderColor={useColorModeValue('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.05)')}
+          p={{ base: 2, sm: 3, md: 4, lg: 4 }}
+        >
+          {/* Layout principal: esquerda (bandeira 1/3) vs direita (infoboxes 2/3) */}
+          <Flex
+            direction={{ base: "column", lg: "row" }}
+            gap={sectionGap}
+            align="flex-start"
+            maxW="1600px"
+            mx="auto"
+            minW="0"
+          >
         {/* Lado Esquerdo: Bandeira (50% do espaço) */}
         <Box
           width={{ base: "100%", lg: "50%" }}
@@ -450,7 +502,9 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
 
           </Box>
         </Box>
-      </Flex>
+          </Flex>
+        </Box>
+      </Collapse>
 
       {/* Modal com os demais indicadores */}
       <BaseModal isOpen={isOpen} onClose={onClose} title="More Indicators">
