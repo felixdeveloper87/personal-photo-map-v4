@@ -7,7 +7,7 @@ import { CountriesContext } from '../context/CountriesContext';
  * Funcionalidades:
  * - Escuta eventos de upload de fotos
  * - Atualiza automaticamente o cache de países
- * - Mantém dados sincronizados em tempo real
+ * - Mantém dados sincronizados em tempo reall
  * 
  * @returns {Object} Objeto com métodos para forçar atualização
  */
@@ -16,25 +16,20 @@ export const usePhotoUploadListener = () => {
 
   useEffect(() => {
     // Função para lidar com eventos de upload
-    const handlePhotoUpload = (event) => {
-      console.log('📸 Photo upload detected, refreshing cache...');
-      
+    const handlePhotoUpload = (event) => {      
       // Força atualização imediata do cache
       forceRefresh();
     };
 
     // Função para lidar com eventos de exclusão
     const handlePhotoDelete = (event) => {
-      console.log('🗑️ Photo deletion detected, refreshing cache...');
       
       // Força atualização imediata do cache
       forceRefresh();
     };
 
     // Função para lidar com eventos de modificação
-    const handlePhotoModify = (event) => {
-      console.log('✏️ Photo modification detected, refreshing cache...');
-      
+    const handlePhotoModify = (event) => {      
       // Força atualização imediata do cache
       forceRefresh();
     };
@@ -47,7 +42,6 @@ export const usePhotoUploadListener = () => {
     // Escuta eventos de storage (para sincronização entre abas)
     const handleStorageChange = (event) => {
       if (event.key === 'photo-upload-timestamp') {
-        console.log('📸 Photo upload detected via storage, refreshing cache...');
         forceRefresh();
       }
     };
@@ -64,9 +58,7 @@ export const usePhotoUploadListener = () => {
   }, [forceRefresh]);
 
   // Função para disparar evento de upload (usada pelos componentes de upload)
-  const triggerPhotoUpload = () => {
-    console.log('📸 Triggering photo upload event...');
-    
+  const triggerPhotoUpload = () => {   
     // Dispara evento customizado
     window.dispatchEvent(new CustomEvent('photo-upload'));
     
@@ -75,17 +67,13 @@ export const usePhotoUploadListener = () => {
   };
 
   // Função para disparar evento de exclusão
-  const triggerPhotoDelete = () => {
-    console.log('🗑️ Triggering photo deletion event...');
-    
+  const triggerPhotoDelete = () => {    
     window.dispatchEvent(new CustomEvent('photo-delete'));
     localStorage.setItem('photo-upload-timestamp', Date.now().toString());
   };
 
   // Função para disparar evento de modificação
-  const triggerPhotoModify = () => {
-    console.log('✏️ Triggering photo modification event...');
-    
+  const triggerPhotoModify = () => {   
     window.dispatchEvent(new CustomEvent('photo-modify'));
     localStorage.setItem('photo-upload-timestamp', Date.now().toString());
   };

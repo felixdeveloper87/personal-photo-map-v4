@@ -286,7 +286,6 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
         isOpen={showResetModal}
         onClose={handleCloseResetModal}
         onReset={(data) => {
-          console.log("Reset password data:", data);
           handleCloseResetModal();
           toast({
             title: "Reset Email Sent",

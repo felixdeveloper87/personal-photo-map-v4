@@ -27,7 +27,7 @@ export const CountriesProvider = ({ children }) => {
     const [photoCount, setPhotoCount] = useState(0);
     // State for the total number of countries with photos
     const [countryCount, setCountryCount] = useState(0);
-    
+
     // Cache management
     const [lastFetch, setLastFetch] = useState(0);
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -42,34 +42,23 @@ export const CountriesProvider = ({ children }) => {
      */
     const fetchCounts = async () => {
         const token = localStorage.getItem('token');
-        console.log('Token:', token);
-
         if (!token) return;
 
         try {
-            console.log('🔄 Fetching counts...');
-            
             const response = await fetch(buildApiUrl('/api/images/count'), {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
-
-            console.log('📊 Counts response status:', response.status, response.statusText);
-
             if (!response.ok) {
                 throw new Error('Error fetching photo and country counts');
             }
 
             const data = await response.json();
-            console.log('📊 Counts data:', data);
-            
+
             setPhotoCount(data.photoCount);
             setCountryCount(data.countryCount);
-            
-            console.log('✅ Counts set successfully:', { photoCount: data.photoCount, countryCount: data.countryCount });
         } catch (error) {
-            console.error('Error fetching photo/country counts:', error);
             setPhotoCount(0);
             setCountryCount(0);
         }
@@ -89,41 +78,27 @@ export const CountriesProvider = ({ children }) => {
         }
 
         try {
-            console.log('🔄 Fetching from detailed endpoint...');
-            
-            // Use the new detailed endpoint
             const response = await fetch(buildApiUrl('/api/images/countries-with-photos-detailed'), {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
 
-            console.log('📊 Response status:', response.status, response.statusText);
-
             if (!response.ok) {
-                console.warn('⚠️ Detailed endpoint failed, falling back to old endpoint');
-                // Fallback to old endpoint
                 return await fetchCountriesWithPhotosOld();
             }
 
             const data = await response.json();
-            console.log('📊 Countries with photos detailed:', data);
-            console.log('📊 Data structure check:', data.map(c => ({ countryId: c.countryId, countryName: c.countryName, photoCount: c.photoCount })));
-            
             // TEMPORARY: If data is empty, force fallback to test old endpoint
             if (!data || data.length === 0) {
-                console.warn('⚠️ Detailed endpoint returned empty array, testing fallback');
                 return await fetchCountriesWithPhotosOld();
             }
-            
+
             // Data already comes with countryId, countryName, and photoCount
             setCountriesWithPhotos(data);
-            console.log('✅ Detailed data set successfully');
-            console.log('✅ Final countriesWithPhotos state:', data);
-            
+
             // Force a re-render by updating the state again
             setTimeout(() => {
-                console.log('🔄 Forcing re-render after 100ms...');
                 setCountriesWithPhotos([...data]);
             }, 100);
         } catch (error) {
@@ -159,16 +134,12 @@ export const CountriesProvider = ({ children }) => {
             }
 
             const data = await response.json();
-            console.log('📊 Countries with photos (old format):', data);
-            
             // Convert old format to new format
             const mappedCountries = data.map((countryId) => ({
                 countryId,
                 countryName: getCountryName(countryId),
                 photoCount: 0 // We don't have photo count in old format
             }));
-            
-            console.log('📊 Mapped countries:', mappedCountries);
             setCountriesWithPhotos(mappedCountries);
         } catch (error) {
             console.error('Error fetching countries with photos (old):', error);
@@ -208,7 +179,7 @@ export const CountriesProvider = ({ children }) => {
             'gf': 'French Guiana',
             'fk': 'Falkland Islands'
         };
-        
+
         return countryNames[countryId?.toLowerCase()] || countryId?.toUpperCase() || 'Unknown';
     };
 
@@ -247,80 +218,51 @@ export const CountriesProvider = ({ children }) => {
      */
     const refreshCountriesWithPhotos = useCallback(async (force = false) => {
         const now = Date.now();
-        
-        console.log('🔄 refreshCountriesWithPhotos called with force:', force);
-        console.log('🔄 Current time:', new Date(now).toLocaleTimeString());
-        console.log('🔄 Last fetch time:', new Date(lastFetch).toLocaleTimeString());
-        console.log('🔄 Cache duration:', CACHE_DURATION, 'ms');
-        console.log('🔄 Is currently refreshing:', isRefreshing);
-        
         // Prevent concurrent refreshes
         if (isRefreshing) {
-            console.log('🔄 Already refreshing, skipping...');
             return;
         }
-        
+
         // Check if cache is still valid (unless forced refresh or cache disabled)
         if (!force && !cacheDisabled && (now - lastFetch) < CACHE_DURATION) {
-            console.log('🔄 Using cached data, last fetch:', new Date(lastFetch).toLocaleTimeString());
             return;
         }
-        
+
         // For forced refresh, ALWAYS bypass cache regardless of timing
         if (force) {
-            console.log('🔄 FORCED REFRESH - bypassing all cache checks');
             // Temporarily disable cache for subsequent operations
             setCacheDisabled(true);
             setTimeout(() => {
                 setCacheDisabled(false);
-                console.log('🔄 Cache re-enabled after forced refresh');
             }, 2000); // Disable cache for 2 seconds
         }
 
-        console.log('🔄 Fetching fresh data...', force ? '(FORCED)' : '');
         setIsRefreshing(true);
         setLoading(true);
-        
+
         try {
             // Always trigger immediate UI update for forced refresh
             if (force) {
-                console.log('🔄 Triggering immediate UI update for forced refresh');
                 setUpdateTrigger(prev => prev + 1);
             }
-            
-            console.log('🔄 Starting parallel data fetch...');
-            
+
             // Use Promise.allSettled for better error handling in production
             const results = await Promise.allSettled([
-                fetchCounts(), 
-                fetchCountriesWithPhotosDetailed(), 
+                fetchCounts(),
+                fetchCountriesWithPhotosDetailed(),
                 fetchAvailableYears()
             ]);
-            
-            // Log any failed operations for debugging
-            results.forEach((result, index) => {
-                const operation = ['fetchCounts', 'fetchCountriesWithPhotosDetailed', 'fetchAvailableYears'][index];
-                if (result.status === 'rejected') {
-                    console.error(`❌ ${operation} failed:`, result.reason);
-                } else {
-                    console.log(`✅ ${operation} completed successfully`);
-                }
-            });
-            
+
             setLastFetch(now);
-            console.log('🔄 Data refresh completed at:', new Date(now).toLocaleTimeString());
-            
             // Trigger another update after data is loaded
             if (force) {
                 setUpdateTrigger(prev => prev + 1);
                 // Add a small delay and trigger again for better production reliability
                 setTimeout(() => {
                     setUpdateTrigger(prev => prev + 1);
-                    console.log('🔄 Secondary trigger executed for production reliability');
                 }, 100);
             }
         } catch (error) {
-            console.error('❌ Critical error refreshing data:', error);
             // Even on error, trigger update to ensure UI consistency
             setUpdateTrigger(prev => prev + 1);
         } finally {
@@ -334,7 +276,6 @@ export const CountriesProvider = ({ children }) => {
      * This bypasses cache and fetches fresh data immediately.
      */
     const forceRefresh = useCallback(async () => {
-        console.log('🔄 Force refresh triggered');
         await refreshCountriesWithPhotos(true);
         // Trigger immediate map update
         setUpdateTrigger(prev => prev + 1);
@@ -345,24 +286,22 @@ export const CountriesProvider = ({ children }) => {
      * Completely bypasses cache and forces immediate data refresh
      */
     const refreshAfterUpload = useCallback(async () => {
-        console.log('🔄 Upload-specific refresh triggered');
-        
+
         // Disable cache temporarily
         setCacheDisabled(true);
-        
+
         // Reset last fetch to force refresh
         setLastFetch(0);
-        
+
         // Trigger immediate UI update
         setUpdateTrigger(prev => prev + 1);
-        
+
         try {
             await refreshCountriesWithPhotos(true);
         } finally {
             // Re-enable cache after a delay
             setTimeout(() => {
                 setCacheDisabled(false);
-                console.log('🔄 Cache re-enabled after upload refresh');
             }, 3000);
         }
     }, [refreshCountriesWithPhotos]);
@@ -372,7 +311,6 @@ export const CountriesProvider = ({ children }) => {
      * This function is used to notify map components that they should refresh their display
      */
     const triggerMapUpdate = useCallback(() => {
-        console.log('🗺️ Triggering map update...');
         setUpdateTrigger(prev => prev + 1);
     }, []);
 
