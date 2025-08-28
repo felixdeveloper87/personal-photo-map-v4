@@ -338,7 +338,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       const url = import.meta.env.VITE_BACKEND_URL 
-        ? `${import.meta.env.VITE_BACKEND_URL}/api/users/make-premium`
+        ? `${import.meta.env.VITE_BACKEND_URL}/api/auth/users/make-premium`
         : '/api/users/make-premium';
 
       console.log('🌐 Making request to:', url);

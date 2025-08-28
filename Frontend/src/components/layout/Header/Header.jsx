@@ -80,7 +80,7 @@ const Header = () => {
       }
 
       console.log('🚀 Attempting premium upgrade...');
-      const upgradeUrl = buildApiUrl('/api/users/make-premium');
+      const upgradeUrl = buildApiUrl('/api/auth/users/make-premium');
       console.log('🌐 Upgrade URL:', upgradeUrl);
       console.log('🔑 Token found:', token.substring(0, 20) + '...');
 
