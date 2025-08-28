@@ -6,41 +6,41 @@ const InfoBox = ({ icon, label, value, colorScheme = "blue", onClick, size = "de
   const textColor = useColorModeValue('gray.800', 'white');
   const labelColor = useColorModeValue('gray.600', 'gray.300');
 
-  // Tamanhos baseados na prop size
+  // Tamanhos padronizados para garantir consistência
   const sizes = {
     small: {
       minW: "120px",
-      p: 2,
-      borderRadius: "8px",
-      iconSize: 3,
-      labelFontSize: "3xs",
-      valueFontSize: "2xs",
-      spacing: 1,
-      minH: "120px"
+      minH: "120px",
+      p: 3,
+      borderRadius: "12px",
+      iconSize: 4,
+      labelFontSize: "xs",
+      valueFontSize: "sm",
+      spacing: 2
     },
     default: {
-      minW: "100px",
-      p: 3,
-      borderRadius: "10px",
-      iconSize: 4,
-      labelFontSize: "2xs",
-      valueFontSize: "xs",
-      spacing: 1,
-      minH: "100px"
-    },
-    large: {
       minW: "140px",
+      minH: "140px",
       p: 4,
       borderRadius: "12px",
       iconSize: 5,
-      labelFontSize: "xs",
-      valueFontSize: "sm",
-      spacing: 2,
-      minH: "140px"
+      labelFontSize: "sm",
+      valueFontSize: "md",
+      spacing: 2
+    },
+    large: {
+      minW: "160px",
+      minH: "160px",
+      p: 5,
+      borderRadius: "16px",
+      iconSize: 6,
+      labelFontSize: "md",
+      valueFontSize: "lg",
+      spacing: 3
     }
   };
 
-  const currentSize = sizes[size];
+  const currentSize = sizes[size] || sizes.default;
 
   return (
     <Box
@@ -69,46 +69,12 @@ const InfoBox = ({ icon, label, value, colorScheme = "blue", onClick, size = "de
       }}
       _active={onClick ? { transform: "translateY(0) scale(0.99)" } : undefined}
     >
-      <VStack 
-        spacing={currentSize.spacing} 
-        align="center" 
-        justify="center"
-        w="100%"
-        h="100%"
-        textAlign="center"
-      >
-        <Icon 
-          as={icon} 
-          boxSize={currentSize.iconSize} 
-          color={`${colorScheme}.500`} 
-          flexShrink={0}
-          display="block"
-          mx="auto"
-        />
-        <Text 
-          fontSize={currentSize.labelFontSize} 
-          color={labelColor} 
-          textTransform="uppercase" 
-          fontWeight="bold" 
-          letterSpacing="wide"
-          textAlign="center"
-          w="100%"
-          display="block"
-          mx="auto"
-        >
+      <VStack spacing={currentSize.spacing} align="center" justify="center" h="full">
+        <Icon as={icon} boxSize={currentSize.iconSize} color={`${colorScheme}.500`} />
+        <Text fontSize={currentSize.labelFontSize} color={labelColor} textTransform="uppercase" fontWeight="bold" letterSpacing="wide">
           {label}
         </Text>
-        <Text 
-          fontSize={currentSize.valueFontSize} 
-          fontWeight="semibold" 
-          color={textColor} 
-          noOfLines={2}
-          textAlign="center"
-          w="100%"
-          lineHeight="1.2"
-          display="block"
-          mx="auto"
-        >
+        <Text fontSize={currentSize.valueFontSize} fontWeight="semibold" color={textColor} noOfLines={2} textAlign="center">
           {value || 'N/A'}
         </Text>
       </VStack>
