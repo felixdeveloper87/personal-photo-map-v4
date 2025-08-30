@@ -6,6 +6,7 @@ export { default as PremiumBenefitsModal } from './PremiumBenefitsModal';
 export { default as PhotoStorageModal } from './PhotoStorageModal';
 export { default as CountriesVisitedModal } from './CountriesVisitedModal';
 export { default as ImageUploaderModal } from './ImageUploaderModal';
+export { default as EnhancedImageUploaderModal } from './EnhancedImageUploaderModal';
 export { default as FullImageModal } from './FullImageModal';
 export { default as ConversionModal } from './ConversionModal';
 export { default as EconomicModal } from './EconomicModal';

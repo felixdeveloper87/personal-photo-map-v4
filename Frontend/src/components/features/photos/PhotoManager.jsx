@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect, useRef, useMemo } from 'react';
 import { FaCloudUploadAlt } from 'react-icons/fa';
 import PhotoGallery from './PhotoGallery';
-import ImageUploaderModal from '../../modals/ImageUploaderModal';
+import EnhancedImageUploaderModal from '../../modals/EnhancedImageUploaderModal';
 import { CountriesContext } from '../../../context/CountriesContext';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../../context/AuthContext';
@@ -188,7 +188,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
 
 
 
-  // ImageUploaderModal state
+  // EnhancedImageUploaderModal state
   const {
     isOpen: isImageUploaderOpen,
     onOpen: onImageUploaderOpen,
@@ -914,12 +914,11 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
         }}
       />
 
-      {/* Image Upload Modal */}
-      <ImageUploaderModal
+      {/* Enhanced Image Upload Modal */}
+      <EnhancedImageUploaderModal
         countryId={countryId}
         onUploadSuccess={handleUploadSuccess}
         isOpen={isImageUploaderOpen}
-        onOpen={onImageUploaderOpen}
         onClose={onImageUploaderClose}
       />
 

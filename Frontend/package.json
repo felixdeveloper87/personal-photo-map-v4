@@ -23,6 +23,7 @@
     "browser-image-compression": "^2.0.2",
     "chakra-react-select": "^4.10.1",
     "compress.js": "^2.1.2",
+    "exif": "^0.6.0",
     "exif-js": "^2.3.0",
     "flag-icons": "^7.2.3",
     "framer-motion": "^11.18.2",

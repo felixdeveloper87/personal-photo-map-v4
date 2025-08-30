@@ -1,6 +1,6 @@
 import { Box, Card, CardBody, Text, Flex, VStack, HStack, Button, Icon, useDisclosure, useColorModeValue, Badge, Divider, Tooltip, useToast } from '@chakra-ui/react';
 import { FaCloudUploadAlt, FaGlobe, FaMapMarkerAlt, FaShare } from 'react-icons/fa';
-import ImageUploaderModal from '../../modals/ImageUploaderModal';
+import EnhancedImageUploaderModal from '../../modals/EnhancedImageUploaderModal';
 
 const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, onUploadSuccess }) => {
   const { isOpen: isImageUploaderOpen, onOpen: onImageUploaderOpen, onClose: onImageUploaderClose } = useDisclosure();
@@ -129,11 +129,10 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
           </VStack>
         </CardBody>
         
-        <ImageUploaderModal
+        <EnhancedImageUploaderModal
           countryId={countryId}
           onUploadSuccess={onUploadSuccess}
           isOpen={isImageUploaderOpen}
-          onOpen={onImageUploaderOpen}
           onClose={onImageUploaderClose}
         />
       </Card>
