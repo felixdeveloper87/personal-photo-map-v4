@@ -51,6 +51,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
    // Function to get authentication headers
   const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
+    // Para FormData, NÃO incluir Content-Type - o browser define automaticamente
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
@@ -211,6 +212,10 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
          throw new Error('Token not found. Please login again.');
        }
        
+       // Log para debug
+       console.log('Upload URL:', uploadUrl);
+       console.log('Token exists:', !!token);
+       
        // Verify URL is correct
        if (!uploadUrl.includes('/api/')) {
          throw new Error('Invalid upload URL');
@@ -243,6 +248,13 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
         onClose();
              } else {
          const errorText = await response.text();
+         console.error('Upload failed:', response.status, errorText);
+         
+         // Tratamento específico para erro 403
+         if (response.status === 403) {
+           throw new Error('Access denied. Please check if you are logged in and try again.');
+         }
+         
          throw new Error(`Upload failed: ${response.status} - ${errorText}`);
        }
     } catch (error) {
