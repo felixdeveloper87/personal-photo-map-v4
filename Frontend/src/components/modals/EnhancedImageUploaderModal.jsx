@@ -39,14 +39,14 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
   const toast = useToast();
   const { refreshCountriesWithPhotos } = useContext(CountriesContext);
 
-     // States for detailed mode
+        // Generate available years (last 30 years)
+   const currentYear = new Date().getFullYear();
+   const availableYears = Array.from({ length: 30 }, (_, i) => currentYear - i);
+
+   // States for detailed mode
    const [selectedYear, setSelectedYear] = useState(currentYear);
    const [selectedCountry, setSelectedCountry] = useState('');
    const [customDescription, setCustomDescription] = useState('');
-
-   // Generate available years (last 30 years)
-   const currentYear = new Date().getFullYear();
-   const availableYears = Array.from({ length: 30 }, (_, i) => currentYear - i);
 
    // Function to get authentication headers
   const getAuthHeaders = () => {
