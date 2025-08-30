@@ -44,7 +44,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
    const availableYears = Array.from({ length: 30 }, (_, i) => currentYear - i);
 
    // States for detailed mode
-   const [selectedYear, setSelectedYear] = useState(currentYear);
+   const [selectedYear, setSelectedYear] = useState(null); // Changed from currentYear to null
    const [selectedCountry, setSelectedCountry] = useState('');
    const [customDescription, setCustomDescription] = useState('');
 
@@ -168,8 +168,8 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
                // Add year (required for backend)
         let yearToUse = null;
         
-        // 1. Priority: year manually selected by user
-        if (selectedYear) {
+        // 1. Priority: year manually selected by user (only if explicitly set)
+        if (selectedYear !== null && selectedYear !== undefined) {
           yearToUse = selectedYear;
         }
         // 2. Priority: year automatically detected via EXIF
@@ -271,7 +271,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
                  // Clear state
          setSelectedFiles([]);
          setPhotoMetadata({});
-         setSelectedYear(currentYear);
+         setSelectedYear(null); // Changed from currentYear to null
          setSelectedCountry('');
          setCustomDescription('');
         onClose();
@@ -458,10 +458,11 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
                          Photo Year (if different from detected):
                        </Text>
                        <Select
-                         value={selectedYear}
-                         onChange={(e) => setSelectedYear(e.target.value)}
+                         value={selectedYear || ''}
+                         onChange={(e) => setSelectedYear(e.target.value ? parseInt(e.target.value) : null)}
                          placeholder="Keep automatically detected year"
                        >
+                         <option value="">Keep automatically detected year</option>
                          {availableYears.map(year => (
                            <option key={year} value={year}>
                              {year}
@@ -519,11 +520,33 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
                <Icon as={FaCalendar} color="green.500" />
                <Text fontSize="sm" color="green.700" _dark={{ color: 'green.200' }}>
                  <strong>Year for upload:</strong> {
-                   selectedYear || 
-                   (selectedFiles.length > 0 && photoMetadata[selectedFiles[0].name]?.year) || 
-                   new Date().getFullYear()
+                   (() => {
+                     // Same logic as in handleUpload
+                     if (selectedYear !== null && selectedYear !== undefined) {
+                       return selectedYear + ' (manually selected)';
+                     } else if (selectedFiles.length > 0) {
+                       const years = selectedFiles
+                         .map(file => photoMetadata[file.name]?.year)
+                         .filter(year => year != null);
+                       
+                       if (years.length > 0) {
+                         const yearCounts = years.reduce((acc, year) => {
+                           acc[year] = (acc[year] || 0) + 1;
+                           return acc;
+                         }, {});
+                         
+                         const mostCommonYear = Object.entries(yearCounts)
+                           .sort(([,a], [,b]) => b - a)[0][0];
+                         
+                         return parseInt(mostCommonYear) + ' (automatically detected via EXIF)';
+                       } else {
+                         return new Date().getFullYear() + ' (current year - no EXIF data)';
+                       }
+                     } else {
+                       return new Date().getFullYear() + ' (current year)';
+                     }
+                   })()
                  }
-                 {selectedYear ? ' (manually selected)' : ' (automatically detected via EXIF)'}
                </Text>
              </HStack>
            </Box>
