@@ -14,6 +14,7 @@ import {
   HStack,
   IconButton,
   Checkbox,
+  useBreakpointValue,
 } from '@chakra-ui/react';
 import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
 import countries from 'i18n-iso-countries';
@@ -69,145 +70,97 @@ const PhotoGallery = memo(function PhotoGallery({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
 
+  // Responsive breakpoints
+  const isMobile = useBreakpointValue({ base: true, sm: false, md: false, lg: false, xl: false });
+  const isSmallMobile = useBreakpointValue({ base: true, sm: false, md: false, lg: false, xl: false });
+
   // Colors
   const bgColor = useColorModeValue('gray.50', 'gray.900');
   const textColor = useColorModeValue('gray.800', 'white');
-  const borderColor = useColorModeValue('gray.100', 'gray.700');
-  const selectionColor = useColorModeValue('blue.500', 'blue.400');
-  const overlayBg = useColorModeValue('blackAlpha.600', 'blackAlpha.700');
+  const selectionColor = useColorModeValue('blue.500', 'blue.300');
 
-  // Normalize selected IDs to ensure consistent ccomparison - use useMemo to prevent unnecessary recalculations
-  const normalizedSelectedIds = useMemo(() => 
-    selectedImageIds.map(id => String(id)), 
-    [selectedImageIds]
-  );
-
-  // Check if an image is selected
-  const isImageSelected = (imageId) => {
-    return normalizedSelectedIds.includes(String(imageId));
+  // Responsive grid configuration
+  const gridConfig = {
+    columns: {
+      base: 2,      // 2 colunas no mobile muito pequeno
+      sm: 3,        // 3 colunas no mobile pequeno
+      md: 3,        // 3 colunas no tablet
+      lg: 4,        // 4 colunas no desktop
+      xl: 5         // 5 colunas no desktop grande
+    },
+    spacing: {
+      base: 2,      // Espaçamento menor no mobile
+      sm: 3,        // Espaçamento padrão
+      md: 3,
+      lg: 4,
+      xl: 4
+    },
+    imageSize: {
+      base: '120px',    // Tamanho menor no mobile
+      sm: '140px',      // Tamanho médio
+      md: '160px',      // Tamanho padrão
+      lg: '180px',      // Tamanho desktop
+      xl: '200px'       // Tamanho grande
+    }
   };
 
   // Toggle selection mode
   const toggleSelectionMode = () => {
-    const newSelectionMode = !isSelectionMode;
-    setIsSelectionMode(newSelectionMode);
-    
-    if (newSelectionMode) {
-      // Apple-like behavior: automatically select first few images when entering selection mode
-      if (images.length > 0 && setSelectedImageIds) {
-        const initialSelection = images.slice(0, Math.min(3, images.length)).map(img => img.id);
-        setSelectedImageIds(initialSelection);
-      }
-    } else {
-      // Clear selection when exiting
-      if (setSelectedImageIds) {
-        setSelectedImageIds([]);
-      }
+    setIsSelectionMode(!isSelectionMode);
+    if (isSelectionMode) {
+      setSelectedImageIds([]);
     }
+  };
+
+  // Check if image is selected
+  const isImageSelected = (imageId) => {
+    return selectedImageIds.includes(imageId);
   };
 
   // Handle image selection
   const handleImageSelection = (imageId, event) => {
-    event?.stopPropagation?.();
-    
-    if (!setSelectedImageIds) return;
-    
-    const stringId = String(imageId);
-    
-    // Check if Shift key is pressed for range selection
-    if (event?.shiftKey && selectedImageIds.length > 0) {
-      const currentIndex = images.findIndex(img => img.id === imageId);
-      const lastSelectedIndex = images.findIndex(img => img.id === selectedImageIds[selectedImageIds.length - 1]);
-      
-      if (currentIndex !== -1 && lastSelectedIndex !== -1) {
-        const start = Math.min(currentIndex, lastSelectedIndex);
-        const end = Math.max(currentIndex, lastSelectedIndex);
-        const rangeIds = images.slice(start, end + 1).map(img => img.id);
-        
-        // Merge with existing selection, avoiding duplicates
-        const newSelection = [...new Set([...selectedImageIds, ...rangeIds])];
-        setSelectedImageIds(newSelection);
-        return;
-      }
-    }
-    
-    if (normalizedSelectedIds.includes(stringId)) {
-      // Remove from selection - filter out the clicked image
-      const newSelection = selectedImageIds.filter(id => String(id) !== stringId);
-      setSelectedImageIds(newSelection);
+    if (event?.target?.checked) {
+      setSelectedImageIds([...selectedImageIds, imageId]);
     } else {
-      // Add to selection - add the original imageId (not stringId)
-      const newSelection = [...selectedImageIds, imageId];
-      setSelectedImageIds(newSelection);
+      setSelectedImageIds(selectedImageIds.filter(id => id !== imageId));
     }
   };
 
-  // Select all images
-  const selectAllImages = () => {
-    if (!setSelectedImageIds) return;
-    const allIds = images.map(img => img.id);
-    setSelectedImageIds(allIds);
-  };
-
-  // Clear all selections
-  const clearAllSelections = () => {
-    if (!setSelectedImageIds) return;
-    setSelectedImageIds([]);
-  };
-
-  // Open modal on image click (only if not in selection mode)
+  // Handle image click
   const handleImageClick = (index, event) => {
-    
     if (isSelectionMode) {
-      // In selection mode, don't do anything when clicking the image
-      // Users should use the checkbox for selection
-      return;
+      // In selection mode, toggle selection instead of opening modal
+      const imageId = images[index].id;
+      if (isImageSelected(imageId)) {
+        setSelectedImageIds(selectedImageIds.filter(id => id !== imageId));
+      } else {
+        setSelectedImageIds([...selectedImageIds, imageId]);
+      }
     } else {
+      // Normal mode - open modal
       setCurrentImageIndex(index);
       onOpen();
     }
   };
 
-  const closeModal = () => onClose();
-
-  const showNextImage = (e, nextIndex) => {
-    e?.stopPropagation?.();
-    if (!images?.length) return;
-    const targetIndex = nextIndex !== undefined ? nextIndex : (currentImageIndex + 1) % images.length;
-    setCurrentImageIndex(targetIndex);
+  // Modal functions
+  const closeModal = () => {
+    onClose();
   };
 
-  const showPrevImage = (e, prevIndex) => {
-    e?.stopPropagation?.();
-    if (!images?.length) return;
-    const targetIndex = prevIndex !== undefined ? prevIndex : (currentImageIndex - 1 + images.length) % images.length;
-    setCurrentImageIndex(targetIndex);
+  const showNextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
   };
 
-  // Keyboard navigation for modal
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (event) => {
-      if (event.key === 'ArrowRight') showNextImage(event);
-      else if (event.key === 'ArrowLeft') showPrevImage(event);
-      else if (event.key === 'Escape') closeModal();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, currentImageIndex, images?.length]);
-
-  const handleDeleteSelected = () => {
-    if (onDeleteSelectedImages && selectedImageIds.length > 0) {
-      onDeleteSelectedImages(selectedImageIds);
-    }
-    clearAllSelections();
+  const showPrevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
   const toggleFullScreen = () => {
-    if (!document.fullscreenElement && fullscreenRef.current) {
-      fullscreenRef.current.requestFullscreen();
-    } else if (document.exitFullscreen) {
-      document.exitFullscreen();
+    if (!document.fullscreenElement) {
+      fullscreenRef.current?.requestFullscreen?.();
+    } else {
+      document.exitFullscreen?.();
     }
   };
 
@@ -300,96 +253,46 @@ const PhotoGallery = memo(function PhotoGallery({
             </Button>
             
             {isSelectionMode && (
-              <>
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
-                  onClick={selectAllImages}
-                  borderRadius="full"
-                  px={4}
-                  transition="all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
-                  _hover={{
-                    bg: 'blue.50',
-                    transform: 'translateY(-1px)',
-                  }}
-                >
-                  Select All
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
-                  onClick={clearAllSelections}
-                  borderRadius="full"
-                  px={4}
-                  transition="all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
-                  _hover={{
-                    bg: 'red.50',
-                    transform: 'translateY(-1px)',
-                  }}
-                >
-                  Clear All
-                </Button>
-                <Text 
-                  fontSize="xs" 
-                  color="gray.500" 
-                  fontStyle="italic"
-                  px={3}
-                  py={2}
-                  bg="gray.50"
-                  borderRadius="full"
-                >
-                  💡 Shift+Click para seleção em lote
+              <HStack spacing={2}>
+                <Text fontSize="sm" color="gray.600">
+                  {selectedImageIds.length} selected
                 </Text>
-              </>
+                
+                <DeleteButton
+                  onDelete={() => onDeleteSelectedImages(selectedImageIds)}
+                  isDisabled={selectedImageIds.length === 0}
+                  size="sm"
+                  colorScheme="red"
+                  variant="outline"
+                  borderRadius="full"
+                  px={4}
+                  leftIcon={<CloseIcon />}
+                  _hover={{
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+                  }}
+                  _active={{
+                    transform: 'translateY(0)',
+                  }}
+                  transition="all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
+                >
+                  Delete Selected
+                </DeleteButton>
+              </HStack>
             )}
           </HStack>
-
-          {selectedImageIds.length > 0 && (
-            <HStack spacing={3}>
-              <Badge 
-                colorScheme="blue" 
-                variant="solid" 
-                borderRadius="full" 
-                px={4} 
-                py={2}
-                fontSize="sm"
-                fontWeight="semibold"
-                boxShadow="0 2px 8px rgba(59, 130, 246, 0.3)"
-              >
-                {selectedImageIds.length}
-              </Badge>
-              <Text fontWeight="medium" color={textColor}>
-                {selectedImageIds.length === 1 ? 'Photo' : 'Photos'} Selected
-              </Text>
-              <DeleteButton
-                size="sm"
-                borderRadius="full"
-                colorScheme="red"
-                onClick={handleDeleteSelected}
-                leftIcon={<CloseIcon />}
-                px={6}
-                transition="all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
-                _hover={{
-                  transform: 'translateY(-1px)',
-                  boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)',
-                }}
-                _active={{
-                  transform: 'translateY(0)',
-                }}
-              >
-                Delete Selected
-              </DeleteButton>
-            </HStack>
-          )}
         </Flex>
       </Box>
 
-      {/* Grid */}
+      {/* Responsive Grid */}
       <Box maxW="1400px" mx="auto" px={6}>
         <SimpleGrid
-          columns={{ base: 1, sm: 2, md: 3, lg: 4, xl: 5 }}
-          spacing={3}
-          sx={{ columnGap: '12px', rowGap: '12px' }}
+          columns={gridConfig.columns}
+          spacing={gridConfig.spacing}
+          sx={{ 
+            columnGap: isMobile ? '8px' : '12px', 
+            rowGap: isMobile ? '8px' : '12px' 
+          }}
         >
           {images.map((image, index) => {
             const isSelected = isImageSelected(image.id);
@@ -405,7 +308,7 @@ const PhotoGallery = memo(function PhotoGallery({
                 layout
                 style={{ 
                   breakInside: 'avoid', 
-                  marginBottom: '12px',
+                  marginBottom: isMobile ? '8px' : '12px',
                   transformOrigin: 'center center'
                 }}
                 transition={{
@@ -415,7 +318,7 @@ const PhotoGallery = memo(function PhotoGallery({
               >
                 <Box
                   position="relative"
-                  borderRadius="12px"
+                  borderRadius={isMobile ? "8px" : "12px"}
                   overflow="hidden"
                   bg="white"
                   boxShadow={isSelected ? `0 0 0 3px ${selectionColor}, 0 4px 20px rgba(59, 130, 246, 0.3)` : '0 2px 8px rgba(0, 0, 0, 0.08)'}
@@ -456,12 +359,12 @@ const PhotoGallery = memo(function PhotoGallery({
                            transition="all 0.2s ease"
                          >
                            <Checkbox
-                             size="lg"
+                             size={isMobile ? "md" : "lg"}
                              colorScheme="blue"
                              isChecked={isSelected}
                              bg="white"
                              borderRadius="full"
-                             p={3}
+                             p={isMobile ? 2 : 3}
                              boxShadow="0 4px 20px rgba(0, 0, 0, 0.15)"
                              border="2px solid"
                              borderColor={isSelected ? 'blue.500' : 'gray.300'}
@@ -483,7 +386,7 @@ const PhotoGallery = memo(function PhotoGallery({
                    </AnimatePresence>
 
                   {/* Image */}
-                  <Box position="relative" overflow="hidden" borderRadius="12px">
+                  <Box position="relative" overflow="hidden" borderRadius={isMobile ? "8px" : "12px"}>
                     <Image
                       src={image.url}
                       alt={`Photo from ${
@@ -496,7 +399,7 @@ const PhotoGallery = memo(function PhotoGallery({
                       fallbackSrc="https://via.placeholder.com/300x300?text=Photo"
                       sx={{ 
                         aspectRatio: '1/1', 
-                        minHeight: '200px', 
+                        minHeight: isMobile ? '120px' : '200px',
                         transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                         filter: isSelected ? 'brightness(0.95) contrast(1.05)' : 'none',
                       }}
@@ -508,23 +411,32 @@ const PhotoGallery = memo(function PhotoGallery({
                     />
                   </Box>
 
-                  {/* Country / year footer */}
+                  {/* Country / year footer - Responsive */}
                   <Box 
                     position="absolute" 
                     bottom="0" 
                     left="0" 
                     right="0" 
                     bg="linear-gradient(transparent, rgba(0, 0, 0, 0.7))" 
-                    p={3} 
+                    p={isMobile ? 2 : 3} 
                     color="white"
                   >
-                    <VStack spacing={1} align="start">
-                      <Text fontSize="sm" fontWeight="semibold" lineHeight="1.2">
+                    <VStack spacing={isMobile ? 0.5 : 1} align="start">
+                      <Text 
+                        fontSize={isMobile ? "xs" : "sm"} 
+                        fontWeight="semibold" 
+                        lineHeight="1.2"
+                        noOfLines={1}
+                      >
                         {countries.getName(image.countryId?.toUpperCase(), 'en') ||
                           image.countryId?.toUpperCase()}
                       </Text>
                       {image.year && (
-                        <Text fontSize="xs" opacity={0.9}>
+                        <Text 
+                          fontSize={isMobile ? "2xs" : "xs"} 
+                          opacity={0.9}
+                          noOfLines={1}
+                        >
                           {image.year}
                         </Text>
                       )}
