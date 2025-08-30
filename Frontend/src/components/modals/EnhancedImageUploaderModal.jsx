@@ -152,148 +152,159 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
     }
   };
 
-  const handleUpload = async () => {
+    const handleUpload = async () => {
     if (selectedFiles.length === 0) return;
 
     setIsLoading(true);
     
     try {
-      const formData = new FormData();
+      // Check if we have photos from different years
+      const years = selectedFiles
+        .map(file => photoMetadata[file.name]?.year)
+        .filter(year => year != null);
       
-             // Add all photos
-       selectedFiles.forEach(file => {
-         formData.append('images', file);
-       });
-
-               // Add year (required for backend)
-        let yearToUse = null;
-        
-        // 1. Priority: year manually selected by user (only if explicitly set)
-        if (selectedYear !== null && selectedYear !== undefined) {
-          yearToUse = selectedYear;
-        }
-        // 2. Priority: year automatically detected via EXIF
-        else if (selectedFiles.length > 0) {
-          // If there are multiple photos, use the most common year or the first available
-          const years = selectedFiles
-            .map(file => photoMetadata[file.name]?.year)
-            .filter(year => year != null);
-          
-          if (years.length > 0) {
-            // Use the most frequent year, or the first if all are different
-            const yearCounts = years.reduce((acc, year) => {
-              acc[year] = (acc[year] || 0) + 1;
-              return acc;
-            }, {});
-            
-            const mostCommonYear = Object.entries(yearCounts)
-              .sort(([,a], [,b]) => b - a)[0][0];
-            
-            yearToUse = parseInt(mostCommonYear);
-          } else {
-            yearToUse = new Date().getFullYear();
-          }
-        }
-        // 3. Fallback: current year (only if we can't detect anything)
-        else {
-          yearToUse = new Date().getFullYear();
-        }
-        
-        formData.append('year', yearToUse);
-        
-        // Add countryId (required for backend)
-        if (countryId) {
-          formData.append('countryId', countryId);
-        } else {
-          // Fallback: try to detect country from GPS or use a default
-          const hasGPS = selectedFiles.some(file => photoMetadata[file.name]?.hasGPS);
-          if (hasGPS) {
-            // TODO: Implement GPS to country detection
-            formData.append('countryId', 'us'); // Default fallback
-          } else {
-            throw new Error('Country ID is required for upload. Please select a country or enable GPS detection.');
-          }
-        }
-
-             // If detailed mode, add additional attributes
-       if (uploadMode === 'detailed') {
-         // Only year is now handled separately, no additional attributes needed
-       }
-
-               // Upload photos
-        const token = localStorage.getItem('token');
-        const uploadUrl = buildApiUrl('/api/images/upload');
-        
-        // Verify token and URL
-        if (!token) {
-          throw new Error('Token not found. Please login again.');
-        }
-        
-        // Verificar se o token não está vazio ou malformado
-        if (token.trim() === '' || token === 'null' || token === 'undefined') {
-          throw new Error('Invalid token. Please login again.');
-        }
-       
-               // Log para debug
-        console.log('Upload URL:', uploadUrl);
-        console.log('Token exists:', !!token);
-        console.log('Token value:', token ? `${token.substring(0, 20)}...` : 'null');
-        console.log('Headers being sent:', getAuthHeaders());
-        console.log('FormData contents:');
-        for (let [key, value] of formData.entries()) {
-          console.log(`  ${key}:`, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
-        }
-        
-        // Verify URL is correct
-        if (!uploadUrl.includes('/api/')) {
-          throw new Error('Invalid upload URL');
-        }
-        
-        const response = await fetch(uploadUrl, {
-          method: 'POST',
-          headers: getAuthHeaders(),
-          body: formData
-        });
+      const uniqueYears = [...new Set(years)];
+      const hasMultipleYears = uniqueYears.length > 1;
       
-      if (response.ok) {
-        await refreshCountriesWithPhotos();
-        onUploadSuccess?.();
-        
-                 toast({
-           title: "Upload Complete!",
-           description: `${selectedFiles.length} photo(s) uploaded successfully`,
-           status: "success",
-           duration: 3000,
-           isClosable: true,
-         });
+      // If user manually selected a year, use that for all photos
+      if (selectedYear !== null && selectedYear !== undefined) {
+        await uploadPhotosWithYear(selectedFiles, selectedYear);
+      }
+      // If photos are from different years, handle each year separately
+      else if (hasMultipleYears) {
+        await handleMultipleYearUpload(selectedFiles);
+      }
+      // Single year detected, upload normally
+      else {
+        const yearToUse = years.length > 0 ? years[0] : new Date().getFullYear();
+        await uploadPhotosWithYear(selectedFiles, yearToUse);
+      }
 
-                 // Clear state
-         setSelectedFiles([]);
-         setPhotoMetadata({});
-         setSelectedYear(null); // Changed from currentYear to null
-         onClose();
-             } else {
-         const errorText = await response.text();
-         console.error('Upload failed:', response.status, errorText);
-         
-         // Tratamento específico para erro 403
-         if (response.status === 403) {
-           throw new Error('Access denied. Please check if you are logged in and try again.');
-         }
-         
-         throw new Error(`Upload failed: ${response.status} - ${errorText}`);
-       }
+      await refreshCountriesWithPhotos();
+      onUploadSuccess?.();
+      
+      toast({
+        title: "Upload Complete!",
+        description: `${selectedFiles.length} photo(s) uploaded successfully`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+
+      // Clear state
+      setSelectedFiles([]);
+      setPhotoMetadata({});
+      setSelectedYear(null);
+      onClose();
+      
     } catch (error) {
-             toast({
-         title: "Upload Error",
-         description: "Try again",
-         status: "error",
-         duration: 3000,
-         isClosable: true,
-       });
+      toast({
+        title: "Upload Error",
+        description: error.message || "Try again",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Helper function to upload photos with a specific year
+  const uploadPhotosWithYear = async (files, year) => {
+    const formData = new FormData();
+    
+    // Add all photos
+    files.forEach(file => {
+      formData.append('images', file);
+    });
+    
+    // Add year and countryId
+    formData.append('year', year);
+    
+    if (countryId) {
+      formData.append('countryId', countryId);
+    } else {
+      // Fallback: try to detect country from GPS or use a default
+      const hasGPS = files.some(file => photoMetadata[file.name]?.hasGPS);
+      if (hasGPS) {
+        // TODO: Implement GPS to country detection
+        formData.append('countryId', 'us'); // Default fallback
+      } else {
+        throw new Error('Country ID is required for upload. Please select a country or enable GPS detection.');
+      }
+    }
+
+    // Upload photos
+    const token = localStorage.getItem('token');
+    const uploadUrl = buildApiUrl('/api/images/upload');
+    
+    // Verify token and URL
+    if (!token) {
+      throw new Error('Token not found. Please login again.');
+    }
+    
+    if (token.trim() === '' || token === 'null' || token === 'undefined') {
+      throw new Error('Invalid token. Please login again.');
+    }
+   
+    // Log para debug
+    console.log('Upload URL:', uploadUrl);
+    console.log('Token exists:', !!token);
+    console.log('Token value:', token ? `${token.substring(0, 20)}...` : 'null');
+    console.log('Headers being sent:', getAuthHeaders());
+    console.log('FormData contents:');
+    for (let [key, value] of formData.entries()) {
+      console.log(`  ${key}:`, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
+    }
+    
+    // Verify URL is correct
+    if (!uploadUrl.includes('/api/')) {
+      throw new Error('Invalid upload URL');
+    }
+    
+    const response = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Upload failed:', response.status, errorText);
+      
+      // Tratamento específico para erro 403
+      if (response.status === 403) {
+        throw new Error('Access denied. Please check if you are logged in and try again.');
+      }
+      
+      throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+    }
+  };
+
+  // Helper function to handle uploads for multiple years
+  const handleMultipleYearUpload = async (files) => {
+    // Group files by year
+    const filesByYear = {};
+    
+    files.forEach(file => {
+      const year = photoMetadata[file.name]?.year || new Date().getFullYear();
+      if (!filesByYear[year]) {
+        filesByYear[year] = [];
+      }
+      filesByYear[year].push(file);
+    });
+
+    // Upload each year group separately
+    const uploadPromises = Object.entries(filesByYear).map(async ([year, yearFiles]) => {
+      console.log(`📅 Uploading ${yearFiles.length} photo(s) from year ${year}`);
+      await uploadPhotosWithYear(yearFiles, parseInt(year));
+    });
+
+    // Wait for all uploads to complete
+    await Promise.all(uploadPromises);
+    
+    console.log(`✅ All ${Object.keys(filesByYear).length} year groups uploaded successfully`);
   };
 
      const getUploadButtonText = () => {
@@ -559,34 +570,52 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
                <Text fontSize="sm" color="green.700" _dark={{ color: 'green.200' }}>
                  <strong>Year for upload:</strong> {
                    (() => {
-                     // Same logic as in handleUpload
+                     // Check if we have photos from different years
+                     const years = selectedFiles
+                       .map(file => photoMetadata[file.name]?.year)
+                       .filter(year => year != null);
+                     
+                     const uniqueYears = [...new Set(years)];
+                     const hasMultipleYears = uniqueYears.length > 1;
+                     
+                     // If user manually selected a year, use that for all photos
                      if (selectedYear !== null && selectedYear !== undefined) {
-                       return selectedYear + ' (manually selected)';
-                     } else if (selectedFiles.length > 0) {
-                       const years = selectedFiles
-                         .map(file => photoMetadata[file.name]?.year)
-                         .filter(year => year != null);
-                       
-                       if (years.length > 0) {
-                         const yearCounts = years.reduce((acc, year) => {
-                           acc[year] = (acc[year] || 0) + 1;
-                           return acc;
-                         }, {});
-                         
-                         const mostCommonYear = Object.entries(yearCounts)
-                           .sort(([,a], [,b]) => b - a)[0][0];
-                         
-                         return parseInt(mostCommonYear) + ' (automatically detected via EXIF)';
-                       } else {
-                         return new Date().getFullYear() + ' (current year - no EXIF data)';
-                       }
+                       return selectedYear + ' (manually selected for all photos)';
+                     }
+                     // If photos are from different years, explain the strategy
+                     else if (hasMultipleYears) {
+                       const yearList = uniqueYears.sort((a, b) => b - a).join(', ');
+                       return `${yearList} (photos will be grouped by year automatically)`;
+                     }
+                     // Single year detected
+                     else if (years.length > 0) {
+                       return years[0] + ' (automatically detected via EXIF)';
                      } else {
-                       return new Date().getFullYear() + ' (current year)';
+                       return new Date().getFullYear() + ' (current year - no EXIF data)';
                      }
                    })()
                  }
                </Text>
              </HStack>
+             
+             {/* Additional info for multiple years */}
+             {(() => {
+               const years = selectedFiles
+                 .map(file => photoMetadata[file.name]?.year)
+                 .filter(year => year != null);
+               
+               const uniqueYears = [...new Set(years)];
+               const hasMultipleYears = uniqueYears.length > 1;
+               
+               if (hasMultipleYears && selectedYear === null) {
+                 return (
+                   <Text fontSize="xs" color="green.600" _dark={{ color: 'green.300' }} mt={2} textAlign="center">
+                     💡 Each photo will be saved with its correct year automatically
+                   </Text>
+                 );
+               }
+               return null;
+             })()}
            </Box>
          )}
 
