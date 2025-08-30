@@ -52,7 +52,11 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
   const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
     // Para FormData, NÃO incluir Content-Type - o browser define automaticamente
-    return token ? { Authorization: `Bearer ${token}` } : {};
+    if (!token || token.trim() === '' || token === 'null' || token === 'undefined') {
+      console.warn('Invalid token in getAuthHeaders');
+      return {};
+    }
+    return { Authorization: `Bearer ${token}` };
   };
 
   const extractPhotoMetadata = async (file) => {
@@ -203,29 +207,40 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
          if (customDescription) formData.append('description', customDescription);
        }
 
-       // Upload photos
-       const token = localStorage.getItem('token');
-       const uploadUrl = buildApiUrl('/api/images/upload');
+               // Upload photos
+        const token = localStorage.getItem('token');
+        const uploadUrl = buildApiUrl('/api/images/upload');
+        
+        // Verify token and URL
+        if (!token) {
+          throw new Error('Token not found. Please login again.');
+        }
+        
+        // Verificar se o token não está vazio ou malformado
+        if (token.trim() === '' || token === 'null' || token === 'undefined') {
+          throw new Error('Invalid token. Please login again.');
+        }
        
-       // Verify token and URL
-       if (!token) {
-         throw new Error('Token not found. Please login again.');
-       }
-       
-       // Log para debug
-       console.log('Upload URL:', uploadUrl);
-       console.log('Token exists:', !!token);
-       
-       // Verify URL is correct
-       if (!uploadUrl.includes('/api/')) {
-         throw new Error('Invalid upload URL');
-       }
-       
-       const response = await fetch(uploadUrl, {
-         method: 'POST',
-         headers: getAuthHeaders(),
-         body: formData
-       });
+               // Log para debug
+        console.log('Upload URL:', uploadUrl);
+        console.log('Token exists:', !!token);
+        console.log('Token value:', token ? `${token.substring(0, 20)}...` : 'null');
+        console.log('Headers being sent:', getAuthHeaders());
+        console.log('FormData contents:');
+        for (let [key, value] of formData.entries()) {
+          console.log(`  ${key}:`, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
+        }
+        
+        // Verify URL is correct
+        if (!uploadUrl.includes('/api/')) {
+          throw new Error('Invalid upload URL');
+        }
+        
+        const response = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: formData
+        });
       
       if (response.ok) {
         await refreshCountriesWithPhotos();
