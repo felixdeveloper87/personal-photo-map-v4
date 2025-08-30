@@ -430,80 +430,108 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
 
                  {/* Detailed Mode - Optional Attributes */}
          {uploadMode === 'detailed' && selectedFiles.length > 0 && (
-           <Collapse in={isAdvancedOpen}>
-             <Box
-               p={4}
-               borderWidth={1}
-               borderRadius="md"
-               bg="gray.50"
-               _dark={{ bg: 'gray.700' }}
-             >
-               <VStack spacing={4} align="stretch">
-                 <HStack justify="space-between">
-                   <Text fontWeight="semibold">
-                     Photo Attributes (Optional)
-                   </Text>
-                   <Icon
-                     as={isAdvancedOpen ? FaChevronUp : FaChevronDown}
-                     cursor="pointer"
-                     onClick={onAdvancedToggle}
-                   />
-                 </HStack>
+           <Box
+             p={4}
+             borderWidth={1}
+             borderRadius="md"
+             bg="blue.50"
+             borderColor="blue.200"
+             _dark={{ bg: 'blue.900', borderColor: 'blue.700' }}
+           >
+             <VStack spacing={4} align="stretch">
+               <HStack justify="space-between">
+                 <Text fontWeight="semibold" color="blue.700" _dark={{ color: 'blue.200' }}>
+                   📝 Edit Photo Attributes
+                 </Text>
+                 <Icon
+                   as={isAdvancedOpen ? FaChevronUp : FaChevronDown}
+                   cursor="pointer"
+                   onClick={onAdvancedToggle}
+                   color="blue.500"
+                 />
+               </HStack>
 
-                 <Collapse in={isAdvancedOpen}>
-                   <VStack spacing={4} align="stretch">
-                     {/* Specific Year */}
-                     <Box>
-                       <Text fontSize="sm" fontWeight="medium" mb={2}>
-                         Photo Year (if different from detected):
-                       </Text>
-                       <Select
-                         value={selectedYear || ''}
-                         onChange={(e) => setSelectedYear(e.target.value ? parseInt(e.target.value) : null)}
-                         placeholder="Keep automatically detected year"
-                       >
-                         <option value="">Keep automatically detected year</option>
-                         {availableYears.map(year => (
-                           <option key={year} value={year}>
-                             {year}
-                           </option>
-                         ))}
-                       </Select>
-                     </Box>
+               <Text fontSize="sm" color="blue.600" _dark={{ color: 'blue.300' }}>
+                 Click the arrow above to expand and edit photo details manually
+               </Text>
 
-                     {/* Country */}
-                     <Box>
-                       <Text fontSize="sm" fontWeight="medium" mb={2}>
-                         Country (if known):
-                       </Text>
-                       <Select
-                         value={selectedCountry}
-                         onChange={(e) => setSelectedCountry(e.target.value)}
-                         placeholder="Detect automatically via GPS"
-                       >
-                         <option value="br">Brazil</option>
-                         <option value="us">United States</option>
-                         <option value="gb">United Kingdom</option>
-                         {/* Add more countries as needed */}
-                       </Select>
-                     </Box>
+               <Collapse in={isAdvancedOpen}>
+                 <VStack spacing={4} align="stretch">
+                   {/* Specific Year */}
+                   <Box>
+                     <Text fontSize="sm" fontWeight="medium" mb={2}>
+                       📅 Photo Year (if different from detected):
+                     </Text>
+                     <Text fontSize="xs" color="gray.600" mb={2}>
+                       Currently detected: {(() => {
+                         if (selectedFiles.length > 0) {
+                           const years = selectedFiles
+                             .map(file => photoMetadata[file.name]?.year)
+                             .filter(year => year != null);
+                           
+                           if (years.length > 0) {
+                             const yearCounts = years.reduce((acc, year) => {
+                               acc[year] = (acc[year] || 0) + 1;
+                               return acc;
+                             }, {});
+                             
+                             const mostCommonYear = Object.entries(yearCounts)
+                               .sort(([,a], [,b]) => b - a)[0][0];
+                             
+                             return `${mostCommonYear} (from EXIF data)`;
+                           }
+                         }
+                         return 'No EXIF data available';
+                       })()}
+                     </Text>
+                     <Select
+                       value={selectedYear || ''}
+                       onChange={(e) => setSelectedYear(e.target.value ? parseInt(e.target.value) : null)}
+                       placeholder="Keep automatically detected year"
+                       bg="white"
+                       _dark={{ bg: 'gray.800' }}
+                     >
+                       <option value="">✅ Keep automatically detected year</option>
+                       {availableYears.map(year => (
+                         <option key={year} value={year}>
+                           {year}
+                         </option>
+                       ))}
+                     </Select>
+                   </Box>
 
-                     {/* Custom Description */}
-                     <Box>
-                       <Text fontSize="sm" fontWeight="medium" mb={2}>
-                         Description (optional):
-                       </Text>
-                       <Input
-                         value={customDescription}
-                         onChange={(e) => setCustomDescription(e.target.value)}
-                         placeholder="Ex: Trip to Paris, Birthday, etc."
-                       />
-                     </Box>
-                   </VStack>
-                 </Collapse>
-               </VStack>
-             </Box>
-           </Collapse>
+                   {/* Country */}
+                   <Box>
+                     <Text fontSize="sm" fontWeight="medium" mb={2}>
+                       Country (if known):
+                     </Text>
+                     <Select
+                       value={selectedCountry}
+                       onChange={(e) => setSelectedCountry(e.target.value)}
+                       placeholder="Detect automatically via GPS"
+                     >
+                       <option value="br">Brazil</option>
+                       <option value="us">United States</option>
+                       <option value="gb">United Kingdom</option>
+                       {/* Add more countries as needed */}
+                     </Select>
+                   </Box>
+
+                   {/* Custom Description */}
+                   <Box>
+                     <Text fontSize="sm" fontWeight="medium" mb={2}>
+                       Description (optional):
+                     </Text>
+                     <Input
+                       value={customDescription}
+                       onChange={(e) => setCustomDescription(e.target.value)}
+                       placeholder="Ex: Trip to Paris, Birthday, etc."
+                     />
+                   </Box>
+                 </VStack>
+               </Collapse>
+             </VStack>
+           </Box>
          )}
 
                  {/* Year Indicator for Upload */}
