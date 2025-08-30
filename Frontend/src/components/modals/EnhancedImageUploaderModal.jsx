@@ -217,8 +217,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
 
              // If detailed mode, add additional attributes
        if (uploadMode === 'detailed') {
-         if (selectedCountry) formData.append('country', selectedCountry);
-         if (customDescription) formData.append('description', customDescription);
+         // Only year is now handled separately, no additional attributes needed
        }
 
                // Upload photos
@@ -272,9 +271,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
          setSelectedFiles([]);
          setPhotoMetadata({});
          setSelectedYear(null); // Changed from currentYear to null
-         setSelectedCountry('');
-         setCustomDescription('');
-        onClose();
+         onClose();
              } else {
          const errorText = await response.text();
          console.error('Upload failed:', response.status, errorText);
@@ -303,7 +300,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
      if (uploadMode === 'simple') {
        return `Upload ${selectedFiles.length} Photo(s)`;
      } else {
-       return `Upload ${selectedFiles.length} Photo(s) with Attributes`;
+       return `Upload ${selectedFiles.length} Photo(s) with Year Selection`;
      }
    };
 
@@ -339,7 +336,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
                onClick={() => setUploadMode('detailed')}
                leftIcon={<FaCalendar />}
              >
-               Upload with Attributes
+               Upload with Year Selection
              </Button>
            </HStack>
          </Box>
@@ -441,7 +438,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
              <VStack spacing={4} align="stretch">
                <HStack justify="space-between">
                  <Text fontWeight="semibold" color="blue.700" _dark={{ color: 'blue.200' }}>
-                   📝 Edit Photo Attributes
+                   📅 Edit Photo Year
                  </Text>
                  <Icon
                    as={isAdvancedOpen ? FaChevronUp : FaChevronDown}
@@ -452,7 +449,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
                </HStack>
 
                <Text fontSize="sm" color="blue.600" _dark={{ color: 'blue.300' }}>
-                 Click the arrow above to expand and edit photo details manually
+                 Click the arrow above to expand and edit the photo year manually
                </Text>
 
                <Collapse in={isAdvancedOpen}>
@@ -492,42 +489,55 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
                        _dark={{ bg: 'gray.800' }}
                      >
                        <option value="">✅ Keep automatically detected year</option>
-                       {availableYears.map(year => (
+                       <option value="" disabled>───────────</option>
+                       <option value="" disabled>📅 Select a specific year:</option>
+                       <option value="" disabled>───────────</option>
+                       {/* Recent years (last 10 years) */}
+                       {availableYears.slice(0, 10).map(year => (
                          <option key={year} value={year}>
                            {year}
                          </option>
                        ))}
+                       <option value="" disabled>───────────</option>
+                       {/* Decades for older photos */}
+                       {[1990, 1980, 1970, 1960, 1950, 1940, 1930, 1920, 1910, 1900].map(year => (
+                         <option key={year} value={year}>
+                           {year}s
+                         </option>
+                       ))}
+                       <option value="" disabled>───────────</option>
+                       {/* Custom year input option */}
+                       <option value="custom">📝 Enter custom year...</option>
                      </Select>
                    </Box>
 
-                   {/* Country */}
-                   <Box>
-                     <Text fontSize="sm" fontWeight="medium" mb={2}>
-                       Country (if known):
-                     </Text>
-                     <Select
-                       value={selectedCountry}
-                       onChange={(e) => setSelectedCountry(e.target.value)}
-                       placeholder="Detect automatically via GPS"
-                     >
-                       <option value="br">Brazil</option>
-                       <option value="us">United States</option>
-                       <option value="gb">United Kingdom</option>
-                       {/* Add more countries as needed */}
-                     </Select>
-                   </Box>
-
-                   {/* Custom Description */}
-                   <Box>
-                     <Text fontSize="sm" fontWeight="medium" mb={2}>
-                       Description (optional):
-                     </Text>
-                     <Input
-                       value={customDescription}
-                       onChange={(e) => setCustomDescription(e.target.value)}
-                       placeholder="Ex: Trip to Paris, Birthday, etc."
-                     />
-                   </Box>
+                                        {/* Custom Year Input (only shown if "custom" is selected) */}
+                     {selectedYear === 'custom' && (
+                       <Box>
+                         <Text fontSize="sm" fontWeight="medium" mb={2}>
+                           Enter the specific year:
+                         </Text>
+                         <Input
+                           type="number"
+                           min="1900"
+                           max={new Date().getFullYear()}
+                           placeholder="e.g., 1995"
+                           onChange={(e) => {
+                             const value = e.target.value;
+                             if (value && value >= 1900 && value <= new Date().getFullYear()) {
+                               setSelectedYear(parseInt(value));
+                             } else if (value === '') {
+                               setSelectedYear('custom');
+                             }
+                           }}
+                           bg="white"
+                           _dark={{ bg: 'gray.800' }}
+                         />
+                         <Text fontSize="xs" color="gray.500" mt={1}>
+                           Enter a year between 1900 and {new Date().getFullYear()}
+                         </Text>
+                       </Box>
+                     )}
                  </VStack>
                </Collapse>
              </VStack>
@@ -606,7 +616,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
              <Text fontSize="sm" color="blue.700" _dark={{ color: 'blue.200' }}>
                <strong>Simple Upload:</strong> Just adds photos to your profile
                <br />
-               <strong>Upload with Attributes:</strong> Allows you to define specific year, country and description
+               <strong>Upload with Year Selection:</strong> Allows you to define a specific year for your photos
              </Text>
            </HStack>
          </Box>
