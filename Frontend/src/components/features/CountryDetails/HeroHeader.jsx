@@ -385,9 +385,33 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
           >
 
             {/* InfoBoxes principais */}
-            <InfoBox icon={FaLanguage} label="Language" value={countryInfo?.officialLanguage} colorScheme="orange" size="mobile" />
-            <InfoBox icon={FaUsers} label="Population" value={countryInfo?.population ? formatPopulation(countryInfo.population) : undefined} colorScheme="green" size="mobile" />
-            <InfoBox icon={FaThermometerHalf} label="Temperature" value={weatherData?.temperature ? `${weatherData.temperature}°C` : undefined} colorScheme="red" size="mobile" />
+            <InfoBox 
+              icon={FaLanguage} 
+              label="Language" 
+              value={countryInfo?.officialLanguage} 
+              colorScheme="orange" 
+              size="mobile" 
+              variant="gradient"
+              tooltip="Official language of the country"
+            />
+            <InfoBox 
+              icon={FaUsers} 
+              label="Population" 
+              value={countryInfo?.population ? formatPopulation(countryInfo.population) : undefined} 
+              colorScheme="green" 
+              size="mobile" 
+              variant="gradient"
+              tooltip="Total population count"
+            />
+            <InfoBox 
+              icon={FaThermometerHalf} 
+              label="Temperature" 
+              value={weatherData?.temperature ? `${weatherData.temperature}°C` : undefined} 
+              colorScheme="red" 
+              size="mobile" 
+              variant="gradient"
+              tooltip="Current temperature in capital"
+            />
 
 
 
@@ -509,34 +533,34 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
       {/* Modal com os demais indicadores */}
       <BaseModal isOpen={isOpen} onClose={onClose} title="More Indicators">
         <Flex wrap="wrap" gap={{ base: 2, md: 3 }}>
-          <InfoBox icon={FaPercent} label="Inflation Rate" value={indicatorsData?.inflationCPI ? `${indicatorsData.inflationCPI.value}%` : undefined} colorScheme="orange" size="mobile" />
-          <InfoBox icon={FaUsers} label="Net Migration" value={indicatorsData?.netMigration ? `${indicatorsData.netMigration.value}` : undefined} colorScheme="cyan" size="mobile" />
-          <InfoBox icon={FaSun} label="Weather" value={weatherData?.description ? weatherData.description : undefined} colorScheme="yellow" size="mobile" />
-          <InfoBox icon={FaCity} label="Capital" value={countryInfo?.capital} colorScheme="purple" size="mobile" />
-          <InfoBox icon={FaDollarSign} label="Exchange Rate" value={exchangeRate ? `1 USD = ${exchangeRate} ${countryInfo?.currencies?.[0] || 'USD'}` : undefined} colorScheme="yellow" size="mobile" />
+          <InfoBox icon={FaPercent} label="Inflation Rate" value={indicatorsData?.inflationCPI ? `${indicatorsData.inflationCPI.value}%` : undefined} colorScheme="orange" size="mobile" variant="glass" />
+          <InfoBox icon={FaUsers} label="Net Migration" value={indicatorsData?.netMigration ? `${indicatorsData.netMigration.value}` : undefined} colorScheme="cyan" size="mobile" variant="glass" />
+          <InfoBox icon={FaSun} label="Weather" value={weatherData?.description ? weatherData.description : undefined} colorScheme="yellow" size="mobile" variant="glass" />
+          <InfoBox icon={FaCity} label="Capital" value={countryInfo?.capital} colorScheme="purple" size="mobile" variant="glass" />
+          <InfoBox icon={FaDollarSign} label="Exchange Rate" value={exchangeRate ? `1 USD = ${exchangeRate} ${countryInfo?.currencies?.[0] || 'USD'}` : undefined} colorScheme="yellow" size="mobile" variant="glass" />
           {indicatorsData?.gdpGrowth && (
-            <InfoBox icon={FaChartLine} label="GDP Growth" value={`${indicatorsData.gdpGrowth.value}%`} colorScheme="green" size="mobile" />
+            <InfoBox icon={FaChartLine} label="GDP Growth" value={`${indicatorsData.gdpGrowth.value}%`} colorScheme="green" size="mobile" variant="glass" />
           )}
           {indicatorsData?.debtToGDP && (
-            <InfoBox icon={FaBalanceScale} label="Public Debt" value={`${indicatorsData.debtToGDP.value}%`} colorScheme="red" size="mobile" />
+            <InfoBox icon={FaBalanceScale} label="Public Debt" value={`${indicatorsData.debtToGDP.value}%`} colorScheme="red" size="mobile" variant="glass" />
           )}
           {indicatorsData?.gdpPerCapitaCurrent && (
-            <InfoBox icon={FaHandHoldingUsd} label="GDP Per Capita" value={`$${indicatorsData.gdpPerCapitaCurrent.value}`} colorScheme="purple" size="mobile" />
+            <InfoBox icon={FaHandHoldingUsd} label="GDP Per Capita" value={`$${indicatorsData.gdpPerCapitaCurrent.value}`} colorScheme="purple" size="mobile" variant="glass" />
           )}
           {indicatorsData?.lifeExpectancy && (
-            <InfoBox icon={FaHeartbeat} label="Life Expectancy" value={indicatorsData.lifeExpectancy.value} colorScheme="pink" size="mobile" />
+            <InfoBox icon={FaHeartbeat} label="Life Expectancy" value={indicatorsData.lifeExpectancy.value} colorScheme="pink" size="mobile" variant="glass" />
           )}
           {indicatorsData?.internetUsers && (
-            <InfoBox icon={FaWifi} label="Internet Users" value={`${indicatorsData.internetUsers.value}%`} colorScheme="blue" size="mobile" />
+            <InfoBox icon={FaWifi} label="Internet Users" value={`${indicatorsData.internetUsers.value}%`} colorScheme="blue" size="mobile" variant="glass" />
           )}
           {indicatorsData?.urbanPopulation && (
-            <InfoBox icon={FaCity} label="Urban Population" value={`${indicatorsData.urbanPopulation.value}%`} colorScheme="green" size="mobile" />
+            <InfoBox icon={FaCity} label="Urban Population" value={`${indicatorsData.urbanPopulation.value}%`} colorScheme="green" size="mobile" variant="glass" />
           )}
           {indicatorsData?.education && (
-            <InfoBox icon={FaBook} label="Literacy Rate" value={`${indicatorsData.education.value}%`} colorScheme="indigo" size="mobile" />
+            <InfoBox icon={FaBook} label="Literacy Rate" value={`${indicatorsData.education.value}%`} colorScheme="indigo" size="mobile" variant="glass" />
           )}
           {getMainReligion(factbookData) && (
-            <InfoBox icon={FaPrayingHands} label="Main Religion" value={getMainReligion(factbookData)} colorScheme="purple" size="mobile" />
+            <InfoBox icon={FaPrayingHands} label="Main Religion" value={getMainReligion(factbookData)} colorScheme="purple" size="mobile" variant="glass" />
           )}
         </Flex>
       </BaseModal>
