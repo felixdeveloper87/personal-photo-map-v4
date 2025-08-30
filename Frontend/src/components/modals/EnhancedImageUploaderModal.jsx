@@ -307,13 +307,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
     console.log(`✅ All ${Object.keys(filesByYear).length} year groups uploaded successfully`);
   };
 
-     const getUploadButtonText = () => {
-     if (uploadMode === 'simple') {
-       return `Upload ${selectedFiles.length} Photo(s)`;
-     } else {
-       return `Upload ${selectedFiles.length} Photo(s) with Year Selection`;
-     }
-   };
+     
 
   return (
     <BaseModal
@@ -324,8 +318,8 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
       size="xl"
     >
       <VStack spacing={6} align="stretch">
-        
-                 {/* Upload Mode Selection */}
+         
+                 {/* Upload Mode Selection - Always visible first */}
          <Box textAlign="center">
            <Text fontSize="lg" fontWeight="bold" mb={3}>
              Choose upload type:
@@ -337,6 +331,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
                colorScheme="blue"
                onClick={() => setUploadMode('simple')}
                leftIcon={<FaCloudUploadAlt />}
+               size="lg"
              >
                Simple Upload
              </Button>
@@ -346,16 +341,28 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
                colorScheme="green"
                onClick={() => setUploadMode('detailed')}
                leftIcon={<FaCalendar />}
+               size="lg"
              >
                Upload with Year Selection
              </Button>
            </HStack>
+           
+           <Text fontSize="sm" color="gray.500" mt={3}>
+             {uploadMode === 'simple' 
+               ? "Photos will be uploaded with automatically detected years"
+               : "You can manually adjust the year for each photo"
+             }
+           </Text>
          </Box>
 
-        <Divider />
+         <Divider />
 
                  {/* File Selection */}
          <Box textAlign="center">
+           <Text fontSize="md" fontWeight="semibold" mb={3}>
+             Select your photos:
+           </Text>
+           
            <input
              type="file"
              accept="image/*"
@@ -374,12 +381,16 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
              leftIcon={<FaCloudUploadAlt />}
              isLoading={isLoading}
              w="full"
+             h="60px"
            >
-             Select Photo(s)
+             {selectedFiles.length === 0 
+               ? "Click to select photos" 
+               : `Selected ${selectedFiles.length} photo(s)`
+             }
            </Button>
            
            <Text fontSize="sm" color="gray.500" mt={2}>
-             You can select multiple photos
+             You can select multiple photos at once
            </Text>
          </Box>
 
@@ -436,7 +447,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
           </Box>
         )}
 
-                 {/* Detailed Mode - Optional Attributes */}
+                 {/* Detailed Mode - Year Selection (only when photos are selected) */}
          {uploadMode === 'detailed' && selectedFiles.length > 0 && (
            <Box
              p={4}
@@ -449,7 +460,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
              <VStack spacing={4} align="stretch">
                <HStack justify="space-between">
                  <Text fontWeight="semibold" color="blue.700" _dark={{ color: 'blue.200' }}>
-                   📅 Edit Photo Year
+                   📅 Adjust Photo Year
                  </Text>
                  <Icon
                    as={isAdvancedOpen ? FaChevronUp : FaChevronDown}
@@ -460,7 +471,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
                </HStack>
 
                <Text fontSize="sm" color="blue.600" _dark={{ color: 'blue.300' }}>
-                 Click the arrow above to expand and edit the photo year manually
+                 Click the arrow above to manually adjust the year for your photos
                </Text>
 
                <Collapse in={isAdvancedOpen}>
@@ -522,33 +533,33 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
                      </Select>
                    </Box>
 
-                                        {/* Custom Year Input (only shown if "custom" is selected) */}
-                     {selectedYear === 'custom' && (
-                       <Box>
-                         <Text fontSize="sm" fontWeight="medium" mb={2}>
-                           Enter the specific year:
-                         </Text>
-                         <Input
-                           type="number"
-                           min="1900"
-                           max={new Date().getFullYear()}
-                           placeholder="e.g., 1995"
-                           onChange={(e) => {
-                             const value = e.target.value;
-                             if (value && value >= 1900 && value <= new Date().getFullYear()) {
-                               setSelectedYear(parseInt(value));
-                             } else if (value === '') {
-                               setSelectedYear('custom');
-                             }
-                           }}
-                           bg="white"
-                           _dark={{ bg: 'gray.800' }}
-                         />
-                         <Text fontSize="xs" color="gray.500" mt={1}>
-                           Enter a year between 1900 and {new Date().getFullYear()}
-                         </Text>
-                       </Box>
-                     )}
+                   {/* Custom Year Input (only shown if "custom" is selected) */}
+                   {selectedYear === 'custom' && (
+                     <Box>
+                       <Text fontSize="sm" fontWeight="medium" mb={2}>
+                         Enter the specific year:
+                       </Text>
+                       <Input
+                         type="number"
+                         min="1900"
+                         max={new Date().getFullYear()}
+                         placeholder="e.g., 1995"
+                         onChange={(e) => {
+                           const value = e.target.value;
+                           if (value && value >= 1900 && value <= new Date().getFullYear()) {
+                             setSelectedYear(parseInt(value));
+                           } else if (value === '') {
+                             setSelectedYear('custom');
+                           }
+                         }}
+                         bg="white"
+                         _dark={{ bg: 'gray.800' }}
+                       />
+                       <Text fontSize="xs" color="gray.500" mt={1}>
+                         Enter a year between 1900 and {new Date().getFullYear()}
+                       </Text>
+                     </Box>
+                   )}
                  </VStack>
                </Collapse>
              </VStack>
@@ -558,96 +569,166 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
                  {/* Year Indicator for Upload */}
          {selectedFiles.length > 0 && (
            <Box
-             p={3}
+             p={4}
              bg="green.50"
              borderRadius="md"
              borderWidth={1}
              borderColor="green.200"
              _dark={{ bg: 'green.900', borderColor: 'green.700' }}
            >
-             <HStack spacing={2} justify="center">
-               <Icon as={FaCalendar} color="green.500" />
-               <Text fontSize="sm" color="green.700" _dark={{ color: 'green.200' }}>
-                 <strong>Year for upload:</strong> {
-                   (() => {
-                     // Check if we have photos from different years
-                     const years = selectedFiles
-                       .map(file => photoMetadata[file.name]?.year)
-                       .filter(year => year != null);
-                     
-                     const uniqueYears = [...new Set(years)];
-                     const hasMultipleYears = uniqueYears.length > 1;
-                     
-                     // If user manually selected a year, use that for all photos
-                     if (selectedYear !== null && selectedYear !== undefined) {
-                       return selectedYear + ' (manually selected for all photos)';
-                     }
-                     // If photos are from different years, explain the strategy
-                     else if (hasMultipleYears) {
-                       const yearList = uniqueYears.sort((a, b) => b - a).join(', ');
-                       return `${yearList} (photos will be grouped by year automatically)`;
-                     }
-                     // Single year detected
-                     else if (years.length > 0) {
-                       return years[0] + ' (automatically detected via EXIF)';
-                     } else {
-                       return new Date().getFullYear() + ' (current year - no EXIF data)';
-                     }
-                   })()
-                 }
-               </Text>
-             </HStack>
-             
-             {/* Additional info for multiple years */}
-             {(() => {
-               const years = selectedFiles
-                 .map(file => photoMetadata[file.name]?.year)
-                 .filter(year => year != null);
+             <VStack spacing={3} align="stretch">
+               <HStack spacing={2} justify="center">
+                 <Icon as={FaCalendar} color="green.500" />
+                 <Text fontSize="md" fontWeight="semibold" color="green.700" _dark={{ color: 'green.200' }}>
+                   📋 Upload Summary
+                 </Text>
+               </HStack>
                
-               const uniqueYears = [...new Set(years)];
-               const hasMultipleYears = uniqueYears.length > 1;
-               
-               if (hasMultipleYears && selectedYear === null) {
-                 return (
-                   <Text fontSize="xs" color="green.600" _dark={{ color: 'green.300' }} mt={2} textAlign="center">
-                     💡 Each photo will be saved with its correct year automatically
-                   </Text>
-                 );
-               }
-               return null;
-             })()}
+               <Box textAlign="center">
+                 <Text fontSize="sm" color="green.700" _dark={{ color: 'green.200' }}>
+                   <strong>Year strategy:</strong> {
+                     (() => {
+                       // Check if we have photos from different years
+                       const years = selectedFiles
+                         .map(file => photoMetadata[file.name]?.year)
+                         .filter(year => year != null);
+                       
+                       const uniqueYears = [...new Set(years)];
+                       const hasMultipleYears = uniqueYears.length > 1;
+                       
+                       // If user manually selected a year, use that for all photos
+                       if (selectedYear !== null && selectedYear !== undefined) {
+                         return `${selectedYear} (manually selected for all photos)`;
+                       }
+                       // If photos are from different years, explain the strategy
+                       else if (hasMultipleYears) {
+                         const yearList = uniqueYears.sort((a, b) => b - a).join(', ');
+                         return `${yearList} (photos will be grouped by year automatically)`;
+                       }
+                       // Single year detected
+                       else if (years.length > 0) {
+                         return `${years[0]} (automatically detected via EXIF)`;
+                       } else {
+                         return `${new Date().getFullYear()} (current year - no EXIF data)`;
+                       }
+                     })()
+                   }
+                 </Text>
+                 
+                 {/* Additional info for multiple years */}
+                 {(() => {
+                   const years = selectedFiles
+                     .map(file => photoMetadata[file.name]?.year)
+                     .filter(year => year != null);
+                   
+                   const uniqueYears = [...new Set(years)];
+                   const hasMultipleYears = uniqueYears.length > 1;
+                   
+                   if (hasMultipleYears && selectedYear === null) {
+                     return (
+                       <Text fontSize="xs" color="green.600" _dark={{ color: 'green.300' }} mt={2}>
+                         💡 Each photo will be saved with its correct year automatically
+                       </Text>
+                     );
+                   }
+                   return null;
+                 })()}
+               </Box>
+             </VStack>
            </Box>
          )}
 
                  {/* Upload Button */}
          {selectedFiles.length > 0 && (
-           <Button
-             colorScheme="green"
-             size="lg"
-             onClick={handleUpload}
-             isLoading={isLoading}
-             leftIcon={<FaCloudUploadAlt />}
-             w="full"
-           >
-             {getUploadButtonText()}
-           </Button>
+           <Box>
+             <Button
+               colorScheme="green"
+               size="lg"
+               onClick={handleUpload}
+               isLoading={isLoading}
+               leftIcon={<FaCloudUploadAlt />}
+               w="full"
+               h="60px"
+               fontSize="lg"
+             >
+               {(() => {
+                 const years = selectedFiles
+                   .map(file => photoMetadata[file.name]?.year)
+                   .filter(year => year != null);
+                 
+                 const uniqueYears = [...new Set(years)];
+                 const hasMultipleYears = uniqueYears.length > 1;
+                 
+                 if (selectedYear !== null && selectedYear !== undefined) {
+                   return `Upload ${selectedFiles.length} photo(s) with year ${selectedYear}`;
+                 } else if (hasMultipleYears) {
+                   return `Upload ${selectedFiles.length} photo(s) with automatic year grouping`;
+                 } else {
+                   const yearToUse = years.length > 0 ? years[0] : new Date().getFullYear();
+                   return `Upload ${selectedFiles.length} photo(s) with year ${yearToUse}`;
+                 }
+               })()}
+             </Button>
+             
+             <Text fontSize="xs" color="gray.500" mt={2} textAlign="center">
+               {(() => {
+                 const years = selectedFiles
+                   .map(file => photoMetadata[file.name]?.year)
+                   .filter(year => year != null);
+                 
+                 const uniqueYears = [...new Set(years)];
+                 const hasMultipleYears = uniqueYears.length > 1;
+                 
+                 if (hasMultipleYears && selectedYear === null) {
+                   return "Photos will be automatically organized by their correct years";
+                 } else if (selectedYear !== null && selectedYear !== undefined) {
+                   return `All photos will be uploaded with year ${selectedYear}`;
+                 } else {
+                   return "Photos will be uploaded with the detected year";
+                 }
+               })()}
+             </Text>
+           </Box>
          )}
 
                  {/* Additional Information */}
          <Box
-           p={3}
+           p={4}
            bg="blue.50"
            borderRadius="md"
            _dark={{ bg: 'blue.900' }}
          >
-           <HStack spacing={2}>
-             <Icon as={FaInfoCircle} color="blue.500" />
-             <Text fontSize="sm" color="blue.700" _dark={{ color: 'blue.200' }}>
-               <strong>Simple Upload:</strong> Just adds photos to your profile
-               <br />
-               <strong>Upload with Year Selection:</strong> Allows you to define a specific year for your photos
-             </Text>
-           </HStack>
+           <VStack spacing={3} align="stretch">
+             <HStack spacing={2} justify="center">
+               <Icon as={FaInfoCircle} color="blue.500" />
+               <Text fontSize="md" fontWeight="semibold" color="blue.700" _dark={{ color: 'blue.200' }}>
+                 How it works
+               </Text>
+             </HStack>
+             
+             <VStack spacing={2} align="start">
+               <HStack spacing={2}>
+                 <Icon as={FaCloudUploadAlt} color="blue.500" />
+                 <Text fontSize="sm" color="blue.700" _dark={{ color: 'blue.200' }}>
+                   <strong>Simple Upload:</strong> Photos are uploaded with automatically detected years
+                 </Text>
+               </HStack>
+               
+               <HStack spacing={2}>
+                 <Icon as={FaCalendar} color="blue.500" />
+                 <Text fontSize="sm" color="blue.700" _dark={{ color: 'blue.200' }}>
+                   <strong>Year Selection:</strong> You can manually adjust the year for your photos
+                 </Text>
+               </HStack>
+               
+               <HStack spacing={2}>
+                 <Icon as={FaMapMarkerAlt} color="blue.500" />
+                 <Text fontSize="sm" color="blue.700" _dark={{ color: 'blue.200' }}>
+                   <strong>Smart Grouping:</strong> Photos from different years are automatically organized
+                 </Text>
+               </HStack>
+             </VStack>
+           </VStack>
          </Box>
       </VStack>
     </BaseModal>
