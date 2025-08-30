@@ -464,7 +464,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
                 colorScheme="blue"
                 leftIcon={<FaCalendar />}
               >
-                Auto-detect (default)
+                Auto-detect
               </Button>
               <Button
                 onClick={() => setYearStrategy('manual')}
@@ -473,7 +473,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
                 colorScheme="green"
                 leftIcon={<FaCalendar />}
               >
-                Set one year for all
+                Set year
               </Button>
             </ButtonGroup>
 
