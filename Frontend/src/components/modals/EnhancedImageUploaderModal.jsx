@@ -28,7 +28,7 @@ import BaseModal from './BaseModal';
 import ModalButton from './ModalButton';
 import { CountriesContext } from '../../context/CountriesContext';
 import { buildApiUrl } from '../../utils/apiConfig';
-import EXIF from 'exif-js';
+import * as EXIF from 'exif-js';
 
 const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryId }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
