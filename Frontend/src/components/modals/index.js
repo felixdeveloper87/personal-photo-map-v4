@@ -11,6 +11,7 @@ export { default as ConversionModal } from './ConversionModal';
 export { default as EconomicModal } from './EconomicModal';
 export { default as SocialModal } from './SocialModal';
 export { default as ResetPasswordModal } from './ResetPasswordModal';
+export { default as UserStatisticsModal } from './UserStatisticsModal';
 
 // Base Modal Components
 export { default as BaseModal } from './BaseModal';

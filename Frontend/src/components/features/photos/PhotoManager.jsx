@@ -8,7 +8,7 @@ import { AuthContext } from '../../../context/AuthContext';
 import { ConfirmDialog } from '../../ui/ConfirmDialog';
 import LoginModal from '../../modals/LoginModal';
 import RegisterModal from '../../modals/RegisterModal';
-import { buildApiUrl } from '../../../utils/apiConfig';
+import { buildImageUrl } from '../../../utils/apiConfig';
 import {
   Box,
   Button,
@@ -587,7 +587,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   const allImages = useMemo(() => 
     Array.isArray(allImagesData)
       ? allImagesData.map((image) => ({
-        url: buildApiUrl(image.filePath),
+        url: buildImageUrl(image.filePath),
         id: image.id,
         year: image.year,
       }))
@@ -602,7 +602,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   const images = useMemo(() => 
     Array.isArray(imagesData)
       ? imagesData.map((image) => ({
-        url: buildApiUrl(image.filePath),
+        url: buildImageUrl(image.filePath),
         id: image.id,
         year: image.year,
       }))
