@@ -165,41 +165,55 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
          formData.append('images', file);
        });
 
-       // Add year (required for backend)
-      let yearToUse = null;
-      
-             // 1. Priority: year manually selected by user
-       if (selectedYear) {
-         yearToUse = selectedYear;
-       }
-       // 2. Priority: year automatically detected via EXIF
-       else if (selectedFiles.length > 0) {
-         // If there are multiple photos, use the most common year or the first available
-         const years = selectedFiles
-           .map(file => photoMetadata[file.name]?.year)
-           .filter(year => year != null);
-         
-         if (years.length > 0) {
-           // Use the most frequent year, or the first if all are different
-           const yearCounts = years.reduce((acc, year) => {
-             acc[year] = (acc[year] || 0) + 1;
-             return acc;
-           }, {});
-           
-           const mostCommonYear = Object.entries(yearCounts)
-             .sort(([,a], [,b]) => b - a)[0][0];
-           
-           yearToUse = parseInt(mostCommonYear);
-         } else {
-           yearToUse = new Date().getFullYear();
-         }
-       }
-       // 3. Fallback: current year (only if we can't detect anything)
-       else {
-         yearToUse = new Date().getFullYear();
-       }
-      
-      formData.append('year', yearToUse);
+               // Add year (required for backend)
+        let yearToUse = null;
+        
+        // 1. Priority: year manually selected by user
+        if (selectedYear) {
+          yearToUse = selectedYear;
+        }
+        // 2. Priority: year automatically detected via EXIF
+        else if (selectedFiles.length > 0) {
+          // If there are multiple photos, use the most common year or the first available
+          const years = selectedFiles
+            .map(file => photoMetadata[file.name]?.year)
+            .filter(year => year != null);
+          
+          if (years.length > 0) {
+            // Use the most frequent year, or the first if all are different
+            const yearCounts = years.reduce((acc, year) => {
+              acc[year] = (acc[year] || 0) + 1;
+              return acc;
+            }, {});
+            
+            const mostCommonYear = Object.entries(yearCounts)
+              .sort(([,a], [,b]) => b - a)[0][0];
+            
+            yearToUse = parseInt(mostCommonYear);
+          } else {
+            yearToUse = new Date().getFullYear();
+          }
+        }
+        // 3. Fallback: current year (only if we can't detect anything)
+        else {
+          yearToUse = new Date().getFullYear();
+        }
+        
+        formData.append('year', yearToUse);
+        
+        // Add countryId (required for backend)
+        if (countryId) {
+          formData.append('countryId', countryId);
+        } else {
+          // Fallback: try to detect country from GPS or use a default
+          const hasGPS = selectedFiles.some(file => photoMetadata[file.name]?.hasGPS);
+          if (hasGPS) {
+            // TODO: Implement GPS to country detection
+            formData.append('countryId', 'us'); // Default fallback
+          } else {
+            throw new Error('Country ID is required for upload. Please select a country or enable GPS detection.');
+          }
+        }
 
              // If detailed mode, add additional attributes
        if (uploadMode === 'detailed') {
