@@ -1,4 +1,4 @@
-import { Box, VStack, Icon, Text, useColorModeValue } from '@chakra-ui/react';
+import { Box, VStack, Icon, Text, useColorModeValue, useBreakpointValue } from '@chakra-ui/react';
 
 const InfoBox = ({ icon, label, value, colorScheme = "blue", onClick, size = "default" }) => {
   const bgColor = useColorModeValue('white', 'gray.700');
@@ -6,27 +6,40 @@ const InfoBox = ({ icon, label, value, colorScheme = "blue", onClick, size = "de
   const textColor = useColorModeValue('gray.800', 'white');
   const labelColor = useColorModeValue('gray.600', 'gray.300');
 
+  // Tamanhos responsivos baseados no breakpoint
+  const isMobile = useBreakpointValue({ base: true, sm: false, md: false, lg: false, xl: false });
+
   // Tamanhos padronizados para garantir consistência
   const sizes = {
     default: {
-      minW: "140px",
-      minH: "140px",
-      p: 4,
-      borderRadius: "12px",
-      iconSize: 8,
-      labelFontSize: "sm",
-      valueFontSize: "md",
-      spacing: 2
+      minW: isMobile ? "100px" : "140px",
+      minH: isMobile ? "100px" : "140px",
+      p: isMobile ? 2 : 4,
+      borderRadius: isMobile ? "8px" : "12px",
+      iconSize: isMobile ? 6 : 8,
+      labelFontSize: isMobile ? "xs" : "sm",
+      valueFontSize: isMobile ? "sm" : "md",
+      spacing: isMobile ? 1 : 2
     },
     large: {
-      minW: "100px",
-      minH: "180px",
-      p: 5,
-      borderRadius: "16px",
-      iconSize: 6,
-      labelFontSize: "md",
-      valueFontSize: "lg",
-      spacing: 3
+      minW: isMobile ? "80px" : "100px",
+      minH: isMobile ? "120px" : "180px",
+      p: isMobile ? 3 : 5,
+      borderRadius: isMobile ? "10px" : "16px",
+      iconSize: isMobile ? 5 : 6,
+      labelFontSize: isMobile ? "sm" : "md",
+      valueFontSize: isMobile ? "md" : "lg",
+      spacing: isMobile ? 2 : 3
+    },
+    mobile: {
+      minW: "80px",
+      minH: "80px",
+      p: 2,
+      borderRadius: "8px",
+      iconSize: 5,
+      labelFontSize: "xs",
+      valueFontSize: "sm",
+      spacing: 1
     }
   };
 

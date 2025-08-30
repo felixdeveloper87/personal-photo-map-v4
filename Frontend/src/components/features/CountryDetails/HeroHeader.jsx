@@ -372,30 +372,30 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
           <Box
             display="grid"
             gridTemplateColumns={{
-              base: "repeat(1, 1fr)",
-              sm: "repeat(2, 1fr)",
+              base: "repeat(3, 1fr)",
+              sm: "repeat(3, 1fr)",
               md: "repeat(2, 1fr)",
               lg: "repeat(2, 1fr)",
               xl: "repeat(3, 1fr)"
             }}
-            gap={infoBoxGap}
+            gap={{ base: 2, sm: 3, md: infoBoxGap }}
             w="full"
             alignItems="stretch"
             gridAutoRows="1fr"
           >
 
             {/* InfoBoxes principais */}
-            <InfoBox icon={FaLanguage} label="Language" value={countryInfo?.officialLanguage} colorScheme="orange" size="large" />
-            <InfoBox icon={FaUsers} label="Population" value={countryInfo?.population ? formatPopulation(countryInfo.population) : undefined} colorScheme="green" size="large" />
-            <InfoBox icon={FaThermometerHalf} label="Temperature" value={weatherData?.temperature ? `${weatherData.temperature}°C` : undefined} colorScheme="red" size="large" />
+            <InfoBox icon={FaLanguage} label="Language" value={countryInfo?.officialLanguage} colorScheme="orange" size="mobile" />
+            <InfoBox icon={FaUsers} label="Population" value={countryInfo?.population ? formatPopulation(countryInfo.population) : undefined} colorScheme="green" size="mobile" />
+            <InfoBox icon={FaThermometerHalf} label="Temperature" value={weatherData?.temperature ? `${weatherData.temperature}°C` : undefined} colorScheme="red" size="mobile" />
 
 
 
             {/* See More com fundo destacado - cor mais sutil */}
             <Box
-              p={4}
+              p={{ base: 2, sm: 3, md: 4 }}
               bg="linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)"
-              borderRadius="xl"
+              borderRadius={{ base: "lg", md: "xl" }}
               border="2px solid"
               borderColor="gray.200"
               _hover={{
@@ -411,21 +411,21 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
               flexDirection="column"
               alignItems="center"
               justifyContent="center"
-              gap={2}
+              gap={{ base: 1, md: 2 }}
               h="100%"
             >
-              <Box p={2} borderRadius="full" bg="rgba(0, 0, 0, 0.1)" color="gray.600">
-                <Icon as={FaBook} boxSize={6} />
+              <Box p={{ base: 1, md: 2 }} borderRadius="full" bg="rgba(0, 0, 0, 0.1)" color="gray.600">
+                <Icon as={FaBook} boxSize={{ base: 4, md: 6 }} />
               </Box>
-              <Text fontSize="lg" fontWeight="bold">See more</Text>
-              <Text fontSize="sm" opacity={0.8}>More indicators</Text>
+              <Text fontSize={{ base: "sm", md: "lg" }} fontWeight="bold">See more</Text>
+              <Text fontSize={{ base: "xs", md: "sm" }} opacity={0.8}>More indicators</Text>
             </Box>
 
             {/* Check Flights com fundo destacado */}
             <Box
-              p={4}
+              p={{ base: 2, sm: 3, md: 4 }}
               bg="linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)"
-              borderRadius="xl"
+              borderRadius={{ base: "lg", md: "xl" }}
               border="2px solid"
               borderColor="teal.200"
               _hover={{
@@ -448,14 +448,14 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
               flexDirection="column"
               alignItems="center"
               justifyContent="center"
-              gap={2}
+              gap={{ base: 1, md: 2 }}
               h="100%"
             >
-              <Box p={2} borderRadius="full" bg="rgba(0, 0, 0, 0.1)" color="gray.700">
-                <Icon as={FaPlane} boxSize={6} />
+              <Box p={{ base: 1, md: 2 }} borderRadius="full" bg="rgba(0, 0, 0, 0.1)" color="gray.700">
+                <Icon as={FaPlane} boxSize={{ base: 4, md: 6 }} />
               </Box>
-              <Text fontSize="lg" fontWeight="bold">Check Flights</Text>
-              <Text fontSize="sm" opacity={0.8}>
+              <Text fontSize={{ base: "sm", md: "lg" }} fontWeight="bold">Check Flights</Text>
+              <Text fontSize={{ base: "xs", md: "sm" }} opacity={0.8}>
                 to {countries.getName(countryId.toUpperCase(), 'en')}
               </Text>
             </Box>
@@ -463,9 +463,9 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
 
             {/* Find Hotels com fundo destacado */}
             <Box
-              p={4}
+              p={{ base: 2, sm: 3, md: 4 }}
               bg="linear-gradient(135deg, #fff5e6 0%, #ffe4b3 100%)"
-              borderRadius="xl"
+              borderRadius={{ base: "lg", md: "xl" }}
               border="2px solid"
               borderColor="orange.200"
               _hover={{
@@ -488,14 +488,14 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
               flexDirection="column"
               alignItems="center"
               justifyContent="center"
-              gap={2}
+              gap={{ base: 1, md: 2 }}
               h="100%"
             >
-              <Box p={2} borderRadius="full" bg="rgba(0, 0, 0, 0.08)" color="gray.700">
-                <Icon as={FaCity} boxSize={6} />
+              <Box p={{ base: 1, md: 2 }} borderRadius="full" bg="rgba(0, 0, 0, 0.08)" color="gray.700">
+                <Icon as={FaCity} boxSize={{ base: 4, md: 6 }} />
               </Box>
-              <Text fontSize="lg" fontWeight="bold">Find Hotels</Text>
-              <Text fontSize="sm" opacity={0.8}>
+              <Text fontSize={{ base: "sm", md: "lg" }} fontWeight="bold">Find Hotels</Text>
+              <Text fontSize={{ base: "xs", md: "sm" }} opacity={0.8}>
                 in {countries.getName(countryId.toUpperCase(), 'en')}
               </Text>
             </Box>
@@ -508,35 +508,35 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
 
       {/* Modal com os demais indicadores */}
       <BaseModal isOpen={isOpen} onClose={onClose} title="More Indicators">
-        <Flex wrap="wrap" gap={3}>
-          <InfoBox icon={FaPercent} label="Inflation Rate" value={indicatorsData?.inflationCPI ? `${indicatorsData.inflationCPI.value}%` : undefined} colorScheme="orange" />
-          <InfoBox icon={FaUsers} label="Net Migration" value={indicatorsData?.netMigration ? `${indicatorsData.netMigration.value}` : undefined} colorScheme="cyan" />
-          <InfoBox icon={FaSun} label="Weather" value={weatherData?.description ? weatherData.description : undefined} colorScheme="yellow" />
-          <InfoBox icon={FaCity} label="Capital" value={countryInfo?.capital} colorScheme="purple" />
-          <InfoBox icon={FaDollarSign} label="Exchange Rate" value={exchangeRate ? `1 USD = ${exchangeRate} ${countryInfo?.currencies?.[0] || 'USD'}` : undefined} colorScheme="yellow" />
+        <Flex wrap="wrap" gap={{ base: 2, md: 3 }}>
+          <InfoBox icon={FaPercent} label="Inflation Rate" value={indicatorsData?.inflationCPI ? `${indicatorsData.inflationCPI.value}%` : undefined} colorScheme="orange" size="mobile" />
+          <InfoBox icon={FaUsers} label="Net Migration" value={indicatorsData?.netMigration ? `${indicatorsData.netMigration.value}` : undefined} colorScheme="cyan" size="mobile" />
+          <InfoBox icon={FaSun} label="Weather" value={weatherData?.description ? weatherData.description : undefined} colorScheme="yellow" size="mobile" />
+          <InfoBox icon={FaCity} label="Capital" value={countryInfo?.capital} colorScheme="purple" size="mobile" />
+          <InfoBox icon={FaDollarSign} label="Exchange Rate" value={exchangeRate ? `1 USD = ${exchangeRate} ${countryInfo?.currencies?.[0] || 'USD'}` : undefined} colorScheme="yellow" size="mobile" />
           {indicatorsData?.gdpGrowth && (
-            <InfoBox icon={FaChartLine} label="GDP Growth" value={`${indicatorsData.gdpGrowth.value}%`} colorScheme="green" />
+            <InfoBox icon={FaChartLine} label="GDP Growth" value={`${indicatorsData.gdpGrowth.value}%`} colorScheme="green" size="mobile" />
           )}
           {indicatorsData?.debtToGDP && (
-            <InfoBox icon={FaBalanceScale} label="Public Debt" value={`${indicatorsData.debtToGDP.value}%`} colorScheme="red" />
+            <InfoBox icon={FaBalanceScale} label="Public Debt" value={`${indicatorsData.debtToGDP.value}%`} colorScheme="red" size="mobile" />
           )}
           {indicatorsData?.gdpPerCapitaCurrent && (
-            <InfoBox icon={FaHandHoldingUsd} label="GDP Per Capita" value={`$${indicatorsData.gdpPerCapitaCurrent.value}`} colorScheme="purple" />
+            <InfoBox icon={FaHandHoldingUsd} label="GDP Per Capita" value={`$${indicatorsData.gdpPerCapitaCurrent.value}`} colorScheme="purple" size="mobile" />
           )}
           {indicatorsData?.lifeExpectancy && (
-            <InfoBox icon={FaHeartbeat} label="Life Expectancy" value={indicatorsData.lifeExpectancy.value} colorScheme="pink" />
+            <InfoBox icon={FaHeartbeat} label="Life Expectancy" value={indicatorsData.lifeExpectancy.value} colorScheme="pink" size="mobile" />
           )}
           {indicatorsData?.internetUsers && (
-            <InfoBox icon={FaWifi} label="Internet Users" value={`${indicatorsData.internetUsers.value}%`} colorScheme="blue" />
+            <InfoBox icon={FaWifi} label="Internet Users" value={`${indicatorsData.internetUsers.value}%`} colorScheme="blue" size="mobile" />
           )}
           {indicatorsData?.urbanPopulation && (
-            <InfoBox icon={FaCity} label="Urban Population" value={`${indicatorsData.urbanPopulation.value}%`} colorScheme="green" />
+            <InfoBox icon={FaCity} label="Urban Population" value={`${indicatorsData.urbanPopulation.value}%`} colorScheme="green" size="mobile" />
           )}
           {indicatorsData?.education && (
-            <InfoBox icon={FaBook} label="Literacy Rate" value={`${indicatorsData.education.value}%`} colorScheme="indigo" />
+            <InfoBox icon={FaBook} label="Literacy Rate" value={`${indicatorsData.education.value}%`} colorScheme="indigo" size="mobile" />
           )}
           {getMainReligion(factbookData) && (
-            <InfoBox icon={FaPrayingHands} label="Main Religion" value={getMainReligion(factbookData)} colorScheme="purple" />
+            <InfoBox icon={FaPrayingHands} label="Main Religion" value={getMainReligion(factbookData)} colorScheme="purple" size="mobile" />
           )}
         </Flex>
       </BaseModal>
