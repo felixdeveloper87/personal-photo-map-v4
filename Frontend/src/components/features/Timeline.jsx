@@ -25,7 +25,7 @@ import { FaGlobe } from 'react-icons/fa';
 // Lazy loading of PhotoGallery
 const LazyPhotoGallery = lazy(() => import('./photos/PhotoGallery'));
 
-import { buildImageUrl } from '../../utils/apiConfig';
+import { buildApiUrl } from '../../utils/apiConfig';
 
 // Fetch photos with error handling
 const fetchAllPictures = async (year) => {
@@ -48,7 +48,7 @@ const fetchAllPictures = async (year) => {
   if (!Array.isArray(data)) return [];
 
   return data.map((image) => ({
-    url: buildImageUrl(image.filePath),
+    url: image.filePath.includes('s3.') ? image.filePath : `${import.meta.env.VITE_BACKEND_URL}${image.filePath}`,
     id: image.id,
     year: image.year,
     countryId: image.countryId,

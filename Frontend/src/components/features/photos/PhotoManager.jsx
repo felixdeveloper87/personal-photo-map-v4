@@ -1,14 +1,14 @@
 import React, { useContext, useState, useEffect, useRef, useMemo } from 'react';
 import { FaCloudUploadAlt } from 'react-icons/fa';
 import PhotoGallery from './PhotoGallery';
-import EnhancedImageUploaderModal from '../../modals/EnhancedImageUploaderModal';
+import ImageUploaderModal from '../../modals/ImageUploaderModal';
 import { CountriesContext } from '../../../context/CountriesContext';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../../context/AuthContext';
 import { ConfirmDialog } from '../../ui/ConfirmDialog';
 import LoginModal from '../../modals/LoginModal';
 import RegisterModal from '../../modals/RegisterModal';
-import { buildImageUrl } from '../../../utils/apiConfig';
+import { buildApiUrl } from '../../../utils/apiConfig';
 import {
   Box,
   Button,
@@ -46,15 +46,6 @@ import {
  */
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
-  
-  // Debug logging
-  if (token) {
-    console.log('🔑 Token found in localStorage, length:', token.length);
-    console.log('🔑 Token preview:', token.substring(0, 20) + '...');
-  } else {
-    console.warn('⚠️ No token found in localStorage');
-  }
-  
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
@@ -164,7 +155,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   const toast = useToast();
   const queryClient = useQueryClient();
   const { isPremium } = useContext(AuthContext);
-  const { refreshCountriesWithPhotos, triggerMapUpdate } = useContext(CountriesContext);
+  const { refreshCountriesWithPhotos, refreshAfterUpload, triggerMapUpdate } = useContext(CountriesContext);
   const navigate = useNavigate();
 
   const [pendingDeleteIds, setPendingDeleteIds] = useState([]);
@@ -197,7 +188,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
 
 
 
-  // EnhancedImageUploaderModal state
+  // ImageUploaderModal state
   const {
     isOpen: isImageUploaderOpen,
     onOpen: onImageUploaderOpen,
@@ -205,26 +196,31 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   } = useDisclosure();
 
   // Handle upload success
-  const handleUploadSuccess = () => {
-    console.log('🔄 Upload success - refreshing data...');
-    
-    // Trigger immediate map update for instant visual feedback
-    triggerMapUpdate();
-    
-    // Force immediate refresh of all data
-    refreshCountriesWithPhotos(true);
-    
-    // Invalidate React Query cache for immediate refetch
-    queryClient.invalidateQueries(['allImages', countryId]);
-    queryClient.invalidateQueries(['years', countryId]);
-    queryClient.invalidateQueries(['albums', countryId]);
-    
-    // Force refetch of specific queries
-    queryClient.refetchQueries(['allImages', countryId]);
-    queryClient.refetchQueries(['years', countryId]);
-    queryClient.refetchQueries(['albums', countryId]);
-    
-    onImageUploaderClose();
+  const handleUploadSuccess = async () => {   
+    try {
+      // 1. Trigger immediate map update for instant visual feedback
+      triggerMapUpdate();
+      
+      // 2. Use specialized upload refresh that bypasses cache
+      await refreshAfterUpload();
+  
+      await Promise.all([
+        queryClient.invalidateQueries(['allImages', countryId]),
+        queryClient.invalidateQueries(['years', countryId]),
+        queryClient.invalidateQueries(['albums', countryId]),
+        queryClient.refetchQueries(['allImages', countryId]),
+        queryClient.refetchQueries(['years', countryId]),
+        queryClient.refetchQueries(['albums', countryId])
+      ]);      
+      // 4. Final trigger for any remaining UI updates
+      triggerMapUpdate();
+      
+    } catch (error) {
+      console.error('❌ Error during upload success processing:', error);
+      showErrorToast(toast, 'Photos uploaded but page refresh failed. Please refresh manually.');
+    } finally {
+      onImageUploaderClose();
+    }
   };
 
   /** Local UI state */
@@ -235,13 +231,6 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
 
   /** Stores the IDs of images the user has selected for deletion/album creation */
   const [selectedImageIds, setSelectedImageIds] = useState([]);
-
-  // Debug: Monitor selectedImageIds changes in PhotoManager
-  useEffect(() => {
-    console.log('=== PHOTO MANAGER: SELECTED IMAGE IDS CHANGED ===');
-    console.log('New selectedImageIds:', selectedImageIds);
-    console.log('Length:', selectedImageIds?.length || 0);
-  }, [selectedImageIds]);
 
   /** Check if the user is logged in */
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -328,15 +317,27 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
       }
       return response;
     },
-    onSuccess: (_, ids) => {
+    onSuccess: async (_, ids) => {
       showSuccessToast(toast, `${ids.length} image(s) deleted successfully.`);
       // Trigger immediate map update
       triggerMapUpdate();
-      // Invalidate relevant queries so React Query refetches fresh data
-      queryClient.invalidateQueries(['images']);
-      queryClient.invalidateQueries(['years']);
-      queryClient.invalidateQueries(['albums']);
-      refreshCountriesWithPhotos(true);
+      
+      try {
+        // Invalidate relevant queries so React Query refetches fresh data
+        await Promise.all([
+          queryClient.invalidateQueries(['images']),
+          queryClient.invalidateQueries(['years']),
+          queryClient.invalidateQueries(['albums'])
+        ]);
+        
+        await refreshCountriesWithPhotos(true);
+        
+        // Final trigger for UI update
+        triggerMapUpdate();
+      } catch (error) {
+        console.error('❌ Error during delete success processing:', error);
+      }
+      
       setSelectedImageIds([]);
     },
     onError: () => {
@@ -386,14 +387,25 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
       }
       return response;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       showSuccessToast(toast, 'The album was deleted successfully.');
       // Trigger immediate map update
       triggerMapUpdate();
-      queryClient.invalidateQueries(['albums']);
-      queryClient.invalidateQueries(['images']);
-      queryClient.invalidateQueries(['years']);
-      refreshCountriesWithPhotos(true);
+      
+      try {
+        await Promise.all([
+          queryClient.invalidateQueries(['albums']),
+          queryClient.invalidateQueries(['images']),
+          queryClient.invalidateQueries(['years'])
+        ]);
+        
+        await refreshCountriesWithPhotos(true);
+        
+        // Final trigger for UI update
+        triggerMapUpdate();
+      } catch (error) {
+        console.error('❌ Error during album delete success processing:', error);
+      }
     },
     onError: () => {
       showErrorToast(toast, 'There was an error deleting the album.');
@@ -415,14 +427,26 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
       }
       return response;
     },
-    onSuccess: (_, { year }) => {
+    onSuccess: async (_, { year }) => {
       showSuccessToast(toast, `All images from year ${year} were deleted successfully.`);
       // Trigger immediate map update
       triggerMapUpdate();
-      queryClient.invalidateQueries(['images']);
-      queryClient.invalidateQueries(['years']);
-      queryClient.invalidateQueries(['albums']);
-      refreshCountriesWithPhotos(true);
+      
+      try {
+        await Promise.all([
+          queryClient.invalidateQueries(['images']),
+          queryClient.invalidateQueries(['years']),
+          queryClient.invalidateQueries(['albums'])
+        ]);
+        
+        await refreshCountriesWithPhotos(true);
+        
+        // Final trigger for UI update
+        triggerMapUpdate();
+      } catch (error) {
+        console.error('❌ Error during year delete success processing:', error);
+      }
+      
       setSelectedYear(null);
     },
     onError: (_, { year }) => {
@@ -447,14 +471,26 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
       }
       return response;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       showSuccessToast(toast, 'All images were deleted successfully.');
       // Trigger immediate map update
       triggerMapUpdate();
-      queryClient.invalidateQueries(['images']);
-      queryClient.invalidateQueries(['years']);
-      queryClient.invalidateQueries(['albums']);
-      refreshCountriesWithPhotos(true);
+      
+      try {
+        await Promise.all([
+          queryClient.invalidateQueries(['images']),
+          queryClient.invalidateQueries(['years']),
+          queryClient.invalidateQueries(['albums'])
+        ]);
+        
+        await refreshCountriesWithPhotos(true);
+        
+        // Final trigger for UI update
+        triggerMapUpdate();
+      } catch (error) {
+        console.error('❌ Error during all images delete success processing:', error);
+      }
+      
       setShowAllSelected(false);
     },
     onError: (_, countryId) => {
@@ -468,21 +504,33 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
    * Called after a successful image upload from ImageUploader.
    * Optionally invalidates queries or triggers re-fetch to show new images.
    */
-  const handleUpload = (newImages, year) => {
-    // Option 1: Invalidate queries to refetch new data
-    queryClient.invalidateQueries(['images']);
-    queryClient.invalidateQueries(['years']);
-    queryClient.invalidateQueries(['albums']);
-
-    // Trigger immediate map update
-    triggerMapUpdate();
-    
-    // Optionally call an onUploadSuccess prop
-    if (onUploadSuccess) {
-      onUploadSuccess();
+  const handleUpload = async (newImages, year) => {   
+    try {
+      // 1. Trigger immediate map update for instant visual feedback
+      triggerMapUpdate();
+      
+      // 2. Invalidate queries to refetch new data
+      await Promise.all([
+        queryClient.invalidateQueries(['images']),
+        queryClient.invalidateQueries(['years']),
+        queryClient.invalidateQueries(['albums'])
+      ]);
+      
+      // 3. Optionally call an onUploadSuccess prop
+      if (onUploadSuccess) {
+        await onUploadSuccess();
+      }
+      
+      // 4. Refresh countries context with forced refresh
+      await refreshCountriesWithPhotos(true);
+      
+      // 5. Final trigger for any remaining UI updates
+      triggerMapUpdate();
+      
+    } catch (error) {
+      console.error('❌ Error in handleUpload:', error);
+      showErrorToast(toast, 'Upload completed but refresh failed. Please refresh the page.');
     }
-    // Refresh countries context
-    refreshCountriesWithPhotos(true);
   };
 
   /**
@@ -587,7 +635,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   const allImages = useMemo(() => 
     Array.isArray(allImagesData)
       ? allImagesData.map((image) => ({
-        url: buildImageUrl(image.filePath),
+        url: image.filePath.includes('s3.') ? image.filePath : buildApiUrl(image.filePath),
         id: image.id,
         year: image.year,
       }))
@@ -602,7 +650,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   const images = useMemo(() => 
     Array.isArray(imagesData)
       ? imagesData.map((image) => ({
-        url: buildImageUrl(image.filePath),
+        url: image.filePath.includes('s3.') ? image.filePath : buildApiUrl(image.filePath),
         id: image.id,
         year: image.year,
       }))
@@ -867,11 +915,12 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
       />
 
       {/* Image Upload Modal */}
-      <EnhancedImageUploaderModal
-        isOpen={isImageUploaderOpen}
-        onClose={onImageUploaderClose}
-        onUploadSuccess={handleUploadSuccess}
+      <ImageUploaderModal
         countryId={countryId}
+        onUploadSuccess={handleUploadSuccess}
+        isOpen={isImageUploaderOpen}
+        onOpen={onImageUploaderOpen}
+        onClose={onImageUploaderClose}
       />
 
     </Box>
