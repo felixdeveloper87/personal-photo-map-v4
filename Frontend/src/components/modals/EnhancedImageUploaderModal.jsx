@@ -19,6 +19,18 @@ import {
   AlertIcon,
   AlertTitle,
   AlertDescription,
+  ButtonGroup,
+  Kbd,
+  SimpleGrid,
+  Tag,
+  TagLabel,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+  Progress,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import {
   FaCloudUploadAlt,
@@ -34,27 +46,27 @@ import { buildApiUrl } from '../../utils/apiConfig';
 import * as EXIF from 'exif-js';
 
 const CURRENT_YEAR = new Date().getFullYear();
-const RECENT_YEARS = Array.from({ length: 30 }, (_, i) => CURRENT_YEAR - i);
-const DECADES = [1990, 1980, 1970, 1960, 1950, 1940, 1930, 1920, 1910, 1900];
+const RECENT_YEARS = Array.from({ length: 16 }, (_, i) => CURRENT_YEAR - i); // 16 years grid
+const MIN_YEAR = 1900;
 
 const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryId }) => {
   const toast = useToast();
   const { refreshCountriesWithPhotos } = useContext(CountriesContext);
-  const { isOpen: isAdvancedOpen, onToggle: onAdvancedToggle } = useDisclosure();
+  const { isOpen: isAutoDetailsOpen, onToggle: onAutoDetailsToggle } = useDisclosure();
 
   // Files & EXIF
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [photoMetadata, setPhotoMetadata] = useState({}); // { [file.name]: { year, date, hasGPS, original } }
   const [isLoading, setIsLoading] = useState(false);
 
-  // Year strategy:
-  // 'auto' => usa o ano detectado por foto (agrupa e envia por ano quando necessário)
-  // 'override' => aplica um único ano manual para todas as fotos
+  // Year strategy: 'auto' (per-photo EXIF) | 'manual' (one year for all)
   const [yearStrategy, setYearStrategy] = useState('auto');
-  const [overrideYear, setOverrideYear] = useState(null); // number | null | 'custom'
-  const [customYear, setCustomYear] = useState(''); // texto para input custom
+  const [manualYear, setManualYear] = useState(''); // string to match NumberInput; validated on use
 
-  // -------------- Helpers --------------
+  // ----- helpers -----
+  const cardBg = useColorModeValue('gray.50', 'gray.800');
+  const subtleText = useColorModeValue('gray.600', 'gray.300');
+  const borderCol = useColorModeValue('gray.200', 'gray.700');
 
   const showToast = useCallback(
     (title, description, status = 'info') => {
@@ -74,7 +86,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
     if (!token || token.trim() === '' || token === 'null' || token === 'undefined') {
       return {};
     }
-    return { Authorization: `Bearer ${token}` }; // NUNCA setar Content-Type para FormData
+    return { Authorization: `Bearer ${token}` }; // Do not set Content-Type with FormData
   };
 
   const extractPhotoMetadata = async (file) =>
@@ -83,13 +95,13 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
       reader.onload = (e) => {
         try {
           const exif = EXIF.readFromBinaryFile(e.target.result) || {};
-          // Ordem de preferência: DateTimeOriginal > DateTime > DateTimeDigitized
+          // Priority: DateTimeOriginal > DateTime > DateTimeDigitized
           const dateStr =
             exif.DateTimeOriginal || exif.DateTime || exif.DateTimeDigitized || null;
 
           let year;
           if (dateStr && typeof dateStr === 'string' && dateStr.includes(':')) {
-            // EXIF vem como "YYYY:MM:DD HH:mm:ss"
+            // "YYYY:MM:DD HH:mm:ss"
             year = parseInt(dateStr.split(':')[0], 10);
           }
 
@@ -110,7 +122,6 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
             });
           }
         } catch {
-          // Fallback: lastModified
           const fileDate = new Date(file.lastModified);
           resolve({
             year: fileDate.getFullYear(),
@@ -131,10 +142,12 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
     return meta;
   };
 
-  const safeNumber = (v) => (typeof v === 'string' ? parseInt(v, 10) : v);
+  const asInt = (v) => {
+    const n = typeof v === 'string' ? parseInt(v, 10) : v;
+    return Number.isNaN(n) ? null : n;
+  };
 
-  // -------------- Derived (useMemo) --------------
-
+  // ----- derived -----
   const detectedYears = useMemo(() => {
     if (selectedFiles.length === 0) return [];
     return selectedFiles
@@ -142,9 +155,13 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
       .filter((y) => y != null && !Number.isNaN(y));
   }, [selectedFiles, photoMetadata]);
 
-  const uniqueYears = useMemo(() => Array.from(new Set(detectedYears)).sort((a, b) => b - a), [detectedYears]);
+  const uniqueYears = useMemo(
+    () => Array.from(new Set(detectedYears)).sort((a, b) => b - a),
+    [detectedYears]
+  );
 
   const hasMultipleYears = uniqueYears.length > 1;
+
   const mostCommonYear = useMemo(() => {
     if (detectedYears.length === 0) return null;
     const counts = detectedYears.reduce((acc, y) => {
@@ -152,8 +169,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
       return acc;
     }, {});
     return parseInt(
-      Object.entries(counts)
-        .sort(([, a], [, b]) => b - a)[0][0],
+      Object.entries(counts).sort(([, a], [, b]) => b - a)[0][0],
       10
     );
   }, [detectedYears]);
@@ -169,48 +185,44 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
     return groups;
   }, [selectedFiles, photoMetadata]);
 
-  const effectiveOverrideYear = useMemo(() => {
-    if (yearStrategy !== 'override') return null;
-    if (overrideYear === 'custom') {
-      const y = safeNumber(customYear);
-      return !Number.isNaN(y) && y >= 1900 && y <= CURRENT_YEAR ? y : null;
-    }
-    return safeNumber(overrideYear);
-  }, [yearStrategy, overrideYear, customYear]);
+  const effectiveManualYear = useMemo(() => {
+    const y = asInt(manualYear);
+    if (!y) return null;
+    if (y < MIN_YEAR || y > CURRENT_YEAR) return null;
+    return y;
+  }, [manualYear]);
 
   const uploadSummaryText = useMemo(() => {
     if (selectedFiles.length === 0) return '';
-    if (yearStrategy === 'override') {
-      if (effectiveOverrideYear) {
-        return `${effectiveOverrideYear} (aplicado manualmente para todas as fotos)`;
-      }
-      return 'Selecione um ano válido para aplicar a todas as fotos';
+    if (yearStrategy === 'manual') {
+      return effectiveManualYear
+        ? `${effectiveManualYear} (applied to all photos)`
+        : 'Select a valid year (1900—current)';
     }
     if (hasMultipleYears) {
-      return `${uniqueYears.join(', ')} (as fotos serão agrupadas automaticamente por ano)`;
+      return `${uniqueYears.join(', ')} (grouped automatically by year)`;
     }
     if (detectedYears.length > 0) {
-      return `${detectedYears[0]} (detectado automaticamente via EXIF/arquivo)`;
+      return `${detectedYears[0]} (auto-detected via EXIF/file)`;
     }
-    return `${CURRENT_YEAR} (ano atual — sem EXIF)`;
+    return `${CURRENT_YEAR} (current year — no EXIF)`;
   }, [
     selectedFiles.length,
     yearStrategy,
-    effectiveOverrideYear,
+    effectiveManualYear,
     hasMultipleYears,
     uniqueYears,
     detectedYears,
   ]);
 
-  // -------------- Handlers --------------
-
+  // ----- handlers -----
   const handleFileSelect = async (event) => {
     const incoming = Array.from(event.target.files || []);
     if (incoming.length === 0) return;
 
     const valid = incoming.filter((f) => f.type?.startsWith('image/'));
     if (valid.length !== incoming.length) {
-      showToast('Alguns arquivos foram ignorados', 'Apenas imagens são permitidas.', 'warning');
+      showToast('Some files were ignored', 'Only image files are allowed.', 'warning');
     }
     if (valid.length === 0) return;
 
@@ -219,13 +231,12 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
       const meta = await readAllExif(valid);
       setSelectedFiles(valid);
       setPhotoMetadata(meta);
-      // Reset da estratégia ao adicionar fotos
+      // Reset strategy on new selection
       setYearStrategy('auto');
-      setOverrideYear(null);
-      setCustomYear('');
-      showToast('Fotos analisadas!', `${valid.length} foto(s) prontas para upload.`, 'success');
+      setManualYear('');
+      showToast('Photos analyzed', `${valid.length} photo(s) ready to upload.`, 'success');
     } catch {
-      showToast('Erro na análise', 'Não foi possível ler os metadados das fotos.', 'error');
+      showToast('Analysis error', 'Could not read photo metadata.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -233,13 +244,12 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
 
   const uploadPhotosWithYear = async (files, year) => {
     if (!countryId) {
-      // Mantive a exigência do countryId conforme seu backend
-      throw new Error('Selecione um país antes de enviar as fotos.');
+      throw new Error('Please select a country before uploading.');
     }
 
     const token = localStorage.getItem('token');
     if (!token || token.trim() === '' || token === 'null' || token === 'undefined') {
-      throw new Error('Você precisa estar logado para enviar fotos.');
+      throw new Error('You must be logged in to upload photos.');
     }
 
     const formData = new FormData();
@@ -258,77 +268,112 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
     if (!response.ok) {
       const errorText = await response.text();
       if (response.status === 403) {
-        throw new Error('Acesso negado. Verifique seu login e tente novamente.');
+        throw new Error('Access denied. Please log in and try again.');
       }
-      throw new Error(`Falha no upload: ${response.status} - ${errorText}`);
+      throw new Error(`Upload failed: ${response.status} - ${errorText}`);
     }
   };
 
   const handleUpload = async () => {
     if (selectedFiles.length === 0) return;
-
-    // Validações prévias
     if (!countryId) {
-      showToast('País obrigatório', 'Selecione um país para associar as fotos.', 'warning');
+      showToast('Country required', 'Please select a country before uploading.', 'warning');
       return;
     }
 
     setIsLoading(true);
     try {
-      if (yearStrategy === 'override') {
-        if (!effectiveOverrideYear) {
-          throw new Error('Informe um ano válido (entre 1900 e o ano atual).');
+      if (yearStrategy === 'manual') {
+        if (!effectiveManualYear) {
+          throw new Error('Provide a valid year (1900—current).');
         }
-        await uploadPhotosWithYear(selectedFiles, effectiveOverrideYear);
+        await uploadPhotosWithYear(selectedFiles, effectiveManualYear);
       } else {
-        // Estratégia auto: enviar por grupos (um request por ano)
-        const entries = Object.entries(groupedFilesByYear); // [[year, files], ...]
-        await Promise.all(
-          entries.map(([y, files]) => uploadPhotosWithYear(files, parseInt(y, 10)))
-        );
+        const entries = Object.entries(groupedFilesByYear);
+        await Promise.all(entries.map(([y, files]) => uploadPhotosWithYear(files, parseInt(y, 10))));
       }
 
       await refreshCountriesWithPhotos();
       onUploadSuccess?.();
 
-      showToast('Upload concluído!', `${selectedFiles.length} foto(s) enviadas com sucesso.`, 'success');
+      showToast('Upload complete', `${selectedFiles.length} photo(s) uploaded successfully.`, 'success');
 
       // Reset
       setSelectedFiles([]);
       setPhotoMetadata({});
       setYearStrategy('auto');
-      setOverrideYear(null);
-      setCustomYear('');
+      setManualYear('');
       onClose();
     } catch (error) {
-      showToast('Erro no upload', error?.message || 'Tente novamente.', 'error');
+      showToast('Upload error', error?.message || 'Try again.', 'error');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // -------------- UI --------------
+  // ----- UI bits -----
+  const StepHeader = ({ index, label }) => (
+    <HStack justify="center" spacing={2}>
+      <Tag borderRadius="full" size="md" colorScheme="blue" variant="subtle">
+        <TagLabel>{index}</TagLabel>
+      </Tag>
+      <Text fontSize="lg" fontWeight="bold">{label}</Text>
+    </HStack>
+  );
+
+  const YearChip = ({ y, isActive, onClick }) => (
+    <Button
+      onClick={onClick}
+      size="sm"
+      variant={isActive ? 'solid' : 'outline'}
+      colorScheme={isActive ? 'green' : 'gray'}
+      borderRadius="full"
+      px={4}
+    >
+      {y}
+    </Button>
+  );
+
+  const YearQuickPicks = () => {
+    // Merge detected years (prioritize) + recent years (no duplicates), cap to ~16–20
+    const merged = Array.from(new Set([...(uniqueYears || []), ...RECENT_YEARS])).slice(0, 20);
+
+    return (
+      <VStack align="stretch" spacing={3}>
+        <Text fontWeight="semibold">Quick picks</Text>
+        <SimpleGrid columns={{ base: 3, md: 6 }} spacing={2}>
+          {merged.map((y) => (
+            <YearChip
+              key={y}
+              y={y}
+              isActive={effectiveManualYear === y}
+              onClick={() => setManualYear(String(y))}
+            />
+          ))}
+        </SimpleGrid>
+      </VStack>
+    );
+  };
 
   return (
     <BaseModal
       isOpen={isOpen}
       onClose={() => {
-        // Reset leve ao fechar
         setYearStrategy('auto');
-        setOverrideYear(null);
-        setCustomYear('');
+        setManualYear('');
         onClose();
       }}
-      title="Enviar Fotos"
+      title="Upload Photos"
       icon={FaCloudUploadAlt}
       size="xl"
     >
       <VStack spacing={6} align="stretch">
-        {/* Paso 1: Selecionar fotos */}
+        {/* Progress bar for flow perception */}
+        <Progress value={selectedFiles.length === 0 ? 33 : yearStrategy === 'auto' && !hasMultipleYears ? 66 : 66} size="xs" borderRadius="full" />
+
+        {/* STEP 1 – Files */}
         <Box>
-          <Text fontSize="lg" fontWeight="bold" mb={3} textAlign="center">
-            1) Selecione suas fotos
-          </Text>
+          <StepHeader index={1} label="Choose your photos" />
 
           <input
             type="file"
@@ -349,24 +394,25 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
             isLoading={isLoading}
             w="full"
             h="56px"
+            mt={3}
           >
             {selectedFiles.length === 0
-              ? 'Clique para selecionar fotos'
-              : `Selecionadas ${selectedFiles.length} foto(s)`}
+              ? 'Click to select photos'
+              : `Selected ${selectedFiles.length} photo(s)`}
           </Button>
 
-          <Text fontSize="sm" color="gray.500" mt={2} textAlign="center">
-            Você pode selecionar múltiplas fotos de uma vez
+          <Text fontSize="sm" color={subtleText} mt={2} textAlign="center">
+            You can select multiple photos at once.
           </Text>
         </Box>
 
-        {/* Prévia dos arquivos */}
+        {/* Selected previews */}
         {selectedFiles.length > 0 && (
           <Box>
             <Text fontWeight="semibold" mb={3}>
-              Selecionadas ({selectedFiles.length}):
+              Selected ({selectedFiles.length}):
             </Text>
-            <Box maxH="300px" overflowY="auto" borderWidth={1} borderRadius="md" p={3}>
+            <Box maxH="300px" overflowY="auto" borderWidth={1} borderRadius="md" p={3} borderColor={borderCol}>
               <VStack spacing={3}>
                 {selectedFiles.map((file, idx) => (
                   <HStack key={`${file.name}-${idx}`} w="full" justify="space-between">
@@ -405,185 +451,171 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
 
         {selectedFiles.length > 0 && <Divider />}
 
-        {/* Passo 2: Estratégia de Ano */}
+        {/* STEP 2 – Year strategy */}
         {selectedFiles.length > 0 && (
           <Box>
-            <Text fontSize="lg" fontWeight="bold" mb={3} textAlign="center">
-              2) Como definir o ano das fotos?
-            </Text>
+            <StepHeader index={2} label="Year strategy" />
 
-            <HStack spacing={4} justify="center">
+            <ButtonGroup isAttached w="full" mt={3}>
               <Button
+                onClick={() => setYearStrategy('auto')}
+                flex={1}
                 variant={yearStrategy === 'auto' ? 'solid' : 'outline'}
                 colorScheme="blue"
-                onClick={() => setYearStrategy('auto')}
                 leftIcon={<FaCalendar />}
-                size="md"
               >
-                Detectar automaticamente (padrão)
+                Auto-detect (default)
               </Button>
-
               <Button
-                variant={yearStrategy === 'override' ? 'solid' : 'outline'}
+                onClick={() => setYearStrategy('manual')}
+                flex={1}
+                variant={yearStrategy === 'manual' ? 'solid' : 'outline'}
                 colorScheme="green"
-                onClick={() => setYearStrategy('override')}
                 leftIcon={<FaCalendar />}
-                size="md"
               >
-                Definir um ano manual
+                Set one year for all
               </Button>
-            </HStack>
+            </ButtonGroup>
 
-            <Text fontSize="sm" color="gray.600" mt={2} textAlign="center">
+            <Text fontSize="sm" color={subtleText} mt={2} textAlign="center">
               {yearStrategy === 'auto'
-                ? 'Usaremos os metadados EXIF (ou a data do arquivo) para cada foto. Fotos de anos diferentes serão agrupadas automaticamente.'
-                : 'Todas as fotos receberão o mesmo ano que você escolher abaixo.'}
+                ? 'We use EXIF (or file date) per photo. If multiple years are found, uploads are grouped by year.'
+                : 'Apply a single year to all selected photos.'}
             </Text>
 
-            {/* Override controls */}
-            {yearStrategy === 'override' && (
+            {/* AUTO details */}
+            {yearStrategy === 'auto' && (
               <Box
                 mt={4}
                 p={4}
                 borderWidth={1}
                 borderRadius="md"
-                bg="green.50"
-                borderColor="green.200"
-                _dark={{ bg: 'green.900', borderColor: 'green.700' }}
+                bg={cardBg}
+                borderColor={borderCol}
               >
-                <VStack align="stretch" spacing={3}>
-                  <Text fontWeight="semibold">Escolha um ano para aplicar a todas as fotos</Text>
-                  <Select
-                    value={overrideYear ?? ''}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      if (v === 'custom') {
-                        setOverrideYear('custom');
-                      } else if (v === '') {
-                        setOverrideYear(null);
-                      } else {
-                        setOverrideYear(parseInt(v, 10));
-                      }
-                    }}
-                    placeholder="Selecione um ano"
-                    bg="white"
-                    _dark={{ bg: 'gray.800' }}
-                  >
-                    {/* Recentes */}
-                    {RECENT_YEARS.slice(0, 10).map((y) => (
-                      <option key={y} value={y}>
-                        {y}
-                      </option>
-                    ))}
-                    <option value="" disabled>
-                      ───────────
-                    </option>
-                    {/* Décadas */}
-                    {DECADES.map((y) => (
-                      <option key={y} value={y}>
-                        {y}s
-                      </option>
-                    ))}
-                    <option value="" disabled>
-                      ───────────
-                    </option>
-                    <option value="custom">📝 Digitar ano manualmente…</option>
-                  </Select>
-
-                  {overrideYear === 'custom' && (
-                    <Box>
-                      <Input
-                        type="number"
-                        min="1900"
-                        max={CURRENT_YEAR}
-                        placeholder={`e.g., ${CURRENT_YEAR}`}
-                        value={customYear}
-                        onChange={(e) => setCustomYear(e.target.value)}
-                        bg="white"
-                        _dark={{ bg: 'gray.800' }}
-                      />
-                      <Text fontSize="xs" color="gray.500" mt={1}>
-                        Informe um ano entre 1900 e {CURRENT_YEAR}
-                      </Text>
-                    </Box>
-                  )}
-                </VStack>
-              </Box>
-            )}
-
-            {/* Dica com ano mais comum detectado */}
-            {yearStrategy === 'auto' && (
-              <Box
-                mt={4}
-                p={3}
-                borderWidth={1}
-                borderRadius="md"
-                bg="blue.50"
-                borderColor="blue.200"
-                _dark={{ bg: 'blue.900', borderColor: 'blue.700' }}
-              >
-                <HStack justify="space-between">
-                  <Text fontWeight="semibold" color="blue.700" _dark={{ color: 'blue.200' }}>
-                    📅 Detecção automática
-                  </Text>
+                <HStack justify="space-between" align="center">
+                  <Text fontWeight="semibold">Auto-detection details</Text>
                   <Icon
-                    as={isAdvancedOpen ? FaChevronUp : FaChevronDown}
+                    as={isAutoDetailsOpen ? FaChevronUp : FaChevronDown}
                     cursor="pointer"
-                    onClick={onAdvancedToggle}
+                    onClick={onAutoDetailsToggle}
                     color="blue.500"
                   />
                 </HStack>
-                <Collapse in={isAdvancedOpen}>
-                  <Text fontSize="sm" mt={2}>
-                    Ano mais frequente entre as fotos: {mostCommonYear ?? 'indisponível'}.
-                  </Text>
-                  {hasMultipleYears && (
-                    <Text fontSize="xs" color="blue.600" _dark={{ color: 'blue.300' }} mt={1}>
-                      Encontramos múltiplos anos: {uniqueYears.join(', ')}. Enviaremos em grupos por ano.
+
+                <Collapse in={isAutoDetailsOpen}>
+                  <VStack align="stretch" spacing={2} mt={3}>
+                    <Text fontSize="sm">
+                      Most common year: <strong>{mostCommonYear ?? 'N/A'}</strong>
                     </Text>
-                  )}
+                    {hasMultipleYears ? (
+                      <Text fontSize="sm">
+                        Multiple years found:{' '}
+                        <strong>{uniqueYears.join(', ')}</strong>. We’ll upload{' '}
+                        <strong>{Object.keys(groupedFilesByYear).length}</strong> group(s):{' '}
+                        {Object.entries(groupedFilesByYear)
+                          .sort((a, b) => b[0] - a[0])
+                          .map(([y, files]) => `${y} (${files.length})`)
+                          .join(', ')}
+                        .
+                      </Text>
+                    ) : (
+                      <Text fontSize="sm">
+                        Single year detected:{' '}
+                        <strong>{detectedYears[0] ?? CURRENT_YEAR}</strong>
+                      </Text>
+                    )}
+                  </VStack>
                 </Collapse>
+              </Box>
+            )}
+
+            {/* MANUAL picker */}
+            {yearStrategy === 'manual' && (
+              <Box
+                mt={4}
+                p={4}
+                borderWidth={1}
+                borderRadius="md"
+                bg={cardBg}
+                borderColor={borderCol}
+              >
+                <VStack align="stretch" spacing={4}>
+                  <Text fontWeight="semibold">Pick a year for all photos</Text>
+
+                  <YearQuickPicks />
+
+                  <VStack align="stretch" spacing={2}>
+                    <Text fontSize="sm" color={subtleText}>
+                      Or type a precise year:
+                    </Text>
+                    <NumberInput
+                      min={MIN_YEAR}
+                      max={CURRENT_YEAR}
+                      value={manualYear}
+                      onChange={(_, num) => {
+                        // Chakra passes (valueString, valueNumber)
+                        if (!Number.isNaN(num)) setManualYear(String(num));
+                        else setManualYear('');
+                      }}
+                      clampValueOnBlur
+                      keepWithinRange
+                      size="md"
+                      w="full"
+                    >
+                      <NumberInputField placeholder={`e.g. ${CURRENT_YEAR}`} />
+                      <NumberInputStepper>
+                        <NumberIncrementStepper />
+                        <NumberDecrementStepper />
+                      </NumberInputStepper>
+                    </NumberInput>
+                    <Text fontSize="xs" color={subtleText}>
+                      Allowed range: {MIN_YEAR}–{CURRENT_YEAR}. Press <Kbd>Enter</Kbd> to confirm.
+                    </Text>
+                  </VStack>
+
+                  {effectiveManualYear ? (
+                    <Alert status="success" variant="subtle" borderRadius="md">
+                      <AlertIcon />
+                      <Text fontSize="sm">
+                        Selected year: <strong>{effectiveManualYear}</strong>
+                      </Text>
+                    </Alert>
+                  ) : (
+                    <Alert status="warning" variant="subtle" borderRadius="md">
+                      <AlertIcon />
+                      <Text fontSize="sm">
+                        Please choose a valid year between {MIN_YEAR} and {CURRENT_YEAR}.
+                      </Text>
+                    </Alert>
+                  )}
+                </VStack>
               </Box>
             )}
           </Box>
         )}
 
-        {/* Resumo */}
+        {/* Summary */}
         {selectedFiles.length > 0 && (
-          <Box
-            p={4}
-            bg="gray.50"
-            borderRadius="md"
-            borderWidth={1}
-            _dark={{ bg: 'gray.800' }}
-          >
+          <Box p={4} bg={cardBg} borderRadius="md" borderWidth={1} borderColor={borderCol}>
             <VStack spacing={3} align="stretch">
               <HStack spacing={2} justify="center">
                 <Icon as={FaCalendar} />
                 <Text fontSize="md" fontWeight="semibold">
-                  📋 Resumo de Upload
+                  Upload Summary
                 </Text>
               </HStack>
               <Box textAlign="center">
                 <Text fontSize="sm">
-                  <strong>Estratégia:</strong> {uploadSummaryText}
+                  <strong>Year strategy:</strong> {uploadSummaryText}
                 </Text>
-                {yearStrategy === 'auto' && hasMultipleYears && (
-                  <Text fontSize="xs" mt={2}>
-                    Enviaremos {Object.keys(groupedFilesByYear).length} grupo(s):{' '}
-                    {Object.entries(groupedFilesByYear)
-                      .sort((a, b) => b[0] - a[0])
-                      .map(([y, files]) => `${y} (${files.length})`)
-                      .join(', ')}
-                  </Text>
-                )}
               </Box>
               {!countryId && (
                 <Alert status="warning" borderRadius="md">
                   <AlertIcon />
-                  <AlertTitle fontSize="sm">País não selecionado.</AlertTitle>
+                  <AlertTitle fontSize="sm">Country not selected.</AlertTitle>
                   <AlertDescription fontSize="sm">
-                    Selecione um país para associar as fotos antes de enviar.
+                    Select a country to associate the photos before uploading.
                   </AlertDescription>
                 </Alert>
               )}
@@ -591,9 +623,10 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
           </Box>
         )}
 
-        {/* Passo 3: Upload */}
+        {/* STEP 3 – Upload */}
         {selectedFiles.length > 0 && (
           <Box>
+            <StepHeader index={3} label="Upload" />
             <Button
               colorScheme="green"
               size="lg"
@@ -603,41 +636,42 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
               w="full"
               h="56px"
               fontSize="lg"
-              isDisabled={yearStrategy === 'override' && !effectiveOverrideYear}
+              mt={3}
+              isDisabled={yearStrategy === 'manual' && !effectiveManualYear}
             >
               {(() => {
-                if (yearStrategy === 'override') {
-                  return effectiveOverrideYear
-                    ? `Enviar ${selectedFiles.length} foto(s) com ano ${effectiveOverrideYear}`
-                    : 'Informe um ano válido';
+                if (yearStrategy === 'manual') {
+                  return effectiveManualYear
+                    ? `Upload ${selectedFiles.length} photo(s) with year ${effectiveManualYear}`
+                    : 'Pick a valid year';
                 }
                 if (hasMultipleYears) {
-                  return `Enviar ${selectedFiles.length} foto(s) (agrupadas por ano)`;
+                  return `Upload ${selectedFiles.length} photo(s) (grouped by year)`;
                 }
                 const y = detectedYears[0] ?? CURRENT_YEAR;
-                return `Enviar ${selectedFiles.length} foto(s) com ano ${y}`;
+                return `Upload ${selectedFiles.length} photo(s) with year ${y}`;
               })()}
             </Button>
 
-            <Text fontSize="xs" color="gray.500" mt={2} textAlign="center">
-              {yearStrategy === 'override'
-                ? effectiveOverrideYear
-                  ? `Todas as fotos receberão o ano ${effectiveOverrideYear}.`
-                  : 'Defina o ano para continuar.'
+            <Text fontSize="xs" color={subtleText} mt={2} textAlign="center">
+              {yearStrategy === 'manual'
+                ? effectiveManualYear
+                  ? `All photos will be uploaded with year ${effectiveManualYear}.`
+                  : 'Choose a year to continue.'
                 : hasMultipleYears
-                ? 'As fotos serão automaticamente organizadas e enviadas por ano.'
-                : 'Usaremos o ano detectado automaticamente.'}
+                ? 'Photos will be automatically organized and uploaded by year.'
+                : 'We will use the auto-detected year.'}
             </Text>
           </Box>
         )}
 
-        {/* Como funciona */}
+        {/* How it works */}
         <Box p={4} bg="blue.50" borderRadius="md" _dark={{ bg: 'blue.900' }}>
           <VStack spacing={3} align="stretch">
             <HStack spacing={2} justify="center">
               <Icon as={FaInfoCircle} color="blue.500" />
               <Text fontSize="md" fontWeight="semibold" color="blue.700" _dark={{ color: 'blue.200' }}>
-                Como funciona
+                How it works
               </Text>
             </HStack>
 
@@ -645,21 +679,21 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
               <HStack spacing={2}>
                 <Icon as={FaCloudUploadAlt} color="blue.500" />
                 <Text fontSize="sm" color="blue.700" _dark={{ color: 'blue.200' }}>
-                  <strong>Seleção de fotos:</strong> escolha várias imagens de uma vez.
+                  <strong>Photo selection:</strong> pick multiple images at once.
                 </Text>
               </HStack>
 
               <HStack spacing={2}>
                 <Icon as={FaCalendar} color="blue.500" />
                 <Text fontSize="sm" color="blue.700" _dark={{ color: 'blue.200' }}>
-                  <strong>Detecção automática:</strong> usamos EXIF (ou data do arquivo) para definir o ano.
+                  <strong>Auto-detect:</strong> EXIF (or file date) sets the year per photo.
                 </Text>
               </HStack>
 
               <HStack spacing={2}>
                 <Icon as={FaMapMarkerAlt} color="blue.500" />
                 <Text fontSize="sm" color="blue.700" _dark={{ color: 'blue.200' }}>
-                  <strong>Ano manual:</strong> opcionalmente, aplique um único ano a todas as fotos.
+                  <strong>Manual year:</strong> optionally apply one year to all photos.
                 </Text>
               </HStack>
             </VStack>
