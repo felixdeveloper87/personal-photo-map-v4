@@ -38,7 +38,6 @@ import { useNavigate } from "react-router-dom";
  */
 const HeaderMobile = ({
   isOpen,
-  isCompact,
   styles,
   colorMode,
   toggleColorMode,
@@ -57,13 +56,13 @@ const HeaderMobile = ({
   onLoginClick,
   onRegisterClick,
   onLogout,
-  onClose, // ⬅️ novo: para fechar pelo X no topo
+  onClose,
 }) => {
   const navigate = useNavigate();
 
   return (
-    <Box display={isCompact ? "block" : "none"}>
-      <Collapse in={isOpen} animateOpacity>
+    <Box display={{ base: "block", lg: "none" }}>
+      <Collapse in={isOpen} animateOpacity transition={{ duration: 0.2, ease: "easeInOut" }}>
         <Box
           {...mobileMenuStyles(styles)}
           position="fixed"
@@ -73,157 +72,198 @@ const HeaderMobile = ({
           zIndex={1000}
           w="100%"
           mt="0"
-          boxShadow="0 10px 30px rgba(0,0,0,0.3)"
-          backdropFilter="blur(12px)"
+          boxShadow="0 6px 20px rgba(0,0,0,0.15)"
+          backdropFilter="blur(16px)"
           overflow="hidden"
         >
-          {/* Barra superior: fechar (esq) e tema (dir), alinhados com o conteúdo */}
-          <Flex
-            align="center"
-            justify="space-between"
-            px={4}
-            pt={3}
-            pb={2}
-            position="sticky"
-            top={0}
-            zIndex={10}
-          >
-            <IconButton
-              aria-label="Close menu"
-              icon={<FaTimes />}
-              onClick={onClose}
-              size="sm"
-              variant="ghost"
-              color={styles.textColor}
-            />
-            <IconButton
-              aria-label="Toggle color mode"
-              icon={colorMode === "light" ? <FaMoon /> : <FaSun />}
-              onClick={toggleColorMode}
-              size="sm"
-              variant="ghost"
-              color={styles.textColor}
-              {...themeToggleStyles?.(styles)}
-            />
-          </Flex>
-
           {isLoggedIn ? (
-            <VStack align="stretch" spacing={3} px={4} pt={2} pb={4}>
-              {/* Perfil do Usuário */}
+            <VStack align="stretch" spacing={{ base: 1, sm: 1.5 }} px={{ base: 1.5, sm: 2 }} pt={0.5} pb={{ base: 1.5, sm: 2 }}>
+              {/* Perfil do Usuário com Controles Integrados */}
               <Flex
                 {...userProfileCardStyles(styles)}
                 align="center"
                 cursor="pointer"
                 onClick={onProfileClick}
                 w="full"
-                justify="center"
+                justify="space-between"
+                py={{ base: 1, sm: 1.5 }}
+                px={{ base: 2, sm: 2.5 }}
+                minH={{ base: "40px", sm: "45px" }}
               >
-                <Avatar
-                  size="md"
-                  name={fullname}
-                  mr={4}
-                  bg={isPremium ? styles.premiumGradient : styles.accentColor}
-                  color="white"
-                  ring="3px"
-                  ringColor={isPremium ? styles.premiumBorderColor : "rgba(255, 255, 255, 0.3)"}
-                  transition="all 0.3s ease"
-                />
-                <Box textAlign="center">
-                  <Text color={styles.textColor} fontSize="lg" fontWeight="700">
-                    {fullname}
-                  </Text>
-                  {isPremium && (
-                    <Badge
-                      mt={2}
-                      colorScheme="yellow"
-                      variant="solid"
-                      borderRadius="full"
-                      px={3}
-                      py={1}
+                {/* Lado esquerdo: Avatar e informações do usuário */}
+                <Flex align="center" flex={1}>
+                  <Avatar
+                    size="xs"
+                    name={fullname}
+                    mr={{ base: 2, sm: 2.5 }}
+                    bg={isPremium ? styles.premiumGradient : styles.accentColor}
+                    color="white"
+                    ring="1px"
+                    ringColor={isPremium ? styles.premiumBorderColor : "rgba(255, 255, 255, 0.3)"}
+                    transition="all 0.2s ease"
+                  />
+                  <Box flex={1}>
+                    <Text 
+                      color={styles.textColor} 
+                      fontSize={{ base: "xs", sm: "sm" }} 
+                      fontWeight="600" 
+                      lineHeight="1.2"
+                      noOfLines={1}
                     >
-                      PREMIUM ✨
-                    </Badge>
-                  )}
-                </Box>
+                      {fullname}
+                    </Text>
+                    {isPremium && (
+                      <Badge
+                        mt={0.5}
+                        colorScheme="yellow"
+                        variant="solid"
+                        borderRadius="full"
+                        px={{ base: 1, sm: 1.5 }}
+                        py={0}
+                        fontSize={{ base: "10px", sm: "xs" }}
+                        h={{ base: "14px", sm: "16px" }}
+                      >
+                        PREMIUM
+                      </Badge>
+                    )}
+                  </Box>
+                </Flex>
+
+                {/* Lado direito: Controles (Tema e Fechar) */}
+                <HStack spacing={1} ml={2}>
+                  {/* Botão de Tema */}
+                  <IconButton
+                    aria-label="Toggle color mode"
+                    icon={colorMode === "light" ? <FaMoon /> : <FaSun />}
+                    onClick={toggleColorMode}
+                    size="xs"
+                    variant="ghost"
+                    color={styles.textColor}
+                    borderRadius="lg"
+                    bg="rgba(255, 255, 255, 0.1)"
+                    border="1px solid"
+                    borderColor="rgba(255, 255, 255, 0.15)"
+                    _hover={{
+                      bg: "rgba(255, 255, 255, 0.15)",
+                      transform: "scale(1.05)",
+                      borderColor: "rgba(255, 255, 255, 0.25)"
+                    }}
+                    w="28px"
+                    h="28px"
+                    minW="28px"
+                    minH="28px"
+                  />
+                  
+                  {/* Botão de Fechar */}
+                  <IconButton
+                    aria-label="Close menu"
+                    icon={<FaTimes />}
+                    onClick={onClose}
+                    size="xs"
+                    variant="ghost"
+                    color={styles.warningColor}
+                    borderRadius="lg"
+                    bg="rgba(239, 68, 68, 0.1)"
+                    border="1px solid"
+                    borderColor="rgba(239, 68, 68, 0.2)"
+                    _hover={{
+                      bg: "rgba(239, 68, 68, 0.2)",
+                      transform: "scale(1.05)",
+                      borderColor: "rgba(239, 68, 68, 0.3)"
+                    }}
+                    w="28px"
+                    h="28px"
+                    minW="28px"
+                    minH="28px"
+                  />
+                </HStack>
               </Flex>
 
-              {/* Botões de funcionalidades - usando os mesmos do desktop */}
+              {/* Botões responsivos - Grid adaptável */}
               <Box w="full">
-                {/* Grid de botões quadrados 2x2 */}
+                {/* Em telas muito pequenas (< 320px): 2x2, em telas pequenas (>= 320px): 4x1 */}
                 <Box
                   display="grid"
-                  gridTemplateColumns="1fr 1fr"
-                  gap={3}
+                  gridTemplateColumns={{ base: "1fr 1fr", sm: "repeat(4, 1fr)" }}
+                  gap={{ base: 1, sm: 1 }}
                   w="full"
                 >
                   {/* Photo Storage Button */}
                   <ModernPhotoStorageButton
                     onClick={onPhotoStorageClick}
                     w="full"
-                    h="80px"
-                    size="md"
-                    borderRadius="xl"
+                    h={{ base: "36px", sm: "38px" }}
+                    size="xs"
+                    borderRadius="md"
                     display="flex"
-                    flexDirection="column"
+                    flexDirection={{ base: "column", sm: "row" }}
                     alignItems="center"
                     justifyContent="center"
-                    gap={2}
+                    gap={{ base: 0, sm: 1 }}
+                    fontSize={{ base: "10px", sm: "xs" }}
+                    fontWeight="500"
+                    px={{ base: 1, sm: 1.5 }}
                   />
-
 
                   {/* Countries Visited Button */}
                   <ModernCountriesVisitedButton
                     onClick={onCountriesClick}
                     w="full"
-                    h="80px"
-                    size="md"
-                    borderRadius="xl"
+                    h={{ base: "36px", sm: "38px" }}
+                    size="xs"
+                    borderRadius="md"
                     display="flex"
-                    flexDirection="column"
+                    flexDirection={{ base: "column", sm: "row" }}
                     alignItems="center"
                     justifyContent="center"
-                    gap={2}
+                    gap={{ base: 0, sm: 1 }}
+                    fontSize={{ base: "10px", sm: "xs" }}
+                    fontWeight="500"
+                    px={{ base: 1, sm: 1.5 }}
                   />
 
                   {/* Search Button */}
                   <ModernSearchButton
                     onClick={() => {
-                      // Encontrar e clicar no botão oculto do SearchForm
                       const searchTrigger = document.querySelector('[data-search-trigger]');
                       if (searchTrigger) {
                         searchTrigger.click();
                       }
-                      // Não fechar o menu imediatamente para permitir que o usuário use o SearchForm
-                      // O menu será fechado quando o SearchForm for fechado
                     }}
                     w="full"
-                    h="80px"
-                    size="md"
-                    borderRadius="xl"
+                    h={{ base: "36px", sm: "38px" }}
+                    size="xs"
+                    borderRadius="md"
                     display="flex"
-                    flexDirection="column"
+                    flexDirection={{ base: "column", sm: "row" }}
                     alignItems="center"
                     justifyContent="center"
-                    gap={2}
+                    gap={{ base: 0, sm: 1 }}
+                    fontSize={{ base: "10px", sm: "xs" }}
+                    fontWeight="500"
+                    px={{ base: 1, sm: 1.5 }}
                   />
 
                   {/* Timeline Button */}
                   <ModernTimelineButton
                     onClick={onTimelineClick}
                     w="full"
-                    h="80px"
-                    size="md"
-                    borderRadius="xl"
+                    h={{ base: "36px", sm: "38px" }}
+                    size="xs"
+                    borderRadius="md"
                     display="flex"
-                    flexDirection="column"
+                    flexDirection={{ base: "column", sm: "row" }}
                     alignItems="center"
                     justifyContent="center"
-                    gap={2}
+                    gap={{ base: 0, sm: 1 }}
+                    fontSize={{ base: "10px", sm: "xs" }}
+                    fontWeight="500"
+                    px={{ base: 1, sm: 1.5 }}
                   />
                 </Box>
               </Box>
 
-              {/* Upgrade Premium */}
+              {/* Upgrade Premium - Responsivo */}
               {!isPremium && (
                 <ModernUpgradeToPremiumButton
                   onClick={() => {
@@ -231,36 +271,41 @@ const HeaderMobile = ({
                     onClose?.();
                   }}
                   w="full"
+                  size="xs"
+                  h={{ base: "30px", sm: "32px" }}
+                  fontSize={{ base: "10px", sm: "xs" }}
+                  fontWeight="600"
                 />
               )}
 
-              {/* Logout */}
+              {/* Logout - Compacto */}
               <Flex
                 w="full"
                 bg={styles.cardBg}
                 color={styles.warningColor}
                 border="1px solid"
                 borderColor={styles.cardBorder}
-                borderRadius="xl"
-                p={4}
+                borderRadius="md"
+                p={{ base: 1, sm: 1.5 }}
                 align="center"
                 justify="center"
                 cursor="pointer"
+                h={{ base: "26px", sm: "28px" }}
                 onClick={() => {
                   onLogout();
-                  navigate('/'); // Redireciona para a landing page após logout
+                  navigate('/');
                   onClose?.();
                 }}
                 _hover={{
                   bg: styles.cardHover,
-                  transform: "translateY(-2px)",
+                  transform: "translateY(-0.5px)",
                   boxShadow: styles.cardShadowHover,
                 }}
-                transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                transition="all 0.15s cubic-bezier(0.4, 0, 0.2, 1)"
                 backdropFilter="blur(20px)"
               >
-                <FaSignOutAlt size={20} />
-                <Text ml={3} fontWeight="600">
+                <FaSignOutAlt size={12} />
+                <Text ml={{ base: 1, sm: 1.5 }} fontWeight="500" fontSize={{ base: "9px", sm: "10px" }}>
                   Logout
                 </Text>
               </Flex>
@@ -273,22 +318,30 @@ const HeaderMobile = ({
               />
             </VStack>
           ) : (
-            <VStack spacing={6} px={4} pt={2} pb={4}>
-              <HStack justify="center" w="full">
-                <Text color={styles.textColor} fontSize="lg" fontWeight="600">
+            <VStack spacing={{ base: 1.5, sm: 2 }} px={2} pt={0.5} pb={2}>
+              <HStack justify="center" w="full" py={1}>
+                <Text 
+                  color={styles.textColor} 
+                  fontSize={{ base: "xs", sm: "sm" }} 
+                  fontWeight="600"
+                  textAlign="center"
+                >
                   Welcome to Photomap
                 </Text>
               </HStack>
-              {/* Map button is rendered next to the logo in Header.jsx for compact layouts */}
               <ModernLoginButton
                 onClick={onLoginClick}
                 w="full"
-                size="md"
+                size="xs"
+                h={{ base: "32px", sm: "35px" }}
+                fontSize={{ base: "xs", sm: "sm" }}
               />
               <ModernRegisterButton
                 onClick={onRegisterClick}
                 w="full"
-                size="md"
+                size="xs"
+                h={{ base: "32px", sm: "35px" }}
+                fontSize={{ base: "xs", sm: "sm" }}
               />
             </VStack>
           )}

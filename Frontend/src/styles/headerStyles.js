@@ -34,18 +34,18 @@ export const useHeaderStyles = () => {
     "rgba(51, 65, 85, 0.8)"
   );
 
-  // Sombras modernas e sutis
+  // Sombras modernas e sutis - mais suaves para mobile
   const boxShadow = useColorModeValue(
-    "0 8px 32px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08)",
-    "0 8px 32px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3)"
+    "0 6px 24px rgba(0, 0, 0, 0.08), 0 3px 12px rgba(0, 0, 0, 0.06)",
+    "0 6px 24px rgba(0, 0, 0, 0.3), 0 3px 12px rgba(0, 0, 0, 0.25)"
   );
   const cardShadow = useColorModeValue(
-    "0 4px 20px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.06)",
-    "0 4px 20px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2)"
+    "0 3px 15px rgba(0, 0, 0, 0.06), 0 1px 6px rgba(0, 0, 0, 0.04)",
+    "0 3px 15px rgba(0, 0, 0, 0.25), 0 1px 6px rgba(0, 0, 0, 0.15)"
   );
   const cardShadowHover = useColorModeValue(
-    "0 12px 40px rgba(0, 0, 0, 0.15), 0 6px 20px rgba(0, 0, 0, 0.1)",
-    "0 12px 40px rgba(0, 0, 0, 0.5), 0 6px 20px rgba(0, 0, 0, 0.4)"
+    "0 8px 25px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08)",
+    "0 8px 25px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3)"
   );
 
   // Gradientes premium modernizados
@@ -169,10 +169,10 @@ export const cardStyles = (isPremium = false, premiumStyles = {}, themeStyles = 
 });
 
 export const mobileMenuStyles = (themeStyles = {}) => ({
-  pb: 4,
-  pt: 2,
-  borderRadius: "2xl",
-  backdropFilter: "blur(12px)",
+  pb: 2,
+  pt: 0,
+  borderRadius: "lg",
+  backdropFilter: "blur(20px)",
   border: "1px solid",
   borderColor: themeStyles.cardBorder,
   mt: 1,
@@ -180,7 +180,14 @@ export const mobileMenuStyles = (themeStyles = {}) => ({
   boxShadow: themeStyles.cardShadow,
   // Performance optimizations
   willChange: "transform, opacity",
-  perspective: 1000
+  perspective: 1000,
+  // Smooth animations
+  transition: "all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+  // Responsive design
+  maxW: { base: "98vw", sm: "95vw" },
+  mx: "auto",
+  // Prevent horizontal scroll on very small screens
+  overflowX: "hidden"
 });
 
 // Novos estilos para elementos específicos
@@ -234,41 +241,43 @@ export const counterCardStyles = (themeStyles = {}) => ({
 
 export const userProfileCardStyles = (themeStyles = {}) => ({
   bg: themeStyles.cardBg,
-  px: 4,
-  py: 3,
-  borderRadius: "2xl",
+  px: 2.5,
+  py: 1.5,
+  borderRadius: "md",
   cursor: "pointer",
   _hover: {
     bg: themeStyles.cardHover,
-    transform: "translateY(-2px)",
+    transform: "translateY(-0.5px)",
     boxShadow: themeStyles.cardShadowHover,
     borderColor: "rgba(255, 255, 255, 0.3)"
   },
-  transition: "all 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
-  backdropFilter: "blur(12px)",
-  border: "2px solid",
+  transition: "all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+  backdropFilter: "blur(20px)",
+  border: "1px solid",
   borderColor: themeStyles.cardBorder,
   position: "relative",
   overflow: "hidden",
   // Performance optimizations
-  willChange: "transform"
+  willChange: "transform",
+  // Ultra compact
+  minH: "45px"
 });
 
 export const counterCardEnhancedStyles = (themeStyles = {}) => ({
   bg: themeStyles.cardBg,
-  px: 4,
-  py: 3,
-  borderRadius: "2xl",
+  px: 3,
+  py: 2,
+  borderRadius: "lg",
   cursor: "pointer",
   _hover: {
     bg: themeStyles.cardHover,
-    transform: "translateY(-2px)",
+    transform: "translateY(-1px)",
     boxShadow: themeStyles.cardShadowHover,
     borderColor: "rgba(255, 255, 255, 0.3)"
   },
-  transition: "all 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
-  backdropFilter: "blur(12px)",
-  border: "2px solid",
+  transition: "all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+  backdropFilter: "blur(16px)",
+  border: "1px solid",
   borderColor: themeStyles.cardBorder,
   position: "relative",
   overflow: "hidden",
