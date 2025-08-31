@@ -61,17 +61,7 @@ const IndicatorsModal = ({
   const weatherDisclosure = useDisclosure({ defaultIsOpen: true });
   const cultureDisclosure = useDisclosure({ defaultIsOpen: true });
 
-  // Função para extrair religião principal dos dados do factbook
-  const getMainReligion = (factbookData) => {
-    if (!factbookData?.religion) return null;
-    const religionText = String(factbookData.religion);
-    const firstReligion = religionText.split(',')[0]?.split('%')[0]?.trim();
-    if (firstReligion && firstReligion.length > 0) {
-      return firstReligion;
-    }
-    const cleanReligion = religionText.split(/[,\-–—]/)[0]?.trim();
-    return cleanReligion || religionText;
-  };
+
 
   // Função para formatar coordenadas
   const formatCoordinates = (coord) => {
@@ -385,7 +375,7 @@ const IndicatorsModal = ({
         <CollapsibleHeader
           icon={FaBook}
           title="Culture & Religion"
-          badgeText="3 indicators"
+          badgeText="4 indicators"
           colorScheme="purple"
           disclosure={cultureDisclosure}
           isExpanded={cultureDisclosure.isOpen}
@@ -400,25 +390,33 @@ const IndicatorsModal = ({
             borderColor={useColorModeValue('gray.200', 'gray.600')}
           >
             <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} gap={3}>
-              {getMainReligion(factbookData) && (
+              {factbookData?.religion && factbookData.religion !== 'N/A' && (
                 <InfoBox 
                   icon={FaPrayingHands} 
                   label="Main Religion" 
-                  value={getMainReligion(factbookData)} 
+                  value={factbookData.religion} 
                   colorScheme="purple" 
+                />
+              )}
+              {factbookData?.culture && factbookData.culture !== 'N/A' && (
+                <InfoBox 
+                  icon={FaBook} 
+                  label="Cultural Heritage" 
+                  value={factbookData.culture} 
+                  colorScheme="orange" 
                 />
               )}
               <InfoBox 
                 icon={FaBook} 
                 label="Language" 
                 value={countryInfo?.officialLanguage} 
-                colorScheme="orange" 
+                colorScheme="blue" 
               />
               <InfoBox 
                 icon={FaCity} 
                 label="Capital" 
                 value={countryInfo?.capital} 
-                colorScheme="blue" 
+                colorScheme="teal" 
               />
             </SimpleGrid>
           </Box>
@@ -429,12 +427,12 @@ const IndicatorsModal = ({
       <Box mt={8} p={4} bg={useColorModeValue('gray.50', 'gray.700')} borderRadius="md">
         <VStack spacing={2} align="center">
           <Text fontSize="sm" color={useColorModeValue('gray.600', 'gray.300')} textAlign="center">
-            Data sources: World Bank, OpenWeatherMap, RestCountries, Exchange Rate API
+            Data sources: World Bank, OpenWeatherMap, RestCountries, Wikipedia, Exchange Rate API
           </Text>
           <HStack spacing={4} fontSize="xs" color={useColorModeValue('gray.500', 'gray.400')}>
             <Text>Last updated: {new Date().toLocaleDateString()}</Text>
             <Text>•</Text>
-            <Text>Total indicators: 23+</Text>
+            <Text>Total indicators: 25+</Text>
           </HStack>
         </VStack>
       </Box>

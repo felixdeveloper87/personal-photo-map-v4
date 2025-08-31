@@ -54,6 +54,8 @@ export const fetchCountryData = async (countryId) => {
   }
 };
 
+
+
 export const fetchWeatherData = async (capital, countryCode) => {
   const query = `${capital},${countryCode}`;
   const response = await fetch(
@@ -82,21 +84,138 @@ export const fetchExchangeRate = async (currency) => {
 
 export const fetchFactbookData = async (countryId) => {
   try {
-    // Mock data for CIA Factbook - you can replace this with a real API call
-    const mockFactbookData = {
+    // Primeiro, tentar buscar dados reais de religião
+    const religionData = await fetchReligionData(countryId);
+    
+    // Dados base do Factbook
+    const factbookData = {
       government: 'Democratic Republic',
       economy: 'Mixed Economy',
       population: 'Varies by country',
       geography: 'Diverse landscapes',
-      people: 'Multi-ethnic population'
+      people: 'Multi-ethnic population',
+      religion: religionData?.religion || 'N/A',
+      culture: religionData?.culture || 'N/A',
+      wikipediaSummary: religionData?.wikipediaSummary || null
     };
     
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    return mockFactbookData;
+    return factbookData;
   } catch (error) {
     console.error('Error fetching Factbook data:', error);
+    return {
+      government: 'N/A',
+      economy: 'N/A',
+      population: 'N/A',
+      geography: 'N/A',
+      people: 'N/A',
+      religion: 'N/A',
+      culture: 'N/A',
+      wikipediaSummary: null
+    };
+  }
+};
+
+// Função para buscar dados de religião da Wikipedia
+export const fetchReligionData = async (countryId) => {
+  try {
+    // Buscar dados da Wikipedia
+    const wikipediaData = await fetchWikipediaData(countryId);
+    if (wikipediaData) {
+      return {
+        religion: wikipediaData.religion || 'N/A',
+        culture: wikipediaData.culture || 'N/A',
+        wikipediaSummary: wikipediaData.summary
+      };
+    }
+
+    return {
+      religion: 'N/A',
+      culture: 'N/A',
+      wikipediaSummary: null
+    };
+  } catch (error) {
+    console.error('Error fetching religion data:', error);
+    return {
+      religion: 'N/A',
+      culture: 'N/A',
+      wikipediaSummary: null
+    };
+  }
+};
+
+// Função para buscar dados da Wikipedia
+export const fetchWikipediaData = async (countryId) => {
+  try {
+    // Obter o nome do país para buscar na Wikipedia
+    const countryName = countries.getName(countryId.toUpperCase(), 'en');
+    if (!countryName) return null;
+
+    // Buscar dados da Wikipedia usando a API pública
+    const searchUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(countryName)}`;
+    const response = await fetch(searchUrl);
+    
+    if (!response.ok) return null;
+    
+    const data = await response.json();
+    
+    // Extrair informações relevantes
+    const summary = data.extract || null;
+    
+    // Buscar dados específicos de religião e cultura
+    const religionData = await extractReligionFromWikipedia(countryName);
+    
+    return {
+      summary,
+      religion: religionData.religion,
+      culture: religionData.culture
+    };
+  } catch (error) {
+    console.warn('Wikipedia API error:', error);
     return null;
   }
+};
+
+// Função para extrair dados de religião da Wikipedia
+const extractReligionFromWikipedia = async (countryName) => {
+  try {
+    // Buscar na Wikipedia por informações específicas sobre religião
+    const searchUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(countryName + " religion")}`;
+    const response = await fetch(searchUrl);
+    
+    if (response.ok) {
+      const data = await response.json();
+      // Tentar extrair informações de religião do resumo
+      const summary = data.extract || '';
+      
+      // Padrões comuns para identificar religiões principais
+      const religionPatterns = {
+        'Christianity': /Christian|Catholic|Protestant|Orthodox/gi,
+        'Islam': /Muslim|Islam|Islamic/gi,
+        'Hinduism': /Hindu|Hinduism/gi,
+        'Buddhism': /Buddhist|Buddhism/gi,
+        'Judaism': /Jewish|Judaism/gi,
+        'Atheism': /Atheist|Atheism|Non-religious/gi
+      };
+      
+      let mainReligion = 'N/A';
+      for (const [religion, pattern] of Object.entries(religionPatterns)) {
+        if (pattern.test(summary)) {
+          mainReligion = religion;
+          break;
+        }
+      }
+      
+      return {
+        religion: mainReligion,
+        culture: 'Cultural heritage information available'
+      };
+    }
+  } catch (error) {
+    console.warn('Error extracting religion from Wikipedia:', error);
+  }
+  
+  return {
+    religion: 'N/A',
+    culture: 'N/A'
+  };
 };
