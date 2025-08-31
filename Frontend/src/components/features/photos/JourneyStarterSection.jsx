@@ -84,9 +84,9 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
         {/* Floating Elements */}
         <Box
           position="absolute"
-          top="8%"
-          right="12%"
-          fontSize="5xl"
+          top={{ base: "5%", md: "8%" }}
+          right={{ base: "8%", md: "12%" }}
+          fontSize={{ base: "2xl", sm: "3xl", md: "4xl", lg: "5xl" }}
           opacity={useColorModeValue("0.3", "0.5")}
           className="floating-element"
           zIndex={1}
@@ -95,9 +95,9 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
         </Box>
         <Box
           position="absolute"
-          bottom="12%"
-          left="8%"
-          fontSize="4xl"
+          bottom={{ base: "8%", md: "12%" }}
+          left={{ base: "5%", md: "8%" }}
+          fontSize={{ base: "xl", sm: "2xl", md: "3xl", lg: "4xl" }}
           opacity={useColorModeValue("0.4", "0.6")}
           className="floating-element-reverse"
           zIndex={1}
@@ -106,9 +106,9 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
         </Box>
         <Box
           position="absolute"
-          top="55%"
-          right="6%"
-          fontSize="3xl"
+          top={{ base: "45%", md: "55%" }}
+          right={{ base: "3%", md: "6%" }}
+          fontSize={{ base: "lg", sm: "xl", md: "2xl", lg: "3xl" }}
           opacity={useColorModeValue("0.3", "0.5")}
           className="floating-element"
           zIndex={1}
@@ -117,9 +117,9 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
         </Box>
         <Box
           position="absolute"
-          top="25%"
-          left="15%"
-          fontSize="2xl"
+          top={{ base: "20%", md: "25%" }}
+          left={{ base: "8%", md: "15%" }}
+          fontSize={{ base: "md", sm: "lg", md: "xl", lg: "2xl" }}
           opacity={useColorModeValue("0.25", "0.45")}
           className="floating-element-reverse"
           zIndex={1}
@@ -256,15 +256,15 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
             }}
           >
             <Button
-              size="lg"
+              size={{ base: "md", md: "lg" }}
               colorScheme="teal"
-              leftIcon={<Icon as={FaRocket} boxSize={6} />}
+              leftIcon={<Icon as={FaRocket} boxSize={{ base: 4, md: 6 }} />}
               onClick={onImageUploaderOpen}
-              px={10}
-              py={8}
-              fontSize="xl"
+              px={{ base: 6, md: 8, lg: 10 }}
+              py={{ base: 4, md: 6, lg: 8 }}
+              fontSize={{ base: "lg", md: "xl" }}
               fontWeight="bold"
-              borderRadius="2xl"
+              borderRadius={{ base: "xl", md: "2xl" }}
               bg={cardBg}
               color={accentColor}
               border="3px solid"
