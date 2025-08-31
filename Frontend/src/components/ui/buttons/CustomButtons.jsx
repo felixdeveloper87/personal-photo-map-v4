@@ -189,13 +189,25 @@ export const DeleteButton = (props) => (
 );
 
 export const DeleteAlbum = (props) => (
-    <BaseButton icon={<WarningTwoIcon />} gradient="danger" {...props} size="sm" mb={2} >
+    <BaseButton 
+        icon={<WarningTwoIcon />} 
+        gradient="danger" 
+        size={{ base: "xs", sm: "sm", md: "sm" }}
+        mb={{ base: 1, sm: 2, md: 2 }}
+        px={{ base: 2, sm: 3, md: 4 }}
+        py={{ base: 1, sm: 2, md: 2 }}
+        {...props} 
+    >
         {props.children || "Delete Album"}
     </BaseButton>
 );
 
 export const CreateAlbumButton = (props) => (
-    <BaseButton gradient="success" {...props}>
+    <BaseButton 
+        gradient="success" 
+        size={{ base: "sm", sm: "md", md: "md" }}
+        {...props}
+    >
         {props.children || "Create Album"}
     </BaseButton>
 );
@@ -204,6 +216,7 @@ export const YearButton = ({ isActive, children, ...props }) => (
     <BaseButton
         gradient={isActive ? "primary" : "neutral"}
         variant={isActive ? "solid" : "outline"}
+        size={{ base: "sm", sm: "md", md: "md" }}
         {...props}
     >
         {children}
@@ -215,9 +228,11 @@ export const DeleteByYearButton = ({ year, ...props }) => (
     icon={<WarningTwoIcon />}
     gradient="danger"
     fontWeight="semibold"
-    size="sm"
-    borderRadius="xl"
+    size={{ base: "xs", sm: "sm", md: "sm" }}
+    borderRadius={{ base: "lg", sm: "xl", md: "xl" }}
     boxShadow="md"
+    px={{ base: 2, sm: 3, md: 4 }}
+    py={{ base: 1, sm: 2, md: 2 }}
     {...props}
   >
     Delete Images of {year}
@@ -228,9 +243,11 @@ export const DeleteAllByYearButton = ({ year, ...props }) => (
   <BaseButton
     icon={<WarningTwoIcon />}
     gradient="danger"
-    size="sm"
-    borderRadius="xl"
+    size={{ base: "xs", sm: "sm", md: "sm" }}
+    borderRadius={{ base: "lg", sm: "xl", md: "xl" }}
     boxShadow="md"
+    px={{ base: 2, sm: 3, md: 4 }}
+    py={{ base: 1, sm: 2, md: 2 }}
     {...props}
   >
     Delete All {year}

@@ -61,16 +61,22 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
             <Divider />
 
             {/* Action buttons - centered and balanced */}
-            <Flex justify="center" gap={4} flexWrap="wrap">
+            <Flex 
+              justify="center" 
+              gap={{ base: 2, sm: 3, md: 4 }} 
+              flexWrap="wrap"
+              direction={{ base: "column", sm: "row" }}
+              align="center"
+            >
               
               {/* Upload Photos Button - Primary action */}
               <Tooltip label="Share your travel memories" hasArrow>
                 <Button
                   onClick={onImageUploaderOpen}
-                  leftIcon={<Icon as={FaCloudUploadAlt} boxSize={4} />}
+                  leftIcon={<Icon as={FaCloudUploadAlt} boxSize={{ base: 3, sm: 4, md: 4 }} />}
                   variant="ghost"
                   colorScheme="blue"
-                  size="sm"
+                  size={{ base: "sm", sm: "sm", md: "md" }}
                   bg={useColorModeValue('blue.50', 'blue.900')}
                   color={useColorModeValue('blue.600', 'blue.200')}
                   _hover={{
@@ -83,8 +89,9 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
                   transition="all 0.2s ease"
                   borderRadius="md"
                   fontWeight="medium"
-                  minW="120px"
-                  px={6}
+                  minW={{ base: "100%", sm: "120px", md: "120px" }}
+                  px={{ base: 4, sm: 6, md: 6 }}
+                  py={{ base: 2, sm: 2, md: 2 }}
                 >
                   Add Photos
                 </Button>
@@ -94,15 +101,15 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
               <Tooltip label="Coming soon - Share functionality" hasArrow>
                 <Button
                   onClick={handleShare}
-                  leftIcon={<Icon as={FaShare} boxSize={4} />}
+                  leftIcon={<Icon as={FaShare} boxSize={{ base: 3, sm: 4, md: 4 }} />}
                   variant="ghost"
                   colorScheme="gray"
-                  size="sm"
-                  bg={useColorModeValue('gray.100', 'gray.700')}
+                  size={{ base: "sm", sm: "sm", md: "md" }}
+                  bg={useColorModeValue('gray.50', 'gray.700')}
                   color={useColorModeValue('gray.600', 'gray.300')}
                   _hover={{
-                    bg: useColorModeValue('gray.200', 'gray.600'),
-                    transform: "translateY(-1px)",
+                    bg: useColorModeValue('gray.100', 'gray.600'),
+                    transform: "translateY(-1px)"
                   }}
                   _active={{
                     transform: "translateY(0)"
@@ -110,8 +117,9 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
                   transition="all 0.2s ease"
                   borderRadius="md"
                   fontWeight="medium"
-                  minW="120px"
-                  px={6}
+                  minW={{ base: "100%", sm: "120px", md: "120px" }}
+                  px={{ base: 4, sm: 6, md: 6 }}
+                  py={{ base: 2, sm: 2, md: 2 }}
                 >
                   Share
                 </Button>

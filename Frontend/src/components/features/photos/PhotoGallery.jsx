@@ -285,13 +285,13 @@ const PhotoGallery = memo(function PhotoGallery({
       </Box>
 
       {/* Responsive Grid */}
-      <Box maxW="1400px" mx="auto" px={6}>
+      <Box maxW="1400px" mx="auto" px={{ base: 2, sm: 4, md: 6 }}>
         <SimpleGrid
           columns={gridConfig.columns}
           spacing={gridConfig.spacing}
           sx={{ 
-            columnGap: isMobile ? '8px' : '12px', 
-            rowGap: isMobile ? '8px' : '12px' 
+            columnGap: { base: '6px', sm: '8px', md: '12px' }, 
+            rowGap: { base: '6px', sm: '8px', md: '12px' } 
           }}
         >
           {images.map((image, index) => {
@@ -308,7 +308,7 @@ const PhotoGallery = memo(function PhotoGallery({
                 layout
                 style={{ 
                   breakInside: 'avoid', 
-                  marginBottom: isMobile ? '8px' : '12px',
+                  marginBottom: { base: '6px', sm: '8px', md: '12px' },
                   transformOrigin: 'center center'
                 }}
                 transition={{
@@ -318,7 +318,7 @@ const PhotoGallery = memo(function PhotoGallery({
               >
                 <Box
                   position="relative"
-                  borderRadius={isMobile ? "8px" : "12px"}
+                  borderRadius={{ base: "6px", sm: "8px", md: "12px" }}
                   overflow="hidden"
                   bg="white"
                   boxShadow={isSelected ? `0 0 0 3px ${selectionColor}, 0 4px 20px rgba(59, 130, 246, 0.3)` : '0 2px 8px rgba(0, 0, 0, 0.08)'}

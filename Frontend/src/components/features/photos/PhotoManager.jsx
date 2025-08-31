@@ -698,7 +698,12 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
 
         {/* Year and Album Selection - Only show if there are photos */}
         {allImages.length > 0 && (
-          <Wrap spacing={3} justify="center">
+          <Wrap 
+            spacing={{ base: 2, sm: 3, md: 3 }} 
+            justify="center"
+            align="center"
+            px={{ base: 2, sm: 3, md: 4 }}
+          >
             {/* List of Years */}
             {yearsData.map((year) => (
               <WrapItem key={year}>

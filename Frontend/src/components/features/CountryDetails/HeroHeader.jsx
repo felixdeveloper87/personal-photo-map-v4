@@ -354,28 +354,47 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
               <Box
                 display="grid"
                 gridTemplateColumns={{
-                  base: "repeat(3, 1fr)",
+                  base: "repeat(2, 1fr)",
                   sm: "repeat(3, 1fr)",
                   md: "repeat(3, 1fr)",
                   lg: "repeat(2, 1fr)",
                   xl: "repeat(3, 1fr)"
                 }}
-                gap={{ base: 0.5, sm: 1, md: 2, lg: 3 }}
+                gap={{ base: 1, sm: 1.5, md: 2, lg: 3 }}
                 w="full"
                 alignItems="stretch"
                 gridAutoRows="1fr"
+                minH={{ base: "auto", sm: "auto", md: "auto" }}
               >
 
                 {/* InfoBoxes principais */}
-                <InfoBox icon={FaLanguage} label="Language" value={countryInfo?.officialLanguage} colorScheme="orange" size="mobile" />
-                <InfoBox icon={FaUsers} label="Population" value={countryInfo?.population ? formatPopulation(countryInfo.population) : undefined} colorScheme="green" size="mobile" />
-                <InfoBox icon={FaThermometerHalf} label="Temperature" value={weatherData?.temperature ? `${weatherData.temperature}°C` : undefined} colorScheme="red" size="mobile" />
+                <InfoBox 
+                  icon={FaLanguage} 
+                  label="Language" 
+                  value={countryInfo?.officialLanguage} 
+                  colorScheme="orange" 
+                  size={{ base: "mobile", sm: "mobile", md: "default", lg: "default" }}
+                />
+                <InfoBox 
+                  icon={FaUsers} 
+                  label="Population" 
+                  value={countryInfo?.population ? formatPopulation(countryInfo.population) : undefined} 
+                  colorScheme="green" 
+                  size={{ base: "mobile", sm: "mobile", md: "default", lg: "default" }}
+                />
+                <InfoBox 
+                  icon={FaThermometerHalf} 
+                  label="Temperature" 
+                  value={weatherData?.temperature ? `${weatherData.temperature}°C` : undefined} 
+                  colorScheme="red" 
+                  size={{ base: "mobile", sm: "mobile", md: "default", lg: "default" }}
+                />
 
                 {/* See More com fundo destacado - cor mais sutil */}
                 <Box
-                  p={{ base: 2, sm: 3, md: 4 }}
+                  p={{ base: 2, sm: 2.5, md: 3, lg: 4 }}
                   bg="linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)"
-                  borderRadius="xl"
+                  borderRadius={{ base: "lg", sm: "xl", md: "xl", lg: "xl" }}
                   border="2px solid"
                   borderColor="gray.200"
                   _hover={{
@@ -391,21 +410,27 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
                   flexDirection="column"
                   alignItems="center"
                   justifyContent="center"
-                  gap={{ base: 1, sm: 2 }}
+                  gap={{ base: 1, sm: 1.5, md: 2 }}
                   h="100%"
+                  minH={{ base: "80px", sm: "90px", md: "100px", lg: "120px" }}
                 >
-                  <Box p={{ base: 1, sm: 2 }} borderRadius="full" bg="rgba(0, 0, 0, 0.1)" color="gray.600">
-                    <Icon as={FaBook} boxSize={{ base: 4, sm: 5, md: 6 }} />
+                  <Box 
+                    p={{ base: 1, sm: 1.5, md: 2 }} 
+                    borderRadius="full" 
+                    bg="rgba(0, 0, 0, 0.1)" 
+                    color="gray.600"
+                  >
+                    <Icon as={FaBook} boxSize={{ base: 3, sm: 4, md: 5, lg: 6 }} />
                   </Box>
-                  <Text fontSize={{ base: "sm", sm: "md", md: "lg" }} fontWeight="bold">See more</Text>
-                  <Text fontSize={{ base: "xs", sm: "sm" }} opacity={0.8}>More indicators</Text>
+                  <Text fontSize={{ base: "xs", sm: "sm", md: "md", lg: "lg" }} fontWeight="bold">See more</Text>
+                  <Text fontSize={{ base: "xs", sm: "xs", md: "sm" }} opacity={0.8}>More indicators</Text>
                 </Box>
 
                 {/* Check Flights com fundo destacado */}
                 <Box
-                  p={{ base: 2, sm: 3, md: 4 }}
+                  p={{ base: 2, sm: 2.5, md: 3, lg: 4 }}
                   bg="linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)"
-                  borderRadius="xl"
+                  borderRadius={{ base: "lg", sm: "xl", md: "xl", lg: "xl" }}
                   border="2px solid"
                   borderColor="teal.200"
                   _hover={{
@@ -428,23 +453,29 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
                   flexDirection="column"
                   alignItems="center"
                   justifyContent="center"
-                  gap={{ base: 1, sm: 2 }}
+                  gap={{ base: 1, sm: 1.5, md: 2 }}
                   h="100%"
+                  minH={{ base: "80px", sm: "90px", md: "100px", lg: "120px" }}
                 >
-                  <Box p={{ base: 1, sm: 2 }} borderRadius="full" bg="rgba(0, 0, 0, 0.1)" color="gray.700">
-                    <Icon as={FaPlane} boxSize={{ base: 4, sm: 5, md: 6 }} />
+                  <Box 
+                    p={{ base: 1, sm: 1.5, md: 2 }} 
+                    borderRadius="full" 
+                    bg="rgba(0, 0, 0, 0.1)" 
+                    color="gray.700"
+                  >
+                    <Icon as={FaPlane} boxSize={{ base: 3, sm: 4, md: 5, lg: 6 }} />
                   </Box>
-                  <Text fontSize={{ base: "sm", sm: "md", md: "lg" }} fontWeight="bold">Check Flights</Text>
-                  <Text fontSize={{ base: "xs", sm: "sm" }} opacity={0.8}>
+                  <Text fontSize={{ base: "xs", sm: "sm", md: "md", lg: "lg" }} fontWeight="bold">Check Flights</Text>
+                  <Text fontSize={{ base: "xs", sm: "xs", md: "sm" }} opacity={0.8}>
                     to {countries.getName(countryId.toUpperCase(), 'en')}
                   </Text>
                 </Box>
 
                 {/* Find Hotels com fundo destacado */}
                 <Box
-                  p={{ base: 2, sm: 3, md: 4 }}
+                  p={{ base: 2, sm: 2.5, md: 3, lg: 4 }}
                   bg="linear-gradient(135deg, #fff5e6 0%, #ffe4b3 100%)"
-                  borderRadius="xl"
+                  borderRadius={{ base: "lg", sm: "xl", md: "xl", lg: "xl" }}
                   border="2px solid"
                   borderColor="orange.200"
                   _hover={{
@@ -467,14 +498,20 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
                   flexDirection="column"
                   alignItems="center"
                   justifyContent="center"
-                  gap={{ base: 1, sm: 2 }}
+                  gap={{ base: 1, sm: 1.5, md: 2 }}
                   h="100%"
+                  minH={{ base: "80px", sm: "90px", md: "100px", lg: "120px" }}
                 >
-                  <Box p={{ base: 1, sm: 2 }} borderRadius="full" bg="rgba(0, 0, 0, 0.08)" color="gray.700">
-                    <Icon as={FaCity} boxSize={{ base: 4, sm: 5, md: 6 }} />
+                  <Box 
+                    p={{ base: 1, sm: 1.5, md: 2 }} 
+                    borderRadius="full" 
+                    bg="rgba(0, 0, 0, 0.08)" 
+                    color="gray.700"
+                  >
+                    <Icon as={FaCity} boxSize={{ base: 3, sm: 4, md: 5, lg: 6 }} />
                   </Box>
-                  <Text fontSize={{ base: "sm", sm: "md", md: "lg" }} fontWeight="bold">Find Hotels</Text>
-                  <Text fontSize={{ base: "xs", sm: "sm" }} opacity={0.8}>
+                  <Text fontSize={{ base: "xs", sm: "sm", md: "md", lg: "lg" }} fontWeight="bold">Find Hotels</Text>
+                  <Text fontSize={{ base: "xs", sm: "xs", md: "sm" }} opacity={0.8}>
                     in {countries.getName(countryId.toUpperCase(), 'en')}
                   </Text>
                 </Box>

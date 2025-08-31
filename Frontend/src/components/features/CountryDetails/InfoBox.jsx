@@ -140,7 +140,18 @@ const InfoBox = ({
     }
   };
 
-  const currentSize = sizes[size] || sizes.default;
+  // Função para obter tamanho responsivo
+  const getResponsiveSize = (sizeProp) => {
+    if (typeof sizeProp === 'object') {
+      // Se size é um objeto com breakpoints, usar useBreakpointValue
+      const responsiveSize = useBreakpointValue(sizeProp);
+      return sizes[responsiveSize] || sizes.default;
+    }
+    // Se size é uma string, usar diretamente
+    return sizes[sizeProp] || sizes.default;
+  };
+
+  const currentSize = getResponsiveSize(size);
   const currentVariant = variants[variant] || variants.default;
   const currentColorScheme = colorSchemes[colorScheme] || colorSchemes.blue;
 
