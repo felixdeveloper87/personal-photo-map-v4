@@ -57,10 +57,10 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
   const headerBorderRadius = useBreakpointValue({ base: "8px", sm: "10px", md: "12px", lg: "14px" });
   const countryNameSize = useBreakpointValue({ base: "sm", sm: "md", md: "lg", lg: "xl" });
   const capitalTextSize = useBreakpointValue({ base: "xs", sm: "xs", md: "sm", lg: "sm" });
-  const flagHeight = useBreakpointValue({ base: "200px", sm: "250px", md: "300px", lg: "350px", xl: "400px" });
-  const flagBorderRadius = useBreakpointValue({ base: "12px", sm: "16px", md: "20px", lg: "24px" });
+  const flagHeight = useBreakpointValue({ base: "120px", sm: "180px", md: "220px", lg: "280px", xl: "320px" });
+  const flagBorderRadius = useBreakpointValue({ base: "10px", sm: "14px", md: "18px", lg: "22px" });
   const infoBoxGap = useBreakpointValue({ base: 1, sm: 2, md: 3, lg: 4 });
-  const sectionGap = useBreakpointValue({ base: 3, sm: 4, md: 5, lg: 6 });
+  const sectionGap = useBreakpointValue({ base: 2, sm: 3, md: 4, lg: 6 });
 
   return (
     <Box mb={2} position="relative">
@@ -289,12 +289,12 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
           backdropFilter="blur(10px)"
           border="1px solid"
           borderColor={useColorModeValue('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.05)')}
-          p={{ base: 2, sm: 3, md: 4, lg: 4 }}
+          p={{ base: 0.5, sm: 1, md: 2, lg: 3 }}
         >
           {/* Layout principal: esquerda (bandeira 1/3) vs direita (infoboxes 2/3) */}
           <Flex
             direction={{ base: "column", lg: "row" }}
-            gap={sectionGap}
+            gap={{ base: 1, sm: 2, md: 3, lg: 5 }}
             align="flex-start"
             maxW="1600px"
             mx="auto"
@@ -306,7 +306,7 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
               display="flex"
               flexDirection="column"
               alignItems="center"
-              mb={{ base: 4, lg: 0 }}
+              mb={{ base: 1, lg: 0 }}
             >
               <Box
                 width="100%"
@@ -354,26 +354,26 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
               <Box
                 display="grid"
                 gridTemplateColumns={{
-                  base: "repeat(1, 1fr)",
-                  sm: "repeat(2, 1fr)",
-                  md: "repeat(2, 1fr)",
+                  base: "repeat(3, 1fr)",
+                  sm: "repeat(3, 1fr)",
+                  md: "repeat(3, 1fr)",
                   lg: "repeat(2, 1fr)",
                   xl: "repeat(3, 1fr)"
                 }}
-                gap={infoBoxGap}
+                gap={{ base: 0.5, sm: 1, md: 2, lg: 3 }}
                 w="full"
                 alignItems="stretch"
                 gridAutoRows="1fr"
               >
 
                 {/* InfoBoxes principais */}
-                <InfoBox icon={FaLanguage} label="Language" value={countryInfo?.officialLanguage} colorScheme="orange" size="large" />
-                <InfoBox icon={FaUsers} label="Population" value={countryInfo?.population ? formatPopulation(countryInfo.population) : undefined} colorScheme="green" size="large" />
-                <InfoBox icon={FaThermometerHalf} label="Temperature" value={weatherData?.temperature ? `${weatherData.temperature}°C` : undefined} colorScheme="red" size="large" />
+                <InfoBox icon={FaLanguage} label="Language" value={countryInfo?.officialLanguage} colorScheme="orange" size="mobile" />
+                <InfoBox icon={FaUsers} label="Population" value={countryInfo?.population ? formatPopulation(countryInfo.population) : undefined} colorScheme="green" size="mobile" />
+                <InfoBox icon={FaThermometerHalf} label="Temperature" value={weatherData?.temperature ? `${weatherData.temperature}°C` : undefined} colorScheme="red" size="mobile" />
 
                 {/* See More com fundo destacado - cor mais sutil */}
                 <Box
-                  p={4}
+                  p={{ base: 2, sm: 3, md: 4 }}
                   bg="linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)"
                   borderRadius="xl"
                   border="2px solid"
@@ -391,19 +391,19 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
                   flexDirection="column"
                   alignItems="center"
                   justifyContent="center"
-                  gap={2}
+                  gap={{ base: 1, sm: 2 }}
                   h="100%"
                 >
-                  <Box p={2} borderRadius="full" bg="rgba(0, 0, 0, 0.1)" color="gray.600">
-                    <Icon as={FaBook} boxSize={6} />
+                  <Box p={{ base: 1, sm: 2 }} borderRadius="full" bg="rgba(0, 0, 0, 0.1)" color="gray.600">
+                    <Icon as={FaBook} boxSize={{ base: 4, sm: 5, md: 6 }} />
                   </Box>
-                  <Text fontSize="lg" fontWeight="bold">See more</Text>
-                  <Text fontSize="sm" opacity={0.8}>More indicators</Text>
+                  <Text fontSize={{ base: "sm", sm: "md", md: "lg" }} fontWeight="bold">See more</Text>
+                  <Text fontSize={{ base: "xs", sm: "sm" }} opacity={0.8}>More indicators</Text>
                 </Box>
 
                 {/* Check Flights com fundo destacado */}
                 <Box
-                  p={4}
+                  p={{ base: 2, sm: 3, md: 4 }}
                   bg="linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)"
                   borderRadius="xl"
                   border="2px solid"
@@ -428,21 +428,21 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
                   flexDirection="column"
                   alignItems="center"
                   justifyContent="center"
-                  gap={2}
+                  gap={{ base: 1, sm: 2 }}
                   h="100%"
                 >
-                  <Box p={2} borderRadius="full" bg="rgba(0, 0, 0, 0.1)" color="gray.700">
-                    <Icon as={FaPlane} boxSize={6} />
+                  <Box p={{ base: 1, sm: 2 }} borderRadius="full" bg="rgba(0, 0, 0, 0.1)" color="gray.700">
+                    <Icon as={FaPlane} boxSize={{ base: 4, sm: 5, md: 6 }} />
                   </Box>
-                  <Text fontSize="lg" fontWeight="bold">Check Flights</Text>
-                  <Text fontSize="sm" opacity={0.8}>
+                  <Text fontSize={{ base: "sm", sm: "md", md: "lg" }} fontWeight="bold">Check Flights</Text>
+                  <Text fontSize={{ base: "xs", sm: "sm" }} opacity={0.8}>
                     to {countries.getName(countryId.toUpperCase(), 'en')}
                   </Text>
                 </Box>
 
                 {/* Find Hotels com fundo destacado */}
                 <Box
-                  p={4}
+                  p={{ base: 2, sm: 3, md: 4 }}
                   bg="linear-gradient(135deg, #fff5e6 0%, #ffe4b3 100%)"
                   borderRadius="xl"
                   border="2px solid"
@@ -467,14 +467,14 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
                   flexDirection="column"
                   alignItems="center"
                   justifyContent="center"
-                  gap={2}
+                  gap={{ base: 1, sm: 2 }}
                   h="100%"
                 >
-                  <Box p={2} borderRadius="full" bg="rgba(0, 0, 0, 0.08)" color="gray.700">
-                    <Icon as={FaCity} boxSize={6} />
+                  <Box p={{ base: 1, sm: 2 }} borderRadius="full" bg="rgba(0, 0, 0, 0.08)" color="gray.700">
+                    <Icon as={FaCity} boxSize={{ base: 4, sm: 5, md: 6 }} />
                   </Box>
-                  <Text fontSize="lg" fontWeight="bold">Find Hotels</Text>
-                  <Text fontSize="sm" opacity={0.8}>
+                  <Text fontSize={{ base: "sm", sm: "md", md: "lg" }} fontWeight="bold">Find Hotels</Text>
+                  <Text fontSize={{ base: "xs", sm: "sm" }} opacity={0.8}>
                     in {countries.getName(countryId.toUpperCase(), 'en')}
                   </Text>
                 </Box>
