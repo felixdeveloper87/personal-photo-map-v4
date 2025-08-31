@@ -63,7 +63,7 @@ export const educationalFeatures = [
   {
     icon: FaGlobeAmericas,
     title: 'Cultural Insights',
-    description: 'Native languages, religions, currencies, capitals, and demographic information with cultural context.',
+    description: 'Native languages, currencies, capitals, and demographic information with cultural context.',
     color: 'indigo',
     gradient: 'linear(135deg, indigo.400, blue.500)'
   },
@@ -93,7 +93,7 @@ export const benefits = [
   },
   {
     title: 'Cultural Understanding',
-    description: 'Deepen your knowledge of world cultures, religions, and social development patterns through comprehensive research tools.',
+    description: 'Deepen your knowledge of world cultures and social development patterns through comprehensive research tools.',
     icon: FaGlobeAmericas,
     color: 'green',
     gradient: 'linear(135deg, green.400, teal.500)'

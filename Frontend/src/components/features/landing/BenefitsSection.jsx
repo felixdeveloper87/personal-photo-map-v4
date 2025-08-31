@@ -39,7 +39,7 @@ const BenefitsSection = () => {
     },
     {
       title: 'Cultural Understanding',
-      description: 'Deepen your knowledge of world cultures, religions, and social development patterns through comprehensive research tools.',
+      description: 'Deepen your knowledge of world cultures and social development patterns through comprehensive research tools.',
       icon: FaGlobeAmericas,
       color: 'green',
       gradient: 'linear(135deg, green.400, teal.500)'

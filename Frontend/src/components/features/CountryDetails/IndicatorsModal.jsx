@@ -25,7 +25,6 @@ import {
   FaWifi,
   FaCity,
   FaBook,
-  FaPrayingHands,
   FaSun,
   FaThermometerHalf,
   FaBolt,
@@ -374,8 +373,8 @@ const IndicatorsModal = ({
       <Box mb={6}>
         <CollapsibleHeader
           icon={FaBook}
-          title="Culture & Religion"
-          badgeText="4 indicators"
+          title="Culture & Heritage"
+          badgeText="3 indicators"
           colorScheme="purple"
           disclosure={cultureDisclosure}
           isExpanded={cultureDisclosure.isOpen}
@@ -390,14 +389,6 @@ const IndicatorsModal = ({
             borderColor={useColorModeValue('gray.200', 'gray.600')}
           >
             <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} gap={3}>
-              {factbookData?.religion && factbookData.religion !== 'N/A' && (
-                <InfoBox 
-                  icon={FaPrayingHands} 
-                  label="Main Religion" 
-                  value={factbookData.religion} 
-                  colorScheme="purple" 
-                />
-              )}
               {factbookData?.culture && factbookData.culture !== 'N/A' && (
                 <InfoBox 
                   icon={FaBook} 
