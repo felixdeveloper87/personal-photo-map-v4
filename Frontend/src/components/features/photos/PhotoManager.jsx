@@ -1,7 +1,6 @@
 import React, { useContext, useState, useEffect, useRef, useMemo } from 'react';
-import { FaCloudUploadAlt } from 'react-icons/fa';
 import PhotoGallery from './PhotoGallery';
-import ImageUploaderModal from '../../modals/ImageUploaderModal';
+import JourneyStarterSection from './JourneyStarterSection';
 import { CountriesContext } from '../../../context/CountriesContext';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../../context/AuthContext';
@@ -189,12 +188,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
 
 
 
-  // ImageUploaderModal state
-  const {
-    isOpen: isImageUploaderOpen,
-    onOpen: onImageUploaderOpen,
-    onClose: onImageUploaderClose,
-  } = useDisclosure();
+
 
   // Handle upload success
   const handleUploadSuccess = async () => {   
@@ -219,8 +213,6 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
     } catch (error) {
       console.error('❌ Error during upload success processing:', error);
       showErrorToast(toast, 'Photos uploaded but page refresh failed. Please refresh manually.');
-    } finally {
-      onImageUploaderClose();
     }
   };
 
@@ -697,246 +689,11 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
         )}
 
         {/* Inspirational Message when no photos */}
-        {allImages.length === 0 && (
-          <Box 
-            textAlign="center" 
-            py={12} 
-            px={8} 
-            bgGradient="linear(to-br, blue.50, purple.50, pink.50)"
-            borderRadius="2xl"
-            border="3px solid"
-            borderColor="transparent"
-            backgroundClip="padding-box"
-            position="relative"
-            overflow="hidden"
-            mb={6}
-            className="hover-lift"
-            _before={{
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'linear-gradient(45deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1), rgba(236, 72, 153, 0.1))',
-              borderRadius: 'inherit',
-              zIndex: 0
-            }}
-            _after={{
-              content: '""',
-              position: 'absolute',
-              top: '-50%',
-              left: '-50%',
-              right: '-50%',
-              bottom: '-50%',
-              background: 'radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%)',
-              className: "pulse-bg",
-              zIndex: 0
-            }}
-            boxShadow="0 20px 40px rgba(59, 130, 246, 0.15), 0 8px 16px rgba(147, 51, 234, 0.1)"
-          >
-            {/* Floating Elements */}
-            <Box
-              position="absolute"
-              top="10%"
-              right="15%"
-              fontSize="4xl"
-              opacity="0.3"
-              className="floating-element"
-              zIndex={1}
-            >
-              🌟
-            </Box>
-            <Box
-              position="absolute"
-              bottom="15%"
-              left="10%"
-              fontSize="3xl"
-              opacity="0.4"
-              className="floating-element-reverse"
-              zIndex={1}
-            >
-              ✨
-            </Box>
-            <Box
-              position="absolute"
-              top="60%"
-              right="8%"
-              fontSize="2xl"
-              opacity="0.3"
-              className="floating-element"
-              zIndex={1}
-            >
-              🎯
-            </Box>
-
-            {/* Main Content */}
-            <Box position="relative" zIndex={2}>
-              {/* Main Title with Gradient */}
-              <Box
-                mb={6}
-                position="relative"
-                _before={{
-                  content: '""',
-                  position: 'absolute',
-                  top: '-10px',
-                  left: '-20px',
-                  right: '-20px',
-                  bottom: '-10px',
-                  background: 'linear-gradient(135deg, #3B82F6, #8B5CF6, #EC4899)',
-                  borderRadius: 'xl',
-                  opacity: '0.1',
-                  filter: 'blur(20px)',
-                  zIndex: -1
-                }}
-              >
-                <Text 
-                  fontSize={{ base: "3xl", md: "4xl" }} 
-                  fontWeight="extrabold" 
-                  bgGradient="linear(to-r, blue.600, purple.600, pink.600)"
-                  bgClip="text"
-                  mb={2}
-                  textShadow="0 2px 4px rgba(0,0,0,0.1)"
-                  letterSpacing="tight"
-                >
-                  🚀 Your Adventure Begins Now!
-                </Text>
-              </Box>
-
-              {/* Subtitle with enhanced styling */}
-              <Text 
-                fontSize={{ base: "lg", md: "xl" }} 
-                color="gray.700" 
-                mb={6} 
-                lineHeight="1.8"
-                fontWeight="medium"
-                maxW="600px"
-                mx="auto"
-                textShadow="0 1px 2px rgba(0,0,0,0.05)"
-              >
-                This incredible country is waiting for your unique story! 🌍 
-                <br />
-                <Text as="span" color="blue.600" fontWeight="semibold">
-                  Capture breathtaking moments, discover hidden gems, and create memories that will last forever.
-                </Text>
-              </Text>
-
-                          {/* Feature Highlights */}
-            <Box
-              display="flex"
-              flexWrap="wrap"
-              justifyContent="center"
-              gap={4}
-              mb={8}
-              maxW="700px"
-              mx="auto"
-            >
-              {[
-                { icon: "📸", text: "Share Your Vision", color: "blue" },
-                { icon: "🗺️", text: "Map Your Journey", color: "purple" },
-                { icon: "💫", text: "Create Legacy", color: "pink" }
-              ].map((feature, index) => (
-                <Box
-                  key={index}
-                  display="flex"
-                  alignItems="center"
-                  gap={2}
-                  px={4}
-                  py={2}
-                  bg={`${feature.color}.100`}
-                  borderRadius="full"
-                  border="1px solid"
-                  borderColor={`${feature.color}.200`}
-                  className="feature-badge"
-                >
-                  <Text fontSize="lg">{feature.icon}</Text>
-                  <Text fontSize="sm" fontWeight="semibold" color={`${feature.color}.700`}>
-                    {feature.text}
-                  </Text>
-                </Box>
-              ))}
-            </Box>
-
-              {/* Enhanced Call to Action */}
-              <Box
-                position="relative"
-                _before={{
-                  content: '""',
-                  position: 'absolute',
-                  top: '-2px',
-                  left: '-2px',
-                  right: '-2px',
-                  bottom: '-2px',
-                  background: 'linear-gradient(45deg, #3B82F6, #8B5CF6, #EC4899, #3B82F6)',
-                  borderRadius: 'xl',
-                  zIndex: -1,
-                  className: "gradient-border"
-                }}
-              >
-                <Button
-                  size="lg"
-                  colorScheme="blue"
-                  leftIcon={<Icon as={FaCloudUploadAlt} />}
-                  onClick={onImageUploaderOpen}
-                  px={8}
-                  py={6}
-                  fontSize="lg"
-                  fontWeight="bold"
-                  borderRadius="xl"
-                  bg="white"
-                  color="blue.600"
-                  border="2px solid"
-                  borderColor="transparent"
-                  className="cta-button"
-                  position="relative"
-                  overflow="hidden"
-                  _after={{
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: '-100%',
-                    width: '100%',
-                    height: '100%',
-                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
-                    transition: 'left 0.5s',
-                    zIndex: 1
-                  }}
-                  sx={{
-                    '&:hover::after': {
-                      left: '100%'
-                    }
-                  }}
-                >
-                  <Text position="relative" zIndex={2}>
-                    🎬 Start Your Photo Journey
-                  </Text>
-                </Button>
-              </Box>
-
-              {/* Motivational Quote */}
-              <Box
-                mt={6}
-                p={4}
-                bg="white"
-                borderRadius="lg"
-                border="1px solid"
-                borderColor="gray.200"
-                maxW="500px"
-                mx="auto"
-                opacity="0.8"
-                className="quote-box"
-              >
-                <Text 
-                  fontSize="sm" 
-                  color="gray.600" 
-                  fontStyle="italic"
-                  textAlign="center"
-                >
-                  "Every photo tells a story. Every story begins with a single click." ✨
-                </Text>
-              </Box>
-            </Box>
-          </Box>
+                {allImages.length === 0 && (
+          <JourneyStarterSection 
+            countryId={countryId}
+            onUploadSuccess={handleUploadSuccess}
+          />
         )}
 
         {/* Year and Album Selection - Only show if there are photos */}
@@ -1118,14 +875,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
         }}
       />
 
-      {/* Image Upload Modal */}
-      <ImageUploaderModal
-        countryId={countryId}
-        onUploadSuccess={handleUploadSuccess}
-        isOpen={isImageUploaderOpen}
-        onOpen={onImageUploaderOpen}
-        onClose={onImageUploaderClose}
-      />
+
 
     </Box>
   );
