@@ -4,3 +4,4 @@ export * from './mapStyles';
 export * from './homeStyles';
 export * from './landing.css';
 export * from './leafletStyles.css';
+export * from './photoManagerAnimations.css';
