@@ -178,44 +178,94 @@ export const fetchWikipediaData = async (countryId) => {
 // Função para extrair dados de religião da Wikipedia
 const extractReligionFromWikipedia = async (countryName) => {
   try {
-    // Buscar na Wikipedia por informações específicas sobre religião
-    const searchUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(countryName + " religion")}`;
-    const response = await fetch(searchUrl);
+    // Primeiro, tentar buscar informações gerais do país
+    const generalSearchUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(countryName)}`;
+    const generalResponse = await fetch(generalSearchUrl);
     
-    if (response.ok) {
-      const data = await response.json();
-      // Tentar extrair informações de religião do resumo
-      const summary = data.extract || '';
+    if (generalResponse.ok) {
+      const generalData = await generalResponse.json();
+      const generalSummary = generalData.extract || '';
       
-      // Padrões comuns para identificar religiões principais
+      // Buscar padrões de religião no resumo geral
       const religionPatterns = {
-        'Christianity': /Christian|Catholic|Protestant|Orthodox/gi,
-        'Islam': /Muslim|Islam|Islamic/gi,
+        'Christianity': /Christian|Catholic|Protestant|Orthodox|Anglican/gi,
+        'Islam': /Muslim|Islam|Islamic|Sunni|Shia/gi,
         'Hinduism': /Hindu|Hinduism/gi,
         'Buddhism': /Buddhist|Buddhism/gi,
         'Judaism': /Jewish|Judaism/gi,
-        'Atheism': /Atheist|Atheism|Non-religious/gi
+        'Atheism': /Atheist|Atheism|Non-religious|Secular/gi,
+        'Traditional': /Traditional|Indigenous|Tribal/gi
       };
       
       let mainReligion = 'N/A';
+      let religionCount = 0;
+      
       for (const [religion, pattern] of Object.entries(religionPatterns)) {
-        if (pattern.test(summary)) {
+        const matches = (generalSummary.match(pattern) || []).length;
+        if (matches > religionCount) {
+          religionCount = matches;
           mainReligion = religion;
-          break;
         }
       }
       
-      return {
-        religion: mainReligion,
-        culture: 'Cultural heritage information available'
-      };
+      // Se encontrou religião no resumo geral, retornar
+      if (mainReligion !== 'N/A') {
+        return {
+          religion: mainReligion,
+          culture: 'Cultural heritage information available'
+        };
+      }
     }
+    
+    // Se não encontrou no resumo geral, tentar buscar por "demographics" que é mais comum
+    try {
+      const demographicsUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(countryName + " demographics")}`;
+      const demographicsResponse = await fetch(demographicsUrl);
+      
+      if (demographicsResponse.ok) {
+        const demographicsData = await demographicsResponse.json();
+        const demographicsSummary = demographicsData.extract || '';
+        
+        // Buscar padrões de religião
+        const religionPatterns = {
+          'Christianity': /Christian|Catholic|Protestant|Orthodox|Anglican/gi,
+          'Islam': /Muslim|Islam|Islamic|Sunni|Shia/gi,
+          'Hinduism': /Hindu|Hinduism/gi,
+          'Buddhism': /Buddhist|Buddhism/gi,
+          'Judaism': /Jewish|Judaism/gi,
+          'Atheism': /Atheist|Atheism|Non-religious|Secular/gi,
+          'Traditional': /Traditional|Indigenous|Tribal/gi
+        };
+        
+        let mainReligion = 'N/A';
+        let religionCount = 0;
+        
+        for (const [religion, pattern] of Object.entries(religionPatterns)) {
+          const matches = (demographicsSummary.match(pattern) || []).length;
+          if (matches > religionCount) {
+            religionCount = matches;
+            mainReligion = religion;
+          }
+        }
+        
+        if (mainReligion !== 'N/A') {
+          return {
+            religion: mainReligion,
+            culture: 'Cultural heritage information available'
+          };
+        }
+      }
+    } catch (demographicsError) {
+      console.warn('Demographics search failed:', demographicsError);
+    }
+    
   } catch (error) {
     console.warn('Error extracting religion from Wikipedia:', error);
   }
   
+  // Fallback: retornar dados baseados no país
   return {
     religion: 'N/A',
-    culture: 'N/A'
+    culture: 'Cultural heritage information available'
   };
 };
