@@ -203,9 +203,14 @@ const Header = () => {
             <IconButton
               aria-label={mobileMenu.isOpen ? "Close menu" : "Open menu"}
               icon={mobileMenu.isOpen ? <CloseIcon /> : <HamburgerIcon />}
-              onClick={
-                mobileMenu.isOpen ? mobileMenu.onClose : mobileMenu.onOpen
-              }
+              onClick={() => {
+                console.log('Hamburger menu clicked');
+                if (mobileMenu.isOpen) {
+                  mobileMenu.onClose();
+                } else {
+                  mobileMenu.onOpen();
+                }
+              }}
               display={isCompact ? "inline-flex" : "none"}
               variant="ghost"
               color={styles.textColor}

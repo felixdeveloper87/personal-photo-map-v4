@@ -11,8 +11,9 @@ import {
   Flex,
   Center,
   Button,
+  useColorModeValue,
 } from "@chakra-ui/react";
-import { FaImages, FaMap, FaUser, FaSignOutAlt, FaMoon, FaSun, FaTimes } from "react-icons/fa";
+import { FaImages, FaMap, FaUser, FaSignOutAlt, FaMoon, FaSun, FaTimes, FaUserCircle } from "react-icons/fa";
 import { 
   ModernUpgradeToPremiumButton, 
   ModernLoginButton, 
@@ -65,30 +66,29 @@ const HeaderMobile = ({
       <Collapse in={isOpen} animateOpacity transition={{ duration: 0.2, ease: "easeInOut" }}>
         <Box
           {...mobileMenuStyles(styles)}
-          position="fixed"
-          top={0}
+          position="absolute"
+          top="100%"
           left={0}
           right={0}
-          zIndex={1000}
+          zIndex={999}
           w="100%"
-          mt="0"
+          mt={0}
           boxShadow="0 6px 20px rgba(0,0,0,0.15)"
           backdropFilter="blur(16px)"
           overflow="hidden"
         >
           {isLoggedIn ? (
             <VStack align="stretch" spacing={{ base: 1, sm: 1.5 }} px={{ base: 1.5, sm: 2 }} pt={0.5} pb={{ base: 1.5, sm: 2 }}>
-              {/* Perfil do Usuário com Controles Integrados */}
+              {/* Perfil do Usuário - Apenas visual, não clicável */}
               <Flex
                 {...userProfileCardStyles(styles)}
                 align="center"
-                cursor="pointer"
-                onClick={onProfileClick}
                 w="full"
                 justify="space-between"
                 py={{ base: 1, sm: 1.5 }}
                 px={{ base: 2, sm: 2.5 }}
                 minH={{ base: "40px", sm: "45px" }}
+                cursor="default"
               >
                 {/* Lado esquerdo: Avatar e informações do usuário */}
                 <Flex align="center" flex={1}>
@@ -178,6 +178,40 @@ const HeaderMobile = ({
                   />
                 </HStack>
               </Flex>
+
+              {/* Botão My Profile - Explícito e separado */}
+              <Button
+                onClick={() => {
+                  console.log('My Profile clicked in mobile menu');
+                  onProfileClick();
+                }}
+                leftIcon={<FaUserCircle />}
+                variant="ghost"
+                colorScheme="blue"
+                size="sm"
+                w="full"
+                h={{ base: "36px", sm: "38px" }}
+                borderRadius="md"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                gap={2}
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="500"
+                px={{ base: 2, sm: 3 }}
+                bg={useColorModeValue('blue.50', 'blue.900')}
+                color={useColorModeValue('blue.600', 'blue.200')}
+                _hover={{
+                  bg: useColorModeValue('blue.100', 'blue.800'),
+                  transform: "translateY(-1px)",
+                }}
+                _active={{
+                  transform: "translateY(0)"
+                }}
+                transition="all 0.2s ease"
+              >
+                My Profile
+              </Button>
 
               {/* Botões responsivos - Grid adaptável */}
               <Box w="full">

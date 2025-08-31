@@ -187,7 +187,9 @@ export const mobileMenuStyles = (themeStyles = {}) => ({
   maxW: { base: "98vw", sm: "95vw" },
   mx: "auto",
   // Prevent horizontal scroll on very small screens
-  overflowX: "hidden"
+  overflowX: "hidden",
+  // Z-index ajustado para evitar conflitos
+  zIndex: 999
 });
 
 // Novos estilos para elementos específicos
