@@ -1,234 +1,333 @@
-import React, { useState } from 'react';
-import { Box, Button, Icon, useDisclosure, useColorModeValue, Text } from '@chakra-ui/react';
-import { FaRocket, FaPlay, FaArrowRight } from 'react-icons/fa';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from 'react';
+import { Box, Text, Button, Icon, useDisclosure, useColorModeValue } from '@chakra-ui/react';
+import { FaRocket, FaCamera, FaGlobe, FaStar } from 'react-icons/fa';
 import EnhancedImageUploaderModal from '../../modals/EnhancedImageUploaderModal';
-
-const MotionBox = motion(Box);
-const MotionButton = motion(Button);
 
 const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
   const { isOpen: isImageUploaderOpen, onOpen: onImageUploaderOpen, onClose: onImageUploaderClose } = useDisclosure();
-  const [isHovered, setIsHovered] = useState(false);
-  const [isPressed, setIsPressed] = useState(false);
 
   // Theme-aware colors
   const bgGradient = useColorModeValue(
-    'linear(135deg, #667eea 0%, #764ba2 100%)',
-    'linear(135deg, #4facfe 0%, #00f2fe 100%)'
+    'linear(to-br, blue.50, purple.50, pink.50)',
+    'linear(to-br, blue.900, purple.900, pink.900)'
   );
   
-  const buttonBg = useColorModeValue('white', 'gray.800');
-  const textColor = useColorModeValue('gray.700', 'gray.200');
-  const shadowColor = useColorModeValue('rgba(102, 126, 234, 0.4)', 'rgba(79, 172, 254, 0.4)');
+  const cardBg = useColorModeValue('white', 'gray.800');
+  const textColor = useColorModeValue('gray.700', 'gray.300');
+  const headingColor = useColorModeValue('gray.900', 'white');
+  const accentColor = useColorModeValue('teal.500', 'teal.300');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  
+  const titleGradient = useColorModeValue(
+    'linear(to-r, blue.600, purple.600, pink.600, orange.500)',
+    'linear(to-r, blue.400, purple.400, pink.400, orange.400)'
+  );
+  
+  const subtitleGradient = useColorModeValue(
+    'linear(to-r, purple.600, pink.600, orange.500)',
+    'linear(to-r, purple.400, pink.400, orange.400)'
+  );
+  
+  const buttonGradient = useColorModeValue(
+    'linear(135deg, #3B82F6, #8B5CF6, #EC4899, #F59E0B, #3B82F6)',
+    'linear(135deg, #60A5FA, #A78BFA, #F472B6, #FBBF24, #60A5FA)'
+  );
 
   return (
     <>
-      {/* Ultra-Modern Journey Starter Button */}
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        py={20}
-        px={6}
+      <Box 
+        textAlign="center" 
+        py={16} 
+        px={10} 
+        bgGradient={bgGradient}
+        borderRadius="3xl"
+        border="3px solid"
+        borderColor="transparent"
+        backgroundClip="padding-box"
         position="relative"
         overflow="hidden"
+        mb={8}
+        className="hover-lift"
+        _before={{
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: useColorModeValue(
+            'linear-gradient(45deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1), rgba(236, 72, 153, 0.1))',
+            'linear-gradient(45deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2), rgba(236, 72, 153, 0.2))'
+          ),
+          borderRadius: 'inherit',
+          zIndex: 0
+        }}
+        _after={{
+          content: '""',
+          position: 'absolute',
+          top: '-50%',
+          left: '-50%',
+          right: '-50%',
+          bottom: '-50%',
+          background: useColorModeValue(
+            'radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%)',
+            'radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%)'
+          ),
+          className: "pulse-bg",
+          zIndex: 0
+        }}
+        boxShadow={useColorModeValue(
+          "0 25px 50px rgba(59, 130, 246, 0.15), 0 12px 24px rgba(147, 51, 234, 0.1)",
+          "0 25px 50px rgba(59, 130, 246, 0.3), 0 12px 24px rgba(147, 51, 234, 0.2)"
+        )}
       >
-        {/* Animated Background Elements */}
-        <AnimatePresence>
-          {isHovered && (
-            <MotionBox
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              position="absolute"
-              top="50%"
-              left="50%"
-              transform="translate(-50%, -50%)"
-              width="400px"
-              height="400px"
-              borderRadius="full"
-              bgGradient={bgGradient}
-              opacity={0.1}
-              filter="blur(40px)"
-              zIndex={0}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Floating Particles */}
+        {/* Floating Elements */}
         <Box
           position="absolute"
-          top="20%"
-          left="15%"
-          width="4px"
-          height="4px"
-          bg="blue.400"
-          borderRadius="full"
-          className="floating-particle"
-          animation="float 6s ease-in-out infinite"
-        />
-        <Box
-          position="absolute"
-          top="60%"
-          right="20%"
-          width="6px"
-          height="6px"
-          bg="purple.400"
-          borderRadius="full"
-          className="floating-particle"
-          animation="float 8s ease-in-out infinite reverse"
-        />
-        <Box
-          position="absolute"
-          bottom="30%"
-          left="25%"
-          width="3px"
-          height="3px"
-          bg="pink.400"
-          borderRadius="full"
-          className="floating-particle"
-          animation="float 7s ease-in-out infinite"
-        />
-
-        {/* Main Button Container */}
-        <MotionBox
-          position="relative"
+          top={{ base: "5%", md: "8%" }}
+          right={{ base: "8%", md: "12%" }}
+          fontSize={{ base: "2xl", sm: "3xl", md: "4xl", lg: "5xl" }}
+          opacity={useColorModeValue("0.3", "0.5")}
+          className="floating-element"
           zIndex={1}
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
         >
-          {/* Button with Modern Design */}
-          <MotionButton
-            size="lg"
-            onClick={onImageUploaderOpen}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            onMouseDown={() => setIsPressed(true)}
-            onMouseUp={() => setIsPressed(false)}
-            px={12}
-            py={8}
-            fontSize="2xl"
-            fontWeight="bold"
-            borderRadius="2xl"
-            bg={buttonBg}
-            color={textColor}
-            border="2px solid"
-            borderColor="transparent"
+          🚀
+        </Box>
+        <Box
+          position="absolute"
+          bottom={{ base: "8%", md: "12%" }}
+          left={{ base: "5%", md: "8%" }}
+          fontSize={{ base: "xl", sm: "2xl", md: "3xl", lg: "4xl" }}
+          opacity={useColorModeValue("0.4", "0.6")}
+          className="floating-element-reverse"
+          zIndex={1}
+        >
+          ⭐
+        </Box>
+        <Box
+          position="absolute"
+          top={{ base: "45%", md: "55%" }}
+          right={{ base: "3%", md: "6%" }}
+          fontSize={{ base: "lg", sm: "xl", md: "2xl", lg: "3xl" }}
+          opacity={useColorModeValue("0.3", "0.5")}
+          className="floating-element"
+          zIndex={1}
+        >
+          🌟
+        </Box>
+        <Box
+          position="absolute"
+          top={{ base: "20%", md: "25%" }}
+          left={{ base: "8%", md: "15%" }}
+          fontSize={{ base: "md", sm: "lg", md: "xl", lg: "2xl" }}
+          opacity={useColorModeValue("0.25", "0.45")}
+          className="floating-element-reverse"
+          zIndex={1}
+        >
+          🎯
+        </Box>
+
+        {/* Main Content */}
+        <Box position="relative" zIndex={2}>
+          {/* Main Title with Enhanced Styling */}
+          <Box
+            mb={8}
             position="relative"
-            overflow="hidden"
-            boxShadow={`0 20px 40px ${shadowColor}`}
-            whileHover={{ 
-              scale: 1.05,
-              y: -5,
-              transition: { duration: 0.3, ease: "easeOut" }
-            }}
-            whileTap={{ 
-              scale: 0.95,
-              y: 0,
-              transition: { duration: 0.1, ease: "easeOut" }
-            }}
             _before={{
               content: '""',
               position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: bgGradient,
-              borderRadius: 'inherit',
-              opacity: 0,
-              transition: 'opacity 0.3s ease',
+              top: '-15px',
+              left: '-25px',
+              right: '-25px',
+              bottom: '-15px',
+              background: useColorModeValue(
+                'linear-gradient(135deg, #3B82F6, #8B5CF6, #EC4899, #F59E0B)',
+                'linear-gradient(135deg, #60A5FA, #A78BFA, #F472B6, #FBBF24)'
+              ),
+              borderRadius: '2xl',
+              opacity: useColorModeValue('0.15', '0.25'),
+              filter: 'blur(25px)',
               zIndex: -1
             }}
-            _hover={{
-              _before: { opacity: 0.1 },
-              boxShadow: `0 25px 50px ${shadowColor}`,
-              transform: 'translateY(-5px)'
-            }}
-            _active={{
-              transform: 'translateY(0px) scale(0.98)'
+          >
+            <Text 
+              fontSize={{ base: "4xl", md: "5xl", lg: "6xl" }} 
+              fontWeight="black" 
+              bgGradient={titleGradient}
+              bgClip="text"
+              mb={3}
+              textShadow={useColorModeValue("0 4px 8px rgba(0,0,0,0.1)", "0 4px 8px rgba(0,0,0,0.3)")}
+              letterSpacing="tight"
+              lineHeight="0.9"
+            >
+              🌍 Your Global Adventure
+            </Text>
+            <Text 
+              fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }} 
+              fontWeight="extrabold" 
+              bgGradient={subtitleGradient}
+              bgClip="text"
+              mb={2}
+              textShadow={useColorModeValue("0 2px 4px rgba(0,0,0,0.1)", "0 2px 4px rgba(0,0,0,0.3)")}
+            >
+              Begins Right Here!
+            </Text>
+          </Box>
+
+          {/* Enhanced Subtitle */}
+          <Text 
+            fontSize={{ base: "xl", md: "2xl" }} 
+            color={textColor}
+            mb={8} 
+            lineHeight="1.8"
+            fontWeight="medium"
+            maxW="700px"
+            mx="auto"
+            textShadow={useColorModeValue("0 1px 2px rgba(0,0,0,0.05)", "0 1px 2px rgba(0,0,0,0.2)")}
+          >
+            This incredible country is waiting for your unique story! 🌟
+            <br />
+            <Text as="span" color={accentColor} fontWeight="semibold">
+              Capture breathtaking moments, discover hidden gems, and create memories that will last forever.
+            </Text>
+          </Text>
+
+          {/* Enhanced Feature Highlights */}
+          <Box
+            display="flex"
+            flexWrap="wrap"
+            justifyContent="center"
+            gap={5}
+            mb={10}
+            maxW="800px"
+            mx="auto"
+          >
+            {[
+              { icon: FaCamera, text: "Capture Memories", color: "blue", emoji: "📸" },
+              { icon: FaGlobe, text: "Explore World", color: "purple", emoji: "🗺️" },
+              { icon: FaStar, text: "Create Legacy", color: "pink", emoji: "💫" },
+            ].map((feature, index) => (
+              <Box
+                key={index}
+                display="flex"
+                alignItems="center"
+                gap={3}
+                px={6}
+                py={3}
+                bg={useColorModeValue(`${feature.color}.100`, `${feature.color}.800`)}
+                borderRadius="full"
+                border="2px solid"
+                borderColor={useColorModeValue(`${feature.color}.200`, `${feature.color}.600`)}
+                className="feature-badge"
+                minW="160px"
+                justifyContent="center"
+                _hover={{
+                  bg: useColorModeValue(`${feature.color}.200`, `${feature.color}.700`),
+                  transform: "translateY(-2px)",
+                  boxShadow: useColorModeValue(
+                    `0 4px 12px rgba(59, 130, 246, 0.2)`,
+                    `0 4px 12px rgba(59, 130, 246, 0.4)`
+                  )
+                }}
+              >
+                <Icon as={feature.icon} color={useColorModeValue(`${feature.color}.600`, `${feature.color}.300`)} boxSize={5} />
+                <Text fontSize="md" fontWeight="bold" color={useColorModeValue(`${feature.color}.700`, `${feature.color}.200`)}>
+                  {feature.text}
+                </Text>
+                <Text fontSize="lg">{feature.emoji}</Text>
+              </Box>
+            ))}
+          </Box>
+
+          {/* Enhanced Call to Action */}
+          <Box
+            position="relative"
+            _before={{
+              content: '""',
+              position: 'absolute',
+              top: '-3px',
+              left: '-3px',
+              right: '-3px',
+              bottom: '-3px',
+              background: buttonGradient,
+              borderRadius: '2xl',
+              zIndex: -1,
+              className: "gradient-border"
             }}
           >
-            {/* Button Content */}
-            <Box
-              display="flex"
-              alignItems="center"
-              gap={4}
+            <Button
+              size={{ base: "md", md: "lg" }}
+              colorScheme="teal"
+              leftIcon={<Icon as={FaRocket} boxSize={{ base: 4, md: 6 }} />}
+              onClick={onImageUploaderOpen}
+              px={{ base: 6, md: 8, lg: 10 }}
+              py={{ base: 4, md: 6, lg: 8 }}
+              fontSize={{ base: "lg", md: "xl" }}
+              fontWeight="bold"
+              borderRadius={{ base: "xl", md: "2xl" }}
+              bg={cardBg}
+              color={accentColor}
+              border="3px solid"
+              borderColor="transparent"
+              className="cta-button"
               position="relative"
-              zIndex={2}
+              overflow="hidden"
+              _after={{
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: '-100%',
+                width: '100%',
+                height: '100%',
+                background: useColorModeValue(
+                  'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+                  'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)'
+                ),
+                transition: 'left 0.5s',
+                zIndex: 1
+              }}
+              sx={{
+                '&:hover::after': {
+                  left: '100%'
+                }
+              }}
             >
-              {/* Animated Icon */}
-              <MotionBox
-                animate={isHovered ? { rotate: 360 } : { rotate: 0 }}
-                transition={{ duration: 0.6, ease: "easeInOut" }}
-              >
-                <Icon as={FaRocket} boxSize={8} color="blue.500" />
-              </MotionBox>
+              <Text position="relative" zIndex={2}>
+                🎬 Start Your Journey
+              </Text>
+            </Button>
+          </Box>
 
-              {/* Text Content */}
-              <Box textAlign="left">
-                <Text
-                  fontSize="2xl"
-                  fontWeight="bold"
-                  bgGradient={bgGradient}
-                  bgClip="text"
-                  lineHeight="1.2"
-                >
-                  Start Your Journey
-                </Text>
-                <Text
-                  fontSize="sm"
-                  color="gray.500"
-                  fontWeight="medium"
-                  mt={1}
-                >
-                  in this amazing country
-                </Text>
-              </Box>
-
-              {/* Animated Arrow */}
-              <MotionBox
-                animate={isHovered ? { x: 10 } : { x: 0 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-              >
-                <Icon as={FaArrowRight} boxSize={6} color="blue.500" />
-              </MotionBox>
-            </Box>
-
-            {/* Shimmer Effect */}
-            <MotionBox
-              position="absolute"
-              top={0}
-              left="-100%"
-              width="100%"
-              height="100%"
-              background="linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)"
-              animate={isHovered ? { left: "100%" } : { left: "-100%" }}
-              transition={{ duration: 0.8, ease: "easeInOut" }}
-              zIndex={1}
-            />
-          </MotionButton>
-
-          {/* Subtle Glow Effect */}
-          <MotionBox
-            position="absolute"
-            top="50%"
-            left="50%"
-            transform="translate(-50%, -50%)"
-            width="120%"
-            height="120%"
-            borderRadius="2xl"
-            bgGradient={bgGradient}
-            opacity={0}
-            filter="blur(20px)"
-            zIndex={-1}
-            animate={isHovered ? { opacity: 0.3 } : { opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-          />
-        </MotionBox>
+          {/* Enhanced Motivational Quote */}
+          <Box
+            mt={8}
+            p={6}
+            bg={cardBg}
+            borderRadius="xl"
+            border="2px solid"
+            borderColor={borderColor}
+            maxW="600px"
+            mx="auto"
+            opacity={useColorModeValue("0.9", "0.95")}
+            className="quote-box"
+            boxShadow={useColorModeValue("0 8px 25px rgba(0,0,0,0.1)", "0 8px 25px rgba(0,0,0,0.3)")}
+          >
+            <Text 
+              fontSize="lg" 
+              color={textColor}
+              fontStyle="italic"
+              textAlign="center"
+              fontWeight="medium"
+              lineHeight="1.6"
+            >
+              "Every photo tells a story. Every story begins with a single click. 
+              <br />
+              <Text as="span" color={accentColor} fontWeight="semibold">
+                Your adventure is just one upload away!" ✨
+              </Text>
+            </Text>
+          </Box>
+        </Box>
       </Box>
 
       {/* Enhanced Image Uploader Modal */}
@@ -238,19 +337,6 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
         isOpen={isImageUploaderOpen}
         onClose={onImageUploaderClose}
       />
-
-      {/* CSS Animations */}
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          33% { transform: translateY(-20px) rotate(120deg); }
-          66% { transform: translateY(-10px) rotate(240deg); }
-        }
-        
-        .floating-particle {
-          animation: float 6s ease-in-out infinite;
-        }
-      `}</style>
     </>
   );
 };
