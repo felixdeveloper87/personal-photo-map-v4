@@ -118,16 +118,6 @@ const InfoBox = ({
       valueFontSize: isMobile ? "sm" : "md",
       spacing: isMobile ? 2 : 3
     },
-    large: {
-      minW: isMobile ? "200px" : "200px",
-      minH: isMobile ? "120px" : "180px",
-      p: isMobile ? 3 : 5,
-      borderRadius: isMobile ? "12px" : "20px",
-      iconSize: isMobile ? 5 : 6,
-      labelFontSize: isMobile ? "sm" : "md",
-      valueFontSize: isMobile ? "md" : "lg",
-      spacing: isMobile ? 2 : 3
-    },
     mobile: {
       minW: "60px",
       minH: "60px",
@@ -140,13 +130,23 @@ const InfoBox = ({
     },
     compact: {
       minW: isMobile ? "100px" : "120px",
-      minH: isMobile ? "80px" : "100px",
+      minH: isMobile ? "80px" : "135px",
       p: isMobile ? 2 : 3,
       borderRadius: isMobile ? "10px" : "12px",
       iconSize: isMobile ? 5 : 6,
       labelFontSize: isMobile ? "xs" : "sm",
       valueFontSize: isMobile ? "sm" : "sm",
       spacing: isMobile ? 1 : 2
+    },
+    compactXl: {
+      minW: isMobile ? "100px" : "100px",
+      minH: isMobile ? "100px" : "140px",
+      p: isMobile ? 2 : 3,
+      borderRadius: isMobile ? "10px" : "14px",
+      iconSize: isMobile ? 5 : 7,
+      labelFontSize: isMobile ? "xs" : "sm",
+      valueFontSize: isMobile ? "sm" : "md",
+      spacing: isMobile ? 1 : 3
     }
   };
 

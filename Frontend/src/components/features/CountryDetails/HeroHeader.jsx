@@ -58,7 +58,7 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
   const countryNameSize = useBreakpointValue({ base: "sm", sm: "md", md: "lg", lg: "xl" });
   const capitalTextSize = useBreakpointValue({ base: "xs", sm: "xs", md: "sm", lg: "sm" });
   // Flag height balanced with infoboxes - more proportional sizing
-  const flagHeight = useBreakpointValue({ base: "180px", sm: "250px", md: "380px", lg: "280px", xl: "320px" });
+  const flagHeight = useBreakpointValue({ base: "180px", sm: "250px", md: "380px", lg: "280px", xl: "330px" });
   const flagBorderRadius = useBreakpointValue({ base: "12px", sm: "14px", md: "16px", lg: "18px" });
   const infoBoxGap = useBreakpointValue({ base: 1, sm: 2, md: 3, lg: 4 });
   const sectionGap = useBreakpointValue({ base: 2, sm: 3, md: 4, lg: 6 });
@@ -305,18 +305,17 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
           borderColor={useColorModeValue('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.05)')}
           p={{ base: 0.5, sm: 1, md: 2, lg: 3 }}
         >
-          {/* Layout principal: esquerda (bandeira 1/3) vs direita (infoboxes 2/3) */}
           <Flex
             direction={{ base: "column", lg: "row" }}
-            gap={{ base: 1, lg: 4 }}
+            gap={{ base: 1, lg: 3 }}
             align="flex-start"
             maxW="1600px"
             mx="auto"
             minW="0"
           >
             <Box
-              width={{ base: "100%", lg: "35%" }}
-              maxW={{ lg: "400px" }}
+              width={{ base: "100%", lg: "50%", xl: "50%" }}
+              maxW={{ lg: "600px", xl: "700px" }}
               display="flex"
               flexDirection="column"
               alignItems="center"
@@ -358,12 +357,12 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
               </Box>
             </Box>
 
-            {/* Lado Direito: Infoboxes e botões (65% em lg, 100% em mobile) */}
+            {/* Lado Direito: Infoboxes e botões (50% em lg, 100% em mobile) */}
             <Box
               flex="1"
               display="flex"
               flexDirection="column"
-              w={{ base: "100%", lg: "65%" }}
+              w={{ base: "100%", lg: "50%" }}
               alignSelf="stretch"
             >
               {/* Grid dinâmico de infoboxes - organizados automaticamente */}
@@ -381,13 +380,13 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
               >
 
                 {/* InfoBoxes principais */}
-                <InfoBox icon={FaLanguage} label="Language" value={countryInfo?.officialLanguage} colorScheme="orange" size={{ base: "default", sm: "default", md: "default", lg: "compact", xl: "compact" }} />
-                <InfoBox icon={FaUsers} label="Population" value={countryInfo?.population ? formatPopulation(countryInfo.population) : undefined} colorScheme="green" size={{ base: "default", sm: "default", md: "default", lg: "compact", xl: "compact" }} />
-                <InfoBox icon={FaThermometerHalf} label="Temperature" value={weatherData?.temperature ? `${weatherData.temperature}°C` : undefined} colorScheme="red" size={{ base: "default", sm: "default", md: "default", lg: "compact", xl: "compact" }} />
+                <InfoBox icon={FaLanguage} label="Language" value={countryInfo?.officialLanguage} colorScheme="orange" size={{ base: "default", sm: "default", md: "default", lg: "compact", xl: "compactXl" }} />
+                <InfoBox icon={FaUsers} label="Population" value={countryInfo?.population ? formatPopulation(countryInfo.population) : undefined} colorScheme="green" size={{ base: "default", sm: "default", md: "default", lg: "compact", xl: "compactXl" }} />
+                <InfoBox icon={FaThermometerHalf} label="Temperature" value={weatherData?.temperature ? `${weatherData.temperature}°C` : undefined} colorScheme="red" size={{ base: "default", sm: "default", md: "default", lg: "compact", xl: "compactXl" }} />
 
                 {/* See More com fundo destacado - cor mais sutil */}
                 <Box
-                  p={{ base: 2, sm: 3, md: 4, lg: 2, xl: 2.5 }}
+                  p={{ base: 2, sm: 3, md: 4, lg: 2, xl: 3 }}
                   bg="linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)"
                   borderRadius="xl"
                   border="2px solid"
@@ -405,9 +404,9 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
                   flexDirection="column"
                   alignItems="center"
                   justifyContent="center"
-                  gap={{ base: 1, sm: 2, lg: 1 }}
+                  gap={{ base: 1, sm: 2, lg: 1, xl: 2 }}
                   h="100%"
-                  minH={{ lg: "100px" }}
+                  minH={{ lg: "100px", xl: "160px" }}
                 >
                   <Box p={{ base: 1, sm: 2 }} borderRadius="full" bg="rgba(0, 0, 0, 0.1)" color="gray.600">
                     <Icon as={FaBook} boxSize={{ base: 4, sm: 5, md: 6 }} />
@@ -418,7 +417,7 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
 
                 {/* Check Flights com fundo destacado */}
                 <Box
-                  p={{ base: 2, sm: 3, md: 4, lg: 2, xl: 2.5 }}
+                  p={{ base: 2, sm: 3, md: 4, lg: 2, xl: 3 }}
                   bg="linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)"
                   borderRadius="xl"
                   border="2px solid"
@@ -443,9 +442,9 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
                   flexDirection="column"
                   alignItems="center"
                   justifyContent="center"
-                  gap={{ base: 1, sm: 2, lg: 1 }}
+                  gap={{ base: 1, sm: 2, lg: 1, xl: 2 }}
                   h="100%"
-                  minH={{ lg: "100px" }}
+                  minH={{ lg: "100px", xl: "160px" }}
                 >
                   <Box p={{ base: 1, sm: 2 }} borderRadius="full" bg="rgba(0, 0, 0, 0.1)" color="gray.700">
                     <Icon as={FaPlane} boxSize={{ base: 4, sm: 5, md: 6 }} />
@@ -458,7 +457,7 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
 
                 {/* Find Hotels com fundo destacado */}
                 <Box
-                  p={{ base: 2, sm: 3, md: 4, lg: 2, xl: 2.5 }}
+                  p={{ base: 2, sm: 3, md: 4, lg: 2, xl: 3 }}
                   bg="linear-gradient(135deg, #fff5e6 0%, #ffe4b3 100%)"
                   borderRadius="xl"
                   border="2px solid"
@@ -483,9 +482,9 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
                   flexDirection="column"
                   alignItems="center"
                   justifyContent="center"
-                  gap={{ base: 1, sm: 2, lg: 1 }}
+                  gap={{ base: 1, sm: 2, lg: 1, xl: 2 }}
                   h="100%"
-                  minH={{ lg: "100px" }}
+                  minH={{ lg: "100px", xl: "160px" }}
                 >
                   <Box p={{ base: 1, sm: 2 }} borderRadius="full" bg="rgba(0, 0, 0, 0.08)" color="gray.700">
                     <Icon as={FaCity} boxSize={{ base: 4, sm: 5, md: 6 }} />
