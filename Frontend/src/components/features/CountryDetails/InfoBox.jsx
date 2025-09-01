@@ -129,8 +129,8 @@ const InfoBox = ({
       spacing: isMobile ? 2 : 3
     },
     mobile: {
-      minW: "80px",
-      minH: "80px",
+      minW: "60px",
+      minH: "60px",
       p: 3,
       borderRadius: "12px",
       iconSize: 5,
