@@ -1,10 +1,43 @@
 import { Box, Card, CardBody, Text, Flex, VStack, HStack, Button, Icon, useDisclosure, useColorModeValue, Badge, Divider, Tooltip, useToast } from '@chakra-ui/react';
 import { FaCloudUploadAlt, FaGlobe, FaMapMarkerAlt, FaShare } from 'react-icons/fa';
+import { useQuery } from '@tanstack/react-query';
+import { useContext } from 'react';
+import { AuthContext } from '../../../context/AuthContext';
+import { buildApiUrl } from '../../../utils/apiConfig';
 import EnhancedImageUploaderModal from '../../modals/EnhancedImageUploaderModal';
+
+// Helper function to fetch user photos for a country
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
+async function fetchUserPhotos(countryId) {
+  const response = await fetch(buildApiUrl(`/api/images/${countryId}`), {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    if (response.status === 401) {
+      return []; // Return empty array if not authenticated
+    }
+    throw new Error(`Error fetching photos: ${response.status}`);
+  }
+  return response.json();
+}
 
 const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, onUploadSuccess }) => {
   const { isOpen: isImageUploaderOpen, onOpen: onImageUploaderOpen, onClose: onImageUploaderClose } = useDisclosure();
   const toast = useToast();
+  const { isLoggedIn } = useContext(AuthContext);
+
+  // Check if user has photos in this country
+  const { data: userPhotos = [] } = useQuery({
+    queryKey: ['userPhotos', countryId],
+    queryFn: () => fetchUserPhotos(countryId),
+    enabled: !!countryId && isLoggedIn,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: false,
+  });
 
   // Color mode values for subtle design
   const subtleBg = useColorModeValue('gray.50', 'gray.800');
@@ -23,6 +56,11 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
       position: "top"
     });
   };
+
+  // Only render if user has photos in this country
+  if (userPhotos.length === 0) {
+    return null;
+  }
 
   return (
     <Box mb={3}>
@@ -61,22 +99,16 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
             <Divider />
 
             {/* Action buttons - centered and balanced */}
-            <Flex 
-              justify="center" 
-              gap={{ base: 2, sm: 3, md: 4 }} 
-              flexWrap="wrap"
-              direction={{ base: "column", sm: "row" }}
-              align="center"
-            >
+            <Flex justify="center" gap={4} flexWrap="wrap">
               
               {/* Upload Photos Button - Primary action */}
               <Tooltip label="Share your travel memories" hasArrow>
                 <Button
                   onClick={onImageUploaderOpen}
-                  leftIcon={<Icon as={FaCloudUploadAlt} boxSize={{ base: 3, sm: 4, md: 4 }} />}
+                  leftIcon={<Icon as={FaCloudUploadAlt} boxSize={4} />}
                   variant="ghost"
                   colorScheme="blue"
-                  size={{ base: "sm", sm: "sm", md: "md" }}
+                  size="sm"
                   bg={useColorModeValue('blue.50', 'blue.900')}
                   color={useColorModeValue('blue.600', 'blue.200')}
                   _hover={{
@@ -89,9 +121,8 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
                   transition="all 0.2s ease"
                   borderRadius="md"
                   fontWeight="medium"
-                  minW={{ base: "100%", sm: "120px", md: "120px" }}
-                  px={{ base: 4, sm: 6, md: 6 }}
-                  py={{ base: 2, sm: 2, md: 2 }}
+                  minW="120px"
+                  px={6}
                 >
                   Add Photos
                 </Button>
@@ -101,15 +132,15 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
               <Tooltip label="Coming soon - Share functionality" hasArrow>
                 <Button
                   onClick={handleShare}
-                  leftIcon={<Icon as={FaShare} boxSize={{ base: 3, sm: 4, md: 4 }} />}
+                  leftIcon={<Icon as={FaShare} boxSize={4} />}
                   variant="ghost"
                   colorScheme="gray"
-                  size={{ base: "sm", sm: "sm", md: "md" }}
-                  bg={useColorModeValue('gray.50', 'gray.700')}
+                  size="sm"
+                  bg={useColorModeValue('gray.100', 'gray.700')}
                   color={useColorModeValue('gray.600', 'gray.300')}
                   _hover={{
-                    bg: useColorModeValue('gray.100', 'gray.600'),
-                    transform: "translateY(-1px)"
+                    bg: useColorModeValue('gray.200', 'gray.600'),
+                    transform: "translateY(-1px)",
                   }}
                   _active={{
                     transform: "translateY(0)"
@@ -117,9 +148,8 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
                   transition="all 0.2s ease"
                   borderRadius="md"
                   fontWeight="medium"
-                  minW={{ base: "100%", sm: "120px", md: "120px" }}
-                  px={{ base: 4, sm: 6, md: 6 }}
-                  py={{ base: 2, sm: 2, md: 2 }}
+                  minW="120px"
+                  px={6}
                 >
                   Share
                 </Button>
@@ -138,10 +168,10 @@ const CountryInsightsSection = ({ countryInfo, cardBg, borderColor, countryId, o
         </CardBody>
         
         <EnhancedImageUploaderModal
-          countryId={countryId}
-          onUploadSuccess={onUploadSuccess}
           isOpen={isImageUploaderOpen}
           onClose={onImageUploaderClose}
+          onUploadSuccess={onUploadSuccess}
+          countryId={countryId}
         />
       </Card>
     </Box>
