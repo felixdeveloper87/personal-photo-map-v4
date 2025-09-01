@@ -323,7 +323,7 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
             >
               <Box
                 width="100%"
-                maxW={{ base: '95%', lg: '100%' }}
+                maxW={{ base: '100%', lg: '100%' }}
                 height={flagHeight}
                 borderRadius={flagBorderRadius}
                 overflow="hidden"
