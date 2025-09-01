@@ -57,10 +57,16 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
   const headerBorderRadius = useBreakpointValue({ base: "8px", sm: "10px", md: "12px", lg: "14px" });
   const countryNameSize = useBreakpointValue({ base: "sm", sm: "md", md: "lg", lg: "xl" });
   const capitalTextSize = useBreakpointValue({ base: "xs", sm: "xs", md: "sm", lg: "sm" });
-  const flagHeight = useBreakpointValue({ base: "120px", sm: "180px", md: "220px", lg: "280px", xl: "320px" });
+  const flagHeight = useBreakpointValue({ base: "160px", sm: "180px", md: "260px", lg: "280px", xl: "320px" });
   const flagBorderRadius = useBreakpointValue({ base: "10px", sm: "14px", md: "18px", lg: "22px" });
   const infoBoxGap = useBreakpointValue({ base: 1, sm: 2, md: 3, lg: 4 });
   const sectionGap = useBreakpointValue({ base: 2, sm: 3, md: 4, lg: 6 });
+
+  // base =  0px - 480px
+  // sm = 481px - 768px 
+  // md = 769px - 992px
+  // lg = 993px - 1280px
+  // xl = 1281px+
 
   return (
     <Box mb={2} position="relative">
