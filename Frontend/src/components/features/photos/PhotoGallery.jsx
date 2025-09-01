@@ -117,27 +117,25 @@ const PhotoGallery = memo(function PhotoGallery({
     return selectedImageIds.includes(imageId);
   };
 
-  // Handle image selection
+  // Handle image selection - CORRIGIDO
   const handleImageSelection = (imageId, event) => {
-    if (event?.target?.checked) {
-      setSelectedImageIds([...selectedImageIds, imageId]);
-    } else {
+    event?.stopPropagation?.(); // Previne o evento de bubble
+    
+    if (selectedImageIds.includes(imageId)) {
       setSelectedImageIds(selectedImageIds.filter(id => id !== imageId));
+    } else {
+      setSelectedImageIds([...selectedImageIds, imageId]);
     }
   };
 
-  // Handle image click
+  // Handle image click - CORRIGIDO
   const handleImageClick = (index, event) => {
     if (isSelectionMode) {
-      // In selection mode, toggle selection instead of opening modal
+      // Em modo de seleção, alterna a seleção da imagem
       const imageId = images[index].id;
-      if (isImageSelected(imageId)) {
-        setSelectedImageIds(selectedImageIds.filter(id => id !== imageId));
-      } else {
-        setSelectedImageIds([...selectedImageIds, imageId]);
-      }
+      handleImageSelection(imageId, event);
     } else {
-      // Normal mode - open modal
+      // Modo normal - abre modal
       setCurrentImageIndex(index);
       onOpen();
     }
@@ -335,7 +333,7 @@ const PhotoGallery = memo(function PhotoGallery({
                   }`}
                   onClick={(e) => handleImageClick(index, e)}
                 >
-                   {/* Selection overlay */}
+                   {/* Selection overlay - CORRIGIDO */}
                    <AnimatePresence mode="wait">
                      {isSelectionMode && (
                        <motion.div
@@ -374,11 +372,8 @@ const PhotoGallery = memo(function PhotoGallery({
                                transform: 'scale(1.1)',
                              }}
                              transition="all 0.2s ease"
-                             onChange={(e) => {
-                               e?.stopPropagation?.();
-                               handleImageSelection(image.id, e);
-                             }}
-                             onClick={(e) => e?.stopPropagation?.()}
+                             // REMOVIDO - o onChange estava causando conflito
+                             // A seleção agora é controlada apenas pelo handleImageClick
                            />
                          </Box>
                        </motion.div>
