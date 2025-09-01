@@ -67,6 +67,24 @@ const PhotoGallery = memo(function PhotoGallery({
   handleImageSelection,
   isImageSelected,
 }) {
+  // Memoize the handleImageClick function to prevent unnecessary re-renders
+  const handleImageClick = useMemo(() => {
+    return (index, event) => {
+      if (isSelectionMode) {
+        // Em modo de seleção, alterna a seleção da imagem
+        const imageId = images[index].id;
+        if (handleImageSelection) {
+          handleImageSelection(imageId);
+        } else {
+          console.error('handleImageSelection function not provided');
+        }
+      } else {
+        // Modo normal - abre modal
+        setCurrentImageIndex(index);
+        onOpen();
+      }
+    };
+  }, [isSelectionMode, images, handleImageSelection, setCurrentImageIndex, onOpen]);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const fullscreenRef = useRef(null);
@@ -108,29 +126,7 @@ const PhotoGallery = memo(function PhotoGallery({
 
 
 
-  // Handle image click - CORRIGIDO
-  const handleImageClick = (index, event) => {
-    console.log('Image clicked:', { 
-      index, 
-      imageId: images[index]?.id,
-      isSelectionMode, 
-      hasHandleImageSelection: !!handleImageSelection 
-    });
-    
-    if (isSelectionMode) {
-      // Em modo de seleção, alterna a seleção da imagem
-      const imageId = images[index].id;
-      if (handleImageSelection) {
-        handleImageSelection(imageId);
-      } else {
-        console.error('handleImageSelection function not provided');
-      }
-    } else {
-      // Modo normal - abre modal
-      setCurrentImageIndex(index);
-      onOpen();
-    }
-  };
+
 
   // Modal functions
   const closeModal = () => {
@@ -225,14 +221,13 @@ const PhotoGallery = memo(function PhotoGallery({
                size="sm"
                colorScheme={isSelectionMode ? 'blue' : 'gray'}
                variant={isSelectionMode ? 'solid' : 'outline'}
-               onClick={() => {
-                 console.log('Toggle selection mode clicked, current mode:', isSelectionMode);
-                 if (toggleSelectionMode) {
-                   toggleSelectionMode();
-                 } else {
-                   console.error('toggleSelectionMode function not provided');
-                 }
-               }}
+                               onClick={() => {
+                  if (toggleSelectionMode) {
+                    toggleSelectionMode();
+                  } else {
+                    console.error('toggleSelectionMode function not provided');
+                  }
+                }}
                leftIcon={isSelectionMode ? <CheckIcon /> : undefined}
                borderRadius="full"
                px={6}
@@ -292,7 +287,6 @@ const PhotoGallery = memo(function PhotoGallery({
         >
                      {images.map((image, index) => {
              const isSelected = isImageSelected ? isImageSelected(image.id) : false;
-             console.log(`Rendering image ${image.id}, selected: ${isSelected}, isImageSelected function: ${!!isImageSelected}`);
             
             return (
               <motion.div
