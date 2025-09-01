@@ -1,36 +1,24 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { Box, Icon, Text, useColorModeValue } from '@chakra-ui/react';
 import Flag from 'react-world-flags';
 import { FaGlobe } from 'react-icons/fa';
 import { getCachedFlag, normalizeCountryCode } from '../../../utils/flagNormalizer';
 
-const EnhancedFlag = ({ countryCode, isHero = false }) => {
+const EnhancedFlag = ({ countryCode }) => {
   const [flagError, setFlagError] = useState(false);
   const [fallbackImage, setFallbackImage] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Color mode values - hooks devem estar no topo
   const fallbackBg = useColorModeValue('gray.100', 'gray.700');
   const fallbackBorder = useColorModeValue('gray.300', 'gray.600');
   const fallbackText = useColorModeValue('gray.600', 'gray.300');
   const hoverBg = useColorModeValue('gray.200', 'gray.600');
   const hoverBorder = useColorModeValue('gray.400', 'gray.500');
 
-  // Cores memoizadas para evitar recálculos
-  const colors = useMemo(() => ({
-    fallbackBg,
-    fallbackBorder,
-    fallbackText,
-    hoverBg,
-    hoverBorder
-  }), [fallbackBg, fallbackBorder, fallbackText, hoverBg, hoverBorder]);
+  const correctedCode = normalizeCountryCode(countryCode);
 
-  // Usa o utilitário de normalização - memoizado
-  const correctedCode = useMemo(() => normalizeCountryCode(countryCode), [countryCode]);
-
-  // Sistema de fallback inteligente usando o utilitário - memoizado com useCallback
   const handleFlagError = useCallback(async () => {
-    if (flagError) return; // Evita múltiplas chamadas
+    if (flagError) return;
     
     setFlagError(true);
     setIsLoading(true);
@@ -38,8 +26,8 @@ const EnhancedFlag = ({ countryCode, isHero = false }) => {
     try {
       const altFlag = await getCachedFlag(countryCode, {
         preferFormat: 'png',
-        maxRetries: 2, // Reduzido de 3 para 2
-        timeout: 3000  // Reduzido de 5000 para 3000
+        maxRetries: 2,
+        timeout: 3000
       });
       
       if (altFlag) {
@@ -57,8 +45,7 @@ const EnhancedFlag = ({ countryCode, isHero = false }) => {
     setIsLoading(false);
   }, []);
 
-  // Estilos comuns memoizados
-  const commonStyles = useMemo(() => ({
+  const commonStyles = {
     position: 'relative',
     width: '100%',
     height: '100%',
@@ -67,19 +54,18 @@ const EnhancedFlag = ({ countryCode, isHero = false }) => {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    transition: 'opacity 0.2s ease' // Reduzido de 0.3s para 0.2s
-  }), []);
+    transition: 'opacity 0.2s ease'
+  };
 
-  const imageStyles = useMemo(() => ({
+  const imageStyles = {
     width: '100%',
     height: '100%',
     objectFit: 'cover',
     objectPosition: 'center center',
     borderRadius: '20px',
-    transition: 'opacity 0.2s ease' // Reduzido de 0.3s para 0.2s
-  }), []);
+    transition: 'opacity 0.2s ease'
+  };
 
-  // Fallback com imagem alternativa
   if (fallbackImage) {
     return (
       <Box {...commonStyles} opacity={0.8}>
@@ -100,7 +86,7 @@ const EnhancedFlag = ({ countryCode, isHero = false }) => {
             justifyContent="center"
             zIndex={10}
             borderRadius="20px"
-            animation="pulse 1s ease-in-out infinite" // Reduzido de 1.5s para 1s
+            animation="pulse 1s ease-in-out infinite"
           >
             <Icon as={FaGlobe} boxSize={8} color="white" />
           </Box>
@@ -109,15 +95,14 @@ const EnhancedFlag = ({ countryCode, isHero = false }) => {
     );
   }
 
-  // Fallback UI quando não há bandeira
   if (flagError) {
     return (
       <Box
-        bg={colors.fallbackBg}
+        bg={fallbackBg}
         border="2px dashed"
-        borderColor={colors.fallbackBorder}
+        borderColor={fallbackBorder}
         borderRadius="20px"
-        transition="all 0.2s ease" // Reduzido de 0.3s para 0.2s
+        transition="all 0.2s ease"
         opacity={0.7}
         display="flex"
         alignItems="center"
@@ -126,23 +111,22 @@ const EnhancedFlag = ({ countryCode, isHero = false }) => {
         width="100%"
         height="100%"
         _hover={{
-          bg: colors.hoverBg,
-          borderColor: colors.hoverBorder,
+          bg: hoverBg,
+          borderColor: hoverBorder,
           opacity: 0.9
         }}
       >
-        <Icon as={FaGlobe} boxSize={16} color={colors.fallbackText} mb={3} />
-        <Text fontSize="lg" color={colors.fallbackText} textAlign="center" fontWeight="semibold">
+        <Icon as={FaGlobe} boxSize={16} color={fallbackText} mb={3} />
+        <Text fontSize="lg" color={fallbackText} textAlign="center" fontWeight="semibold">
           {countryCode}
         </Text>
-        <Text fontSize="sm" color={colors.fallbackText} textAlign="center">
+        <Text fontSize="sm" color={fallbackText} textAlign="center">
           Flag not available
         </Text>
       </Box>
     );
   }
 
-  // Bandeira SVG normal
   return (
     <Box {...commonStyles} opacity={0.9}>
       <Flag
@@ -161,7 +145,6 @@ const EnhancedFlag = ({ countryCode, isHero = false }) => {
           justifyContent="center"
           zIndex={10}
           borderRadius="20px"
-          animation="pulse 1s ease-in-out infinite" // Reduzido de 1.5s para 1s
         >
           <Icon as={FaGlobe} boxSize={8} color="white" />
         </Box>

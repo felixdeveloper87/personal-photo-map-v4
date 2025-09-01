@@ -256,7 +256,7 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
         <Button
           onClick={onToggle}
           variant="outline"
-          size={{ base: "xs", sm: "sm", md: "sm", lg: "md" }}
+          size={{ base: "xs", sm: "sm" }}
           colorScheme="blue"
           bg={useColorModeValue('white', 'gray.700')}
           color={useColorModeValue('blue.500', 'blue.300')}
@@ -338,7 +338,7 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
                   bg: "linear-gradient(135deg, #1e293b 0%, #334155 100%)"
                 }}
                 _hover={{
-                  transform: { base: "scale(1.01)", sm: "scale(1.02)", md: "scale(1.03)", lg: "scale(1.04)" },
+                  transform: "scale(1.005)",
                   boxShadow: {
                     base: "0 6px 16px rgba(0, 0, 0, 0.15)",
                     sm: "0 8px 20px rgba(0, 0, 0, 0.18)",
