@@ -360,8 +360,8 @@ const PhotoGallery = memo(function PhotoGallery({
                     >
                       <Box
                         position="relative"
-                        w={isMobile ? '24px' : '28px'}
-                        h={isMobile ? '24px' : '28px'}
+                        w={isMobile ? '20px' : '24px'}
+                        h={isMobile ? '20px' : '24px'}
                         borderRadius="full"
                         bg={checkboxBgColor}
                         border="2px solid"
@@ -386,45 +386,13 @@ const PhotoGallery = memo(function PhotoGallery({
                             transition={{ duration: 0.2, ease: "easeOut" }}
                           >
                             <Icon
-                              as={IoCheckmarkCircle}
-                              boxSize={isMobile ? 4 : 5}
+                              as={IoCheckmark}
+                              boxSize={isMobile ? 3 : 3.5}
                               color={selectionColor}
                               filter="drop-shadow(0 1px 2px rgba(0,0,0,0.3))"
                             />
                           </motion.div>
                         )}
-                      </Box>
-                    </motion.div>
-                  )}
-
-                  {/* Indicador de seleção no canto inferior esquerdo */}
-                  {isSelectionMode && isSelected && (
-                    <motion.div
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ duration: 0.2, ease: "easeOut" }}
-                      style={{
-                        position: 'absolute',
-                        bottom: '12px',
-                        left: '12px',
-                        zIndex: 2,
-                      }}
-                    >
-                      <Box
-                        w={isMobile ? '20px' : '24px'}
-                        h={isMobile ? '20px' : '24px'}
-                        borderRadius="full"
-                        bg={selectionColor}
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
-                        boxShadow="0 2px 8px rgba(59,130,246,0.4)"
-                      >
-                        <Icon
-                          as={IoCheckmark}
-                          boxSize={isMobile ? 3 : 3.5}
-                          color="white"
-                        />
                       </Box>
                     </motion.div>
                   )}
