@@ -64,11 +64,6 @@ const PhotoGallery = memo(function PhotoGallery({
   selectedImageIds = [],
   setSelectedImageIds,
 }) {
-  console.log('PhotoGallery render:', { 
-    imagesCount: images?.length, 
-    selectedImageIds, 
-    hasSetSelectedImageIds: !!setSelectedImageIds 
-  });
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const fullscreenRef = useRef(null);
@@ -112,11 +107,6 @@ const PhotoGallery = memo(function PhotoGallery({
   // Toggle selection mode
   const toggleSelectionMode = () => {
     const newSelectionMode = !isSelectionMode;
-    console.log('Toggle selection mode:', { 
-      currentMode: isSelectionMode, 
-      newMode: newSelectionMode 
-    });
-    
     setIsSelectionMode(newSelectionMode);
     if (isSelectionMode) {
       setSelectedImageIds([]);
@@ -134,13 +124,6 @@ const PhotoGallery = memo(function PhotoGallery({
   const handleImageSelection = (imageId, event) => {
     event?.stopPropagation?.(); // Previne o evento de bubble
     
-    console.log('handleImageSelection called:', { 
-      imageId, 
-      imageIdType: typeof imageId,
-      selectedImageIds, 
-      setSelectedImageIds: !!setSelectedImageIds 
-    });
-    
     // Garantir que setSelectedImageIds existe antes de usar
     if (!setSelectedImageIds) {
       console.warn('setSelectedImageIds function not provided');
@@ -151,23 +134,17 @@ const PhotoGallery = memo(function PhotoGallery({
     const imageIdStr = String(imageId);
     const isCurrentlySelected = selectedImageIds.some(id => String(id) === imageIdStr);
     
-    console.log('Selection logic:', { imageIdStr, isCurrentlySelected, currentSelectedIds: selectedImageIds });
-    
     if (isCurrentlySelected) {
       const newSelectedIds = selectedImageIds.filter(id => String(id) !== imageIdStr);
-      console.log('Removing image, new selection:', newSelectedIds);
       setSelectedImageIds(newSelectedIds);
     } else {
       const newSelectedIds = [...selectedImageIds, imageId];
-      console.log('Adding image, new selection:', newSelectedIds);
       setSelectedImageIds(newSelectedIds);
     }
   };
 
   // Handle image click - CORRIGIDO
   const handleImageClick = (index, event) => {
-    console.log('Image clicked:', { index, isSelectionMode, imageId: images[index]?.id });
-    
     if (isSelectionMode) {
       // Em modo de seleção, alterna a seleção da imagem
       const imageId = images[index].id;
@@ -394,27 +371,25 @@ const PhotoGallery = memo(function PhotoGallery({
                            justifyContent="center"
                            transition="all 0.2s ease"
                          >
-                           <Checkbox
-                             size={isMobile ? "md" : "lg"}
-                             colorScheme="blue"
-                             isChecked={isSelected}
-                             bg="white"
-                             borderRadius="full"
-                             p={isMobile ? 2 : 3}
-                             boxShadow="0 4px 20px rgba(0, 0, 0, 0.15)"
-                             border="2px solid"
-                             borderColor={isSelected ? 'blue.500' : 'gray.300'}
-                             _checked={{
-                               bg: 'blue.500',
-                               borderColor: 'blue.500',
-                               transform: 'scale(1.1)',
-                             }}
-                             transition="all 0.2s ease"
-                             onChange={(e) => {
-                               e.stopPropagation();
-                               handleImageSelection(image.id, e);
-                             }}
-                           />
+                                                       <Checkbox
+                              size={isMobile ? "md" : "lg"}
+                              colorScheme="blue"
+                              isChecked={isSelected}
+                              bg="white"
+                              borderRadius="full"
+                              p={isMobile ? 2 : 3}
+                              boxShadow="0 4px 20px rgba(0, 0, 0, 0.15)"
+                              border="2px solid"
+                              borderColor={isSelected ? 'blue.500' : 'gray.300'}
+                              _checked={{
+                                bg: 'blue.500',
+                                borderColor: 'blue.500',
+                                transform: 'scale(1.1)',
+                              }}
+                              transition="all 0.2s ease"
+                              // Removido onChange para evitar duplo disparo
+                              // A seleção é controlada apenas pelo clique na imagem
+                            />
                          </Box>
                        </motion.div>
                      )}
