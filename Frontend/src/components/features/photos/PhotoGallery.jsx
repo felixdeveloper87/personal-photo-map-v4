@@ -16,9 +16,10 @@ import {
   Icon,
   Tooltip,
   Kbd,
+  Badge,
 } from '@chakra-ui/react';
 import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
-import { IoCheckmark } from 'react-icons/io5';
+import { IoCheckmark, IoCheckmarkCircle } from 'react-icons/io5';
 import countries from 'i18n-iso-countries';
 import en from 'i18n-iso-countries/langs/en.json';
 import { DeleteButton } from '../../ui/buttons/CustomButtons';
@@ -47,6 +48,14 @@ const imageVariants = {
   },
 };
 
+// Animações para checkboxes
+const checkboxVariants = {
+  initial: { scale: 0.8, opacity: 0 },
+  animate: { scale: 1, opacity: 1 },
+  checked: { scale: 1.1, opacity: 1 },
+  hover: { scale: 1.05 },
+};
+
 const PhotoGallery = memo(function PhotoGallery({
   images,
   onDeleteSelectedImages,
@@ -67,6 +76,9 @@ const PhotoGallery = memo(function PhotoGallery({
   const bgColor = useColorModeValue('gray.50', 'gray.900');
   const textColor = useColorModeValue('gray.800', 'white');
   const selectionColor = useColorModeValue('blue.500', 'blue.300');
+  const selectionBgColor = useColorModeValue('blue.50', 'blue.900');
+  const checkboxBgColor = useColorModeValue('white', 'gray.800');
+  const checkboxBorderColor = useColorModeValue('gray.300', 'gray.600');
 
   // O(1) lookup — garante que Select All/Unselect All reflitam imediatamente nos checkboxes
   const selectedSet = useMemo(
@@ -171,6 +183,13 @@ const PhotoGallery = memo(function PhotoGallery({
               leftIcon={isSelectionMode ? <CheckIcon /> : undefined}
               borderRadius="full"
               px={6}
+              _hover={{
+                transform: 'translateY(-1px)',
+                boxShadow: isSelectionMode 
+                  ? '0 4px 12px rgba(59, 130, 246, 0.3)' 
+                  : '0 4px 12px rgba(0, 0, 0, 0.1)'
+              }}
+              transition="all 0.2s ease"
             >
               {isSelectionMode ? 'Exit Selection' : 'Select Photos'}
             </Button>
@@ -183,6 +202,12 @@ const PhotoGallery = memo(function PhotoGallery({
                     variant="ghost"
                     onClick={() => onSelectAll?.(images)}
                     borderRadius="full"
+                    colorScheme="blue"
+                    _hover={{
+                      bg: 'blue.50',
+                      transform: 'translateY(-1px)',
+                    }}
+                    transition="all 0.2s ease"
                   >
                     Select All ({total})
                   </Button>
@@ -194,15 +219,31 @@ const PhotoGallery = memo(function PhotoGallery({
                     variant="ghost"
                     onClick={() => onClearSelection?.()}
                     borderRadius="full"
+                    colorScheme="gray"
+                    _hover={{
+                      bg: 'gray.50',
+                      transform: 'translateY(-1px)',
+                    }}
+                    transition="all 0.2s ease"
                   >
                     Unselect All
                   </Button>
                 </Tooltip>
 
-                <HStack spacing={2}>
-                  <Text fontSize="sm" color="gray.600">
+                <HStack spacing={3}>
+                  <Badge
+                    colorScheme="blue"
+                    variant="subtle"
+                    fontSize="sm"
+                    px={3}
+                    py={1}
+                    borderRadius="full"
+                    bg={selectionBgColor}
+                    color={selectionColor}
+                    fontWeight="semibold"
+                  >
                     {selectedCount} selected
-                  </Text>
+                  </Badge>
                   <DeleteButton
                     onClick={() => onDeleteSelectedImages?.(selectedImageIds)}
                     isDisabled={selectedCount === 0}
@@ -212,6 +253,11 @@ const PhotoGallery = memo(function PhotoGallery({
                     borderRadius="full"
                     px={4}
                     leftIcon={<CloseIcon />}
+                    _hover={{
+                      transform: 'translateY(-1px)',
+                      boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+                    }}
+                    transition="all 0.2s ease"
                   >
                     Delete Selected
                   </DeleteButton>
@@ -271,13 +317,13 @@ const PhotoGallery = memo(function PhotoGallery({
                   bg="white"
                   boxShadow={
                     isSelected
-                      ? `0 0 0 3px ${selectionColor}, 0 4px 20px rgba(59,130,246,0.3)`
+                      ? `0 0 0 3px ${selectionColor}, 0 8px 32px rgba(59,130,246,0.25)`
                       : '0 2px 8px rgba(0,0,0,0.08)'
                   }
                   cursor="pointer"
                   _hover={{
                     boxShadow: isSelected
-                      ? `0 0 0 3px ${selectionColor}, 0 6px 25px rgba(59,130,246,0.4)`
+                      ? `0 0 0 3px ${selectionColor}, 0 12px 40px rgba(59,130,246,0.35)`
                       : '0 8px 25px rgba(0,0,0,0.15)',
                   }}
                   transition="all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
@@ -290,55 +336,97 @@ const PhotoGallery = memo(function PhotoGallery({
                     <Box
                       position="absolute"
                       inset="0"
-                      bg={isSelected ? 'rgba(59,130,246,0.14)' : 'transparent'}
+                      bg={isSelected ? 'rgba(59,130,246,0.08)' : 'transparent'}
                       zIndex={1}
                       pointerEvents="none"
-                      transition="all 0.2s ease"
+                      transition="all 0.3s ease"
                     />
                   )}
 
-                  {/* Checkbox PRO no canto superior direito */}
+                  {/* Checkbox melhorado no canto superior direito */}
                   {isSelectionMode && (
-                    <Box
-                      position="absolute"
-                      top="10px"
-                      right="10px"
-                      zIndex={3}
+                    <motion.div
+                      variants={checkboxVariants}
+                      initial="initial"
+                      animate={isSelected ? "checked" : "animate"}
+                      whileHover="hover"
+                      style={{
+                        position: 'absolute',
+                        top: '12px',
+                        right: '12px',
+                        zIndex: 3,
+                      }}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <Checkbox
-                        size={isMobile ? 'md' : 'lg'}
-                        isChecked={isSelected}
-                        aria-label={isSelected ? 'Deselect photo' : 'Select photo'}
-                        onChange={() => handleImageSelection?.(image.id)}
-                        icon={<Icon as={IoCheckmark} boxSize={isMobile ? 3.5 : 4} />}
-                        colorScheme="blue"
-                        sx={{
-                          // “pill” pro
-                          rounded: 'full',
-                          p: isMobile ? 1 : 1.5,
-                          bg: useColorModeValue('whiteAlpha.900', 'blackAlpha.700'),
-                          backdropFilter: 'saturate(180%) blur(6px)',
-                          borderWidth: '2px',
-                          borderColor: isSelected ? 'blue.500' : useColorModeValue('gray.300', 'gray.600'),
-                          boxShadow: '0 6px 18px rgba(0,0,0,0.18)',
-                          transition: 'all 0.18s ease',
-                          _hover: {
-                            transform: 'translateY(-1px)',
-                            boxShadow: '0 10px 24px rgba(0,0,0,0.24)',
-                          },
-                          '& .chakra-checkbox__control': {
-                            rounded: 'full',
-                            border: 'none',
-                            bg: 'transparent',
-                          },
-                          '&[data-checked]': {
-                            bg: useColorModeValue('white', 'blackAlpha.700'),
-                            borderColor: 'blue.500',
-                          },
+                      <Box
+                        position="relative"
+                        w={isMobile ? '24px' : '28px'}
+                        h={isMobile ? '24px' : '28px'}
+                        borderRadius="full"
+                        bg={checkboxBgColor}
+                        border="2px solid"
+                        borderColor={isSelected ? selectionColor : checkboxBorderColor}
+                        boxShadow="0 4px 16px rgba(0,0,0,0.15)"
+                        cursor="pointer"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                        transition="all 0.2s ease"
+                        _hover={{
+                          transform: 'scale(1.1)',
+                          boxShadow: '0 6px 20px rgba(0,0,0,0.2)',
+                          borderColor: isSelected ? selectionColor : 'blue.400',
                         }}
-                      />
-                    </Box>
+                        onClick={() => handleImageSelection?.(image.id)}
+                      >
+                        {isSelected && (
+                          <motion.div
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 0.2, ease: "easeOut" }}
+                          >
+                            <Icon
+                              as={IoCheckmarkCircle}
+                              boxSize={isMobile ? 4 : 5}
+                              color={selectionColor}
+                              filter="drop-shadow(0 1px 2px rgba(0,0,0,0.3))"
+                            />
+                          </motion.div>
+                        )}
+                      </Box>
+                    </motion.div>
+                  )}
+
+                  {/* Indicador de seleção no canto inferior esquerdo */}
+                  {isSelectionMode && isSelected && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      style={{
+                        position: 'absolute',
+                        bottom: '12px',
+                        left: '12px',
+                        zIndex: 2,
+                      }}
+                    >
+                      <Box
+                        w={isMobile ? '20px' : '24px'}
+                        h={isMobile ? '20px' : '24px'}
+                        borderRadius="full"
+                        bg={selectionColor}
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                        boxShadow="0 2px 8px rgba(59,130,246,0.4)"
+                      >
+                        <Icon
+                          as={IoCheckmark}
+                          boxSize={isMobile ? 3 : 3.5}
+                          color="white"
+                        />
+                      </Box>
+                    </motion.div>
                   )}
 
                   {/* Imagem */}
@@ -355,7 +443,7 @@ const PhotoGallery = memo(function PhotoGallery({
                         aspectRatio: '1/1',
                         minHeight: isMobile ? '120px' : '200px',
                         transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                        filter: isSelected ? 'brightness(0.96) contrast(1.04)' : 'none',
+                        filter: isSelected ? 'brightness(0.98) contrast(1.02) saturate(1.05)' : 'none',
                       }}
                       _groupHover={{ transform: isSelectionMode ? 'scale(1.01)' : 'scale(1.05)' }}
                     />
@@ -367,7 +455,7 @@ const PhotoGallery = memo(function PhotoGallery({
                     bottom="0"
                     left="0"
                     right="0"
-                    bg="linear-gradient(transparent, rgba(0,0,0,0.7))"
+                    bg="linear-gradient(transparent, rgba(0,0,0,0.8))"
                     p={isMobile ? 2 : 3}
                     color="white"
                   >
