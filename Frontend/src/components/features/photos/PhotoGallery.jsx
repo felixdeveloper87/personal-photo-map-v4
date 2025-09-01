@@ -106,18 +106,23 @@ const PhotoGallery = memo(function PhotoGallery({
 
   // Toggle selection mode
   const toggleSelectionMode = () => {
+    console.log('=== toggleSelectionMode called ===');
+    console.log('Current isSelectionMode:', isSelectionMode);
+    console.log('Current selectedImageIds:', selectedImageIds);
+    
     const newSelectionMode = !isSelectionMode;
     setIsSelectionMode(newSelectionMode);
+    console.log('New isSelectionMode will be:', newSelectionMode);
+    
     if (isSelectionMode) {
       setSelectedImageIds([]);
+      console.log('Cleared selectedImageIds');
     }
   };
 
   // Check if image is selected
   const isImageSelected = (imageId) => {
-    // Convert both to strings for consistent comparison
-    const imageIdStr = String(imageId);
-    return selectedImageIds.some(id => String(id) === imageIdStr);
+    return selectedImageIds.includes(imageId);
   };
 
   // Handle image selection - CORRIGIDO
@@ -130,27 +135,35 @@ const PhotoGallery = memo(function PhotoGallery({
       return;
     }
     
-    // Convert both to strings for consistent comparison
-    const imageIdStr = String(imageId);
-    const isCurrentlySelected = selectedImageIds.some(id => String(id) === imageIdStr);
-    
-    if (isCurrentlySelected) {
-      const newSelectedIds = selectedImageIds.filter(id => String(id) !== imageIdStr);
-      setSelectedImageIds(newSelectedIds);
+    if (selectedImageIds.includes(imageId)) {
+      setSelectedImageIds(selectedImageIds.filter(id => id !== imageId));
     } else {
-      const newSelectedIds = [...selectedImageIds, imageId];
-      setSelectedImageIds(newSelectedIds);
+      setSelectedImageIds([...selectedImageIds, imageId]);
     }
   };
 
-  // Handle image click - CORRIGIDO
+  // Handle image click - SIMPLIFICADO COM DEBUG
   const handleImageClick = (index, event) => {
+    console.log('=== handleImageClick called ===');
+    console.log('Index:', index);
+    console.log('Image ID:', images[index]?.id);
+    console.log('Selection mode:', isSelectionMode);
+    console.log('Current selectedImageIds:', selectedImageIds);
+    
     if (isSelectionMode) {
-      // Em modo de seleção, alterna a seleção da imagem
       const imageId = images[index].id;
-      handleImageSelection(imageId, event);
+      console.log('Trying to toggle selection for imageId:', imageId);
+      
+      if (selectedImageIds.includes(imageId)) {
+        console.log('Removing from selection');
+        setSelectedImageIds(selectedImageIds.filter(id => id !== imageId));
+      } else {
+        console.log('Adding to selection');
+        setSelectedImageIds([...selectedImageIds, imageId]);
+      }
     } else {
       // Modo normal - abre modal
+      console.log('Opening modal for image at index:', index);
       setCurrentImageIndex(index);
       onOpen();
     }
@@ -346,7 +359,13 @@ const PhotoGallery = memo(function PhotoGallery({
                   aria-label={`Image from ${
                     countries.getName(image.countryId?.toUpperCase(), 'en') || 'Unknown'
                   }`}
-                  onClick={(e) => handleImageClick(index, e)}
+                  onMouseDown={(e) => {
+                    console.log('Mouse down on image', image.id, 'Selection mode:', isSelectionMode);
+                  }}
+                  onClick={(e) => {
+                    console.log('Click on image', image.id, 'Selection mode:', isSelectionMode);
+                    handleImageClick(index, e);
+                  }}
                 >
                    {/* Selection overlay - CORRIGIDO */}
                    <AnimatePresence mode="wait">
@@ -371,25 +390,25 @@ const PhotoGallery = memo(function PhotoGallery({
                            justifyContent="center"
                            transition="all 0.2s ease"
                          >
-                                                       <Checkbox
-                              size={isMobile ? "md" : "lg"}
-                              colorScheme="blue"
-                              isChecked={isSelected}
-                              bg="white"
-                              borderRadius="full"
-                              p={isMobile ? 2 : 3}
-                              boxShadow="0 4px 20px rgba(0, 0, 0, 0.15)"
-                              border="2px solid"
-                              borderColor={isSelected ? 'blue.500' : 'gray.300'}
-                              _checked={{
-                                bg: 'blue.500',
-                                borderColor: 'blue.500',
-                                transform: 'scale(1.1)',
-                              }}
-                              transition="all 0.2s ease"
-                              // Removido onChange para evitar duplo disparo
-                              // A seleção é controlada apenas pelo clique na imagem
-                            />
+                           <Checkbox
+                             size={isMobile ? "md" : "lg"}
+                             colorScheme="blue"
+                             isChecked={isSelected}
+                             bg="white"
+                             borderRadius="full"
+                             p={isMobile ? 2 : 3}
+                             boxShadow="0 4px 20px rgba(0, 0, 0, 0.15)"
+                             border="2px solid"
+                             borderColor={isSelected ? 'blue.500' : 'gray.300'}
+                             _checked={{
+                               bg: 'blue.500',
+                               borderColor: 'blue.500',
+                               transform: 'scale(1.1)',
+                             }}
+                             transition="all 0.2s ease"
+                             // REMOVIDO - o onChange estava causando conflito
+                             // A seleção agora é controlada apenas pelo handleImageClick
+                           />
                          </Box>
                        </motion.div>
                      )}
