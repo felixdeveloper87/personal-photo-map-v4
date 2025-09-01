@@ -106,25 +106,18 @@ const PhotoGallery = memo(function PhotoGallery({
 
   // Toggle selection mode
   const toggleSelectionMode = () => {
-    console.log('=== toggleSelectionMode called ===');
-    console.log('Current isSelectionMode:', isSelectionMode);
-    console.log('Current selectedImageIds:', selectedImageIds);
-    
     const newSelectionMode = !isSelectionMode;
     setIsSelectionMode(newSelectionMode);
-    console.log('New isSelectionMode will be:', newSelectionMode);
-    
     if (isSelectionMode) {
       setSelectedImageIds([]);
-      console.log('Cleared selectedImageIds');
     }
   };
 
   // Check if image is selected - CORRIGIDO
   const isImageSelected = (imageId) => {
-    const selected = selectedImageIds.includes(imageId);
-    console.log(`Image ${imageId} selected:`, selected, 'selectedImageIds:', selectedImageIds);
-    return selected;
+    // Convert both to strings for consistent comparison
+    const imageIdStr = String(imageId);
+    return selectedImageIds.some(id => String(id) === imageIdStr);
   };
 
   // Handle image selection - CORRIGIDO
@@ -144,28 +137,14 @@ const PhotoGallery = memo(function PhotoGallery({
     }
   };
 
-  // Handle image click - SIMPLIFICADO COM DEBUG
+  // Handle image click - CORRIGIDO
   const handleImageClick = (index, event) => {
-    console.log('=== handleImageClick called ===');
-    console.log('Index:', index);
-    console.log('Image ID:', images[index]?.id);
-    console.log('Selection mode:', isSelectionMode);
-    console.log('Current selectedImageIds:', selectedImageIds);
-    
     if (isSelectionMode) {
+      // Em modo de seleção, alterna a seleção da imagem
       const imageId = images[index].id;
-      console.log('Trying to toggle selection for imageId:', imageId);
-      
-      if (selectedImageIds.includes(imageId)) {
-        console.log('Removing from selection');
-        setSelectedImageIds(selectedImageIds.filter(id => id !== imageId));
-      } else {
-        console.log('Adding to selection');
-        setSelectedImageIds([...selectedImageIds, imageId]);
-      }
+      handleImageSelection(imageId, event);
     } else {
       // Modo normal - abre modal
-      console.log('Opening modal for image at index:', index);
       setCurrentImageIndex(index);
       onOpen();
     }
@@ -287,7 +266,7 @@ const PhotoGallery = memo(function PhotoGallery({
                 </Text>
                 
                 <DeleteButton
-                  onDelete={() => onDeleteSelectedImages(selectedImageIds)}
+                  onClick={() => onDeleteSelectedImages(selectedImageIds)}
                   isDisabled={selectedImageIds.length === 0}
                   size="sm"
                   colorScheme="red"
@@ -324,11 +303,10 @@ const PhotoGallery = memo(function PhotoGallery({
         >
           {images.map((image, index) => {
             const isSelected = isImageSelected(image.id);
-            console.log(`Rendering image ${image.id}, selected: ${isSelected}`);
             
             return (
               <motion.div
-                key={`${image.id}-${isSelected}-${isSelectionMode}`}
+                key={image.id}
                 variants={imageVariants}
                 initial="hidden"
                 animate="visible"
@@ -362,13 +340,7 @@ const PhotoGallery = memo(function PhotoGallery({
                   aria-label={`Image from ${
                     countries.getName(image.countryId?.toUpperCase(), 'en') || 'Unknown'
                   }`}
-                  onMouseDown={(e) => {
-                    console.log('Mouse down on image', image.id, 'Selection mode:', isSelectionMode);
-                  }}
-                  onClick={(e) => {
-                    console.log('Click on image', image.id, 'Selection mode:', isSelectionMode);
-                    handleImageClick(index, e);
-                  }}
+                  onClick={(e) => handleImageClick(index, e)}
                 >
                    {/* Selection overlay - SIMPLIFICADO */}
                    {isSelectionMode && (

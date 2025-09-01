@@ -503,6 +503,8 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
    * @param {Array<string>} ids - The IDs of the images to delete.
    */
   const handleDeleteMultipleImages = (ids) => {
+    console.log('handleDeleteMultipleImages called with:', ids);
+    
     if (ids.length === 0) {
       showWarningToast(toast, 'Please select at least one image.');
       return;
