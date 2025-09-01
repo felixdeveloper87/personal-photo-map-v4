@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, memo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, memo, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -54,9 +54,9 @@ const PhotoGallery = memo(function PhotoGallery({
   isSelectionMode = false,
   toggleSelectionMode,
   handleImageSelection,
-  isImageSelected,
-  onSelectAll,         // NEW: selecionar todos do conjunto mostrado
-  onClearSelection,    // NEW: limpar seleção
+  isImageSelected,       // (legacy) mantido para compat, mas a UI usa selectedSet abaixo
+  onSelectAll,           // selecionar todos do conjunto mostrado
+  onClearSelection,      // limpar seleção
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -67,6 +67,12 @@ const PhotoGallery = memo(function PhotoGallery({
   const bgColor = useColorModeValue('gray.50', 'gray.900');
   const textColor = useColorModeValue('gray.800', 'white');
   const selectionColor = useColorModeValue('blue.500', 'blue.300');
+
+  // O(1) lookup — garante que Select All/Unselect All reflitam imediatamente nos checkboxes
+  const selectedSet = useMemo(
+    () => new Set((selectedImageIds || []).map((id) => String(id))),
+    [selectedImageIds]
+  );
 
   // Clique na imagem
   const handleImageClick = useCallback(
@@ -165,9 +171,6 @@ const PhotoGallery = memo(function PhotoGallery({
               leftIcon={isSelectionMode ? <CheckIcon /> : undefined}
               borderRadius="full"
               px={6}
-              transition="all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
-              _hover={{ transform: 'translateY(-1px)', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
-              _active={{ transform: 'translateY(0)' }}
             >
               {isSelectionMode ? 'Exit Selection' : 'Select Photos'}
             </Button>
@@ -238,7 +241,9 @@ const PhotoGallery = memo(function PhotoGallery({
           }}
         >
           {images.map((image, index) => {
-            const isSelected = isImageSelected ? isImageSelected(image.id) : false;
+            // >>> O(1) e consistente entre "manual" e "Select All"
+            const isSelected = selectedSet.has(String(image.id));
+
             const countryName =
               countries.getName(image.countryId?.toUpperCase?.(), 'en') ||
               image.countryId?.toUpperCase?.() ||
@@ -423,7 +428,7 @@ PhotoGallery.propTypes = {
   isSelectionMode: PropTypes.bool,
   toggleSelectionMode: PropTypes.func,
   handleImageSelection: PropTypes.func,
-  isImageSelected: PropTypes.func,
+  isImageSelected: PropTypes.func, // compat
   onSelectAll: PropTypes.func,
   onClearSelection: PropTypes.func,
 };
