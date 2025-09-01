@@ -62,7 +62,7 @@ const HeaderMobile = ({
   const navigate = useNavigate();
 
   return (
-    <Box display={{ base: "block", lg: "none" }}>
+    <Box display={{ base: "block", xl: "none" }}>
       <Collapse in={isOpen} animateOpacity transition={{ duration: 0.2, ease: "easeInOut" }}>
         <Box
           {...mobileMenuStyles(styles)}

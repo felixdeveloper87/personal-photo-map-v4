@@ -1,275 +1,242 @@
-import React from 'react';
-import { Box, Text, Button, Icon, useDisclosure, useColorModeValue } from '@chakra-ui/react';
-import { FaRocket, FaCamera, FaGlobe, FaStar } from 'react-icons/fa';
+import React, { memo, useMemo, useId, useCallback } from 'react';
+import {
+  Box,
+  Text,
+  Button,
+  Icon,
+  useDisclosure,
+  useColorModeValue,
+  useBreakpointValue,
+  usePrefersReducedMotion,
+} from '@chakra-ui/react';
+import { FaRocket } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 import EnhancedImageUploaderModal from '../../modals/EnhancedImageUploaderModal';
 
-const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
-  const { isOpen: isImageUploaderOpen, onOpen: onImageUploaderOpen, onClose: onImageUploaderClose } = useDisclosure();
+const MotionBox = motion(Box);
+const MotionButton = motion(Button);
 
-  // Theme-aware colors
+const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
+  const {
+    isOpen: isImageUploaderOpen,
+    onOpen: onImageUploaderOpen,
+    onClose: onImageUploaderClose,
+  } = useDisclosure();
+
+  // A11y ids
+  const titleId = useId();
+  const descId = useId();
+
+  // Respects users who prefer reduced motion
+  const prefersReducedMotion = usePrefersReducedMotion();
+
+  // Theme-aware tokens (computed once per render)
   const bgGradient = useColorModeValue(
-    'linear(to-br, blue.50, purple.50, pink.50)',
-    'linear(to-br, blue.900, purple.900, pink.900)'
+    'linear(to-br, blue.100, teal.100, yellow.300)',
+    'linear(to-br, blue.700, teal.800, gray.900)'
   );
-  
   const cardBg = useColorModeValue('white', 'gray.800');
   const textColor = useColorModeValue('gray.700', 'gray.300');
-  const headingColor = useColorModeValue('gray.900', 'white');
-  const accentColor = useColorModeValue('teal.500', 'teal.300');
-  const borderColor = useColorModeValue('gray.200', 'gray.600');
-  
+  const accentColor = useColorModeValue('teal.600', 'teal.300');
+  const borderColor = useColorModeValue('gray.200', 'gray.700');
+
   const titleGradient = useColorModeValue(
     'linear(to-r, blue.600, purple.600, pink.600, orange.500)',
-    'linear(to-r, blue.400, purple.400, pink.400, orange.400)'
+    'linear(to-r, blue.300, purple.300, pink.300, orange.300)'
   );
-  
+
   const subtitleGradient = useColorModeValue(
     'linear(to-r, purple.600, pink.600, orange.500)',
-    'linear(to-r, purple.400, pink.400, orange.400)'
+    'linear(to-r, purple.300, pink.300, orange.300)'
   );
-  
-  const buttonGradient = useColorModeValue(
+
+  const buttonBorderGradient = useColorModeValue(
     'linear(135deg, #3B82F6, #8B5CF6, #EC4899, #F59E0B, #3B82F6)',
     'linear(135deg, #60A5FA, #A78BFA, #F472B6, #FBBF24, #60A5FA)'
   );
 
+  // Responsivo
+  const containerPy = useBreakpointValue({ base: 10, md: 16 });
+  const containerPx = useBreakpointValue({ base: 6, md: 10 });
+  const titleSize = useBreakpointValue({ base: '4xl', md: '5xl', lg: '6xl' });
+  const subtitleSize = useBreakpointValue({ base: 'xl', md: '2xl', lg: '3xl' });
+  const ctaSize = useBreakpointValue({ base: 'md', md: 'lg' });
+
+  // Variants centralizados
+  const floatVariant = useMemo(
+    () => ({
+      animate: prefersReducedMotion
+        ? {}
+        : {
+            y: [0, -10, 0],
+            transition: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
+          },
+    }),
+    [prefersReducedMotion]
+  );
+
+  const shimmerHover = useMemo(
+    () =>
+      prefersReducedMotion
+        ? {}
+        : {
+            '&:hover::after': { left: '100%' },
+          },
+    [prefersReducedMotion]
+  );
+
+  // A11y: abrir via teclado também
+  const handleKeyOpen = useCallback(
+    (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onImageUploaderOpen();
+      }
+    },
+    [onImageUploaderOpen]
+  );
+
   return (
     <>
-      <Box 
-        textAlign="center" 
-        py={16} 
-        px={10} 
+      <Box
+        role="region"
+        aria-labelledby={titleId}
+        aria-describedby={descId}
+        textAlign="center"
+        py={containerPy}
+        px={containerPx}
         bgGradient={bgGradient}
         borderRadius="3xl"
-        border="3px solid"
-        borderColor="transparent"
-        backgroundClip="padding-box"
         position="relative"
         overflow="hidden"
         mb={8}
-        className="hover-lift"
+        boxShadow={useColorModeValue(
+          '0 25px 50px rgba(59,130,246,0.15), 0 12px 24px rgba(147,51,234,0.10)',
+          '0 25px 50px rgba(59,130,246,0.30), 0 12px 24px rgba(147,51,234,0.20)'
+        )}
         _before={{
           content: '""',
           position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
+          inset: 0,
           background: useColorModeValue(
-            'linear-gradient(45deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1), rgba(236, 72, 153, 0.1))',
-            'linear-gradient(45deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2), rgba(236, 72, 153, 0.2))'
+            'linear-gradient(45deg, rgba(59,130,246,.08), rgba(147,51,234,.08), rgba(236,72,153,.08))',
+            'linear-gradient(45deg, rgba(59,130,246,.18), rgba(147,51,234,.18), rgba(236,72,153,.18))'
           ),
           borderRadius: 'inherit',
-          zIndex: 0
+          zIndex: 0,
         }}
-        _after={{
-          content: '""',
-          position: 'absolute',
-          top: '-50%',
-          left: '-50%',
-          right: '-50%',
-          bottom: '-50%',
-          background: useColorModeValue(
-            'radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%)',
-            'radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%)'
-          ),
-          className: "pulse-bg",
-          zIndex: 0
-        }}
-        boxShadow={useColorModeValue(
-          "0 25px 50px rgba(59, 130, 246, 0.15), 0 12px 24px rgba(147, 51, 234, 0.1)",
-          "0 25px 50px rgba(59, 130, 246, 0.3), 0 12px 24px rgba(147, 51, 234, 0.2)"
-        )}
       >
-        {/* Floating Elements */}
-        <Box
-          position="absolute"
-          top={{ base: "5%", md: "8%" }}
-          right={{ base: "8%", md: "12%" }}
-          fontSize={{ base: "2xl", sm: "3xl", md: "4xl", lg: "5xl" }}
-          opacity={useColorModeValue("0.3", "0.5")}
-          className="floating-element"
-          zIndex={1}
-        >
-          🚀
-        </Box>
-        <Box
-          position="absolute"
-          bottom={{ base: "8%", md: "12%" }}
-          left={{ base: "5%", md: "8%" }}
-          fontSize={{ base: "xl", sm: "2xl", md: "3xl", lg: "4xl" }}
-          opacity={useColorModeValue("0.4", "0.6")}
-          className="floating-element-reverse"
-          zIndex={1}
-        >
-          ⭐
-        </Box>
-        <Box
-          position="absolute"
-          top={{ base: "45%", md: "55%" }}
-          right={{ base: "3%", md: "6%" }}
-          fontSize={{ base: "lg", sm: "xl", md: "2xl", lg: "3xl" }}
-          opacity={useColorModeValue("0.3", "0.5")}
-          className="floating-element"
-          zIndex={1}
-        >
-          🌟
-        </Box>
-        <Box
-          position="absolute"
-          top={{ base: "20%", md: "25%" }}
-          left={{ base: "8%", md: "15%" }}
-          fontSize={{ base: "md", sm: "lg", md: "xl", lg: "2xl" }}
-          opacity={useColorModeValue("0.25", "0.45")}
-          className="floating-element-reverse"
-          zIndex={1}
-        >
-          🎯
-        </Box>
+        {/* Subtle floating accents (decorative) */}
+        {!prefersReducedMotion && (
+          <>
+            <MotionBox
+              aria-hidden="true"
+              position="absolute"
+              top={{ base: '6%', md: '8%' }}
+              right={{ base: '8%', md: '12%' }}
+              fontSize={{ base: '2xl', md: '4xl', lg: '5xl' }}
+              opacity={useColorModeValue(0.25, 0.45)}
+              zIndex={1}
+              animate={floatVariant.animate}
+            >
+              🚀
+            </MotionBox>
+            <MotionBox
+              aria-hidden="true"
+              position="absolute"
+              bottom={{ base: '8%', md: '12%' }}
+              left={{ base: '6%', md: '10%' }}
+              fontSize={{ base: 'xl', md: '3xl', lg: '4xl' }}
+              opacity={useColorModeValue(0.3, 0.5)}
+              zIndex={1}
+              animate={floatVariant.animate}
+              transition={{ delay: 0.6 }}
+            >
+              ⭐
+            </MotionBox>
+          </>
+        )}
 
         {/* Main Content */}
-        <Box position="relative" zIndex={2}>
-          {/* Main Title with Enhanced Styling */}
-          <Box
-            mb={8}
-            position="relative"
-            _before={{
-              content: '""',
-              position: 'absolute',
-              top: '-15px',
-              left: '-25px',
-              right: '-25px',
-              bottom: '-15px',
-              background: useColorModeValue(
-                'linear-gradient(135deg, #3B82F6, #8B5CF6, #EC4899, #F59E0B)',
-                'linear-gradient(135deg, #60A5FA, #A78BFA, #F472B6, #FBBF24)'
-              ),
-              borderRadius: '2xl',
-              opacity: useColorModeValue('0.15', '0.25'),
-              filter: 'blur(25px)',
-              zIndex: -1
-            }}
-          >
-            <Text 
-              fontSize={{ base: "4xl", md: "5xl", lg: "6xl" }} 
-              fontWeight="black" 
+        <Box position="relative" zIndex={2} maxW="900px" mx="auto">
+          {/* Title */}
+          <Box mb={6}>
+            <Text
+              id={titleId}
+              as="h2"
+              fontSize={titleSize}
+              fontWeight="black"
               bgGradient={titleGradient}
               bgClip="text"
-              mb={3}
-              textShadow={useColorModeValue("0 4px 8px rgba(0,0,0,0.1)", "0 4px 8px rgba(0,0,0,0.3)")}
+              lineHeight="0.95"
               letterSpacing="tight"
-              lineHeight="0.9"
+              textShadow={useColorModeValue(
+                '0 4px 8px rgba(0,0,0,0.08)',
+                '0 4px 8px rgba(0,0,0,0.30)'
+              )}
             >
               🌍 Your Global Adventure
             </Text>
-            <Text 
-              fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }} 
-              fontWeight="extrabold" 
+            <Text
+              fontSize={subtitleSize}
+              fontWeight="extrabold"
               bgGradient={subtitleGradient}
               bgClip="text"
-              mb={2}
-              textShadow={useColorModeValue("0 2px 4px rgba(0,0,0,0.1)", "0 2px 4px rgba(0,0,0,0.3)")}
+              mt={1}
+              textShadow={useColorModeValue(
+                '0 2px 4px rgba(0,0,0,0.06)',
+                '0 2px 4px rgba(0,0,0,0.24)'
+              )}
             >
               Begins Right Here!
             </Text>
           </Box>
 
-          {/* Enhanced Subtitle */}
-          <Text 
-            fontSize={{ base: "xl", md: "2xl" }} 
+          {/* Description */}
+          <Text
+            id={descId}
+            fontSize={{ base: 'md', md: 'lg' }}
             color={textColor}
-            mb={8} 
+            mb={8}
             lineHeight="1.8"
             fontWeight="medium"
-            maxW="700px"
+            maxW="720px"
             mx="auto"
-            textShadow={useColorModeValue("0 1px 2px rgba(0,0,0,0.05)", "0 1px 2px rgba(0,0,0,0.2)")}
           >
-            This incredible country is waiting for your unique story! 🌟
-            <br />
+            This incredible country is waiting for your unique story!{' '}
             <Text as="span" color={accentColor} fontWeight="semibold">
               Capture breathtaking moments, discover hidden gems, and create memories that will last forever.
             </Text>
           </Text>
 
-          {/* Enhanced Feature Highlights */}
-          <Box
-            display="flex"
-            flexWrap="wrap"
-            justifyContent="center"
-            gap={5}
-            mb={10}
-            maxW="800px"
-            mx="auto"
-          >
-            {[
-              { icon: FaCamera, text: "Capture Memories", color: "blue", emoji: "📸" },
-              { icon: FaGlobe, text: "Explore World", color: "purple", emoji: "🗺️" },
-              { icon: FaStar, text: "Create Legacy", color: "pink", emoji: "💫" },
-            ].map((feature, index) => (
-              <Box
-                key={index}
-                display="flex"
-                alignItems="center"
-                gap={3}
-                px={6}
-                py={3}
-                bg={useColorModeValue(`${feature.color}.100`, `${feature.color}.800`)}
-                borderRadius="full"
-                border="2px solid"
-                borderColor={useColorModeValue(`${feature.color}.200`, `${feature.color}.600`)}
-                className="feature-badge"
-                minW="160px"
-                justifyContent="center"
-                _hover={{
-                  bg: useColorModeValue(`${feature.color}.200`, `${feature.color}.700`),
-                  transform: "translateY(-2px)",
-                  boxShadow: useColorModeValue(
-                    `0 4px 12px rgba(59, 130, 246, 0.2)`,
-                    `0 4px 12px rgba(59, 130, 246, 0.4)`
-                  )
-                }}
-              >
-                <Icon as={feature.icon} color={useColorModeValue(`${feature.color}.600`, `${feature.color}.300`)} boxSize={5} />
-                <Text fontSize="md" fontWeight="bold" color={useColorModeValue(`${feature.color}.700`, `${feature.color}.200`)}>
-                  {feature.text}
-                </Text>
-                <Text fontSize="lg">{feature.emoji}</Text>
-              </Box>
-            ))}
-          </Box>
-
-          {/* Enhanced Call to Action */}
+          {/* CTA */}
           <Box
             position="relative"
             _before={{
               content: '""',
               position: 'absolute',
-              top: '-3px',
-              left: '-3px',
-              right: '-3px',
-              bottom: '-3px',
-              background: buttonGradient,
+              inset: '-3px',
+              background: buttonBorderGradient,
               borderRadius: '2xl',
               zIndex: -1,
-              className: "gradient-border"
             }}
           >
-            <Button
-              size={{ base: "md", md: "lg" }}
-              colorScheme="teal"
-              leftIcon={<Icon as={FaRocket} boxSize={{ base: 4, md: 6 }} />}
+            <MotionButton
+              size={ctaSize}
+              leftIcon={<Icon as={FaRocket} boxSize={{ base: 4, md: 5 }} aria-hidden="true" />}
               onClick={onImageUploaderOpen}
-              px={{ base: 6, md: 8, lg: 10 }}
-              py={{ base: 4, md: 6, lg: 8 }}
-              fontSize={{ base: "lg", md: "xl" }}
+              onKeyDown={handleKeyOpen}
+              px={{ base: 6, md: 8 }}
+              py={{ base: 4, md: 6 }}
+              fontSize={{ base: 'md', md: 'lg' }}
               fontWeight="bold"
-              borderRadius={{ base: "xl", md: "2xl" }}
+              borderRadius="2xl"
               bg={cardBg}
               color={accentColor}
-              border="3px solid"
-              borderColor="transparent"
-              className="cta-button"
+              border="2px solid"
+              borderColor={borderColor}
+              role="button"
+              aria-label="Start your journey by uploading your first photo"
               position="relative"
               overflow="hidden"
               _after={{
@@ -280,57 +247,51 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                 width: '100%',
                 height: '100%',
                 background: useColorModeValue(
-                  'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+                  'linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)',
                   'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)'
                 ),
-                transition: 'left 0.5s',
-                zIndex: 1
+                transition: 'left 0.55s',
+                zIndex: 1,
               }}
-              sx={{
-                '&:hover::after': {
-                  left: '100%'
-                }
-              }}
+              sx={shimmerHover}
+              whileHover={prefersReducedMotion ? {} : { scale: 1.02 }}
+              whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
             >
-              <Text position="relative" zIndex={2}>
-                🎬 Start Your Journey
-              </Text>
-            </Button>
+              🎬 Start Your Journey
+            </MotionButton>
           </Box>
 
-          {/* Enhanced Motivational Quote */}
+          {/* Quote */}
           <Box
             mt={8}
-            p={6}
+            p={{ base: 5, md: 6 }}
             bg={cardBg}
             borderRadius="xl"
-            border="2px solid"
+            border="1px solid"
             borderColor={borderColor}
-            maxW="600px"
+            maxW="680px"
             mx="auto"
-            opacity={useColorModeValue("0.9", "0.95")}
-            className="quote-box"
-            boxShadow={useColorModeValue("0 8px 25px rgba(0,0,0,0.1)", "0 8px 25px rgba(0,0,0,0.3)")}
+            boxShadow={useColorModeValue(
+              '0 8px 24px rgba(0,0,0,0.08)',
+              '0 8px 24px rgba(0,0,0,0.3)'
+            )}
           >
-            <Text 
-              fontSize="lg" 
+            <Text
+              fontSize={{ base: 'md', md: 'lg' }}
               color={textColor}
               fontStyle="italic"
               textAlign="center"
               fontWeight="medium"
-              lineHeight="1.6"
+              lineHeight="1.7"
             >
-              "Every photo tells a story. Every story begins with a single click. 
-              <br />
-              <Text as="span" color={accentColor} fontWeight="semibold">
-                Your adventure is just one upload away!" ✨
-              </Text>
+              “Every photo tells a story. Every story begins with a single click.
+              <Text as="span" color={accentColor} fontWeight="semibold"> Your adventure is just one upload away!” ✨</Text>
+              ”
             </Text>
           </Box>
         </Box>
       </Box>
 
-      {/* Enhanced Image Uploader Modal */}
       <EnhancedImageUploaderModal
         countryId={countryId}
         onUploadSuccess={onUploadSuccess}
@@ -341,4 +302,4 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
   );
 };
 
-export default JourneyStarterSection;
+export default memo(JourneyStarterSection);
