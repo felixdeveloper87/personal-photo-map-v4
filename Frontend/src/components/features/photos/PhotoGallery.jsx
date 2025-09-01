@@ -120,9 +120,11 @@ const PhotoGallery = memo(function PhotoGallery({
     }
   };
 
-  // Check if image is selected
+  // Check if image is selected - CORRIGIDO
   const isImageSelected = (imageId) => {
-    return selectedImageIds.includes(imageId);
+    const selected = selectedImageIds.includes(imageId);
+    console.log(`Image ${imageId} selected:`, selected, 'selectedImageIds:', selectedImageIds);
+    return selected;
   };
 
   // Handle image selection - CORRIGIDO
@@ -322,10 +324,11 @@ const PhotoGallery = memo(function PhotoGallery({
         >
           {images.map((image, index) => {
             const isSelected = isImageSelected(image.id);
+            console.log(`Rendering image ${image.id}, selected: ${isSelected}`);
             
             return (
               <motion.div
-                key={image.id ?? index}
+                key={`${image.id}-${isSelected}-${isSelectionMode}`}
                 variants={imageVariants}
                 initial="hidden"
                 animate="visible"
@@ -367,52 +370,40 @@ const PhotoGallery = memo(function PhotoGallery({
                     handleImageClick(index, e);
                   }}
                 >
-                   {/* Selection overlay - CORRIGIDO */}
-                   <AnimatePresence mode="wait">
-                     {isSelectionMode && (
-                       <motion.div
-                         key={`overlay-${image.id}`}
-                         initial={{ opacity: 0 }}
-                         animate={{ opacity: 1 }}
-                         exit={{ opacity: 0 }}
-                         transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-                       >
-                         <Box
-                           position="absolute"
-                           top="0"
-                           left="0"
-                           right="0"
-                           bottom="0"
-                           bg={isSelected ? 'rgba(59, 130, 246, 0.15)' : 'rgba(0, 0, 0, 0.05)'}
-                           zIndex={2}
-                           display="flex"
-                           alignItems="center"
-                           justifyContent="center"
-                           transition="all 0.2s ease"
-                         >
-                           <Checkbox
-                             size={isMobile ? "md" : "lg"}
-                             colorScheme="blue"
-                             isChecked={isSelected}
-                             bg="white"
-                             borderRadius="full"
-                             p={isMobile ? 2 : 3}
-                             boxShadow="0 4px 20px rgba(0, 0, 0, 0.15)"
-                             border="2px solid"
-                             borderColor={isSelected ? 'blue.500' : 'gray.300'}
-                             _checked={{
-                               bg: 'blue.500',
-                               borderColor: 'blue.500',
-                               transform: 'scale(1.1)',
-                             }}
-                             transition="all 0.2s ease"
-                             // REMOVIDO - o onChange estava causando conflito
-                             // A seleção agora é controlada apenas pelo handleImageClick
-                           />
-                         </Box>
-                       </motion.div>
-                     )}
-                   </AnimatePresence>
+                   {/* Selection overlay - SIMPLIFICADO */}
+                   {isSelectionMode && (
+                     <Box
+                       position="absolute"
+                       top="0"
+                       left="0"
+                       right="0"
+                       bottom="0"
+                       bg={isSelected ? 'rgba(59, 130, 246, 0.15)' : 'rgba(0, 0, 0, 0.05)'}
+                       zIndex={2}
+                       display="flex"
+                       alignItems="center"
+                       justifyContent="center"
+                       transition="all 0.2s ease"
+                     >
+                       <Checkbox
+                         size={isMobile ? "md" : "lg"}
+                         colorScheme="blue"
+                         isChecked={isSelected}
+                         bg="white"
+                         borderRadius="full"
+                         p={isMobile ? 2 : 3}
+                         boxShadow="0 4px 20px rgba(0, 0, 0, 0.15)"
+                         border="2px solid"
+                         borderColor={isSelected ? 'blue.500' : 'gray.300'}
+                         _checked={{
+                           bg: 'blue.500',
+                           borderColor: 'blue.500',
+                           transform: 'scale(1.1)',
+                         }}
+                         transition="all 0.2s ease"
+                       />
+                     </Box>
+                   )}
 
                   {/* Image */}
                   <Box position="relative" overflow="hidden" borderRadius={isMobile ? "8px" : "12px"}>
