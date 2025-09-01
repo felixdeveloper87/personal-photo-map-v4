@@ -67,6 +67,11 @@ const PhotoGallery = memo(function PhotoGallery({
   handleImageSelection,
   isImageSelected,
 }) {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const fullscreenRef = useRef(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
   // Memoize the handleImageClick function to prevent unnecessary re-renders
   const handleImageClick = useMemo(() => {
     return (index, event) => {
@@ -85,10 +90,6 @@ const PhotoGallery = memo(function PhotoGallery({
       }
     };
   }, [isSelectionMode, images, handleImageSelection, setCurrentImageIndex, onOpen]);
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const fullscreenRef = useRef(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Responsive breakpoints
   const isMobile = useBreakpointValue({ base: true, sm: false, md: false, lg: false, xl: false });
