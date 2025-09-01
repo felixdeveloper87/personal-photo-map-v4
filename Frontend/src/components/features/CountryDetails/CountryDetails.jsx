@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Box, IconButton, useColorModeValue, Flex } from '@chakra-ui/react';
+import { Box, IconButton, useColorModeValue, Flex, Divider } from '@chakra-ui/react';
 import { ArrowBackIcon } from '@chakra-ui/icons';
 import { useState, useEffect, useContext } from 'react';
 import moment from 'moment-timezone';
@@ -70,7 +70,7 @@ const CountryDetails = () => {
     queryKey: ['factbook', countryId],
     queryFn: () => fetchFactbookData(countryId),
     enabled: !!countryId,
-    staleTime: 0,
+    staleTime: 5 * 60 * 1000, // 5 minutos
     retry: false,
   });
 
@@ -97,12 +97,19 @@ const CountryDetails = () => {
     return () => clearInterval(interval);
   }, [weatherData?.timezone]);
 
+  // Debug indicators data
+  useEffect(() => {
+    if (indicatorsData) {
+      console.log('Economic/Social indicators loaded for', countryId, indicatorsData);
+    }
+  }, [indicatorsData, countryId]);
+
   if (countryLoading) return <LoadingState mutedTextColor={mutedTextColor} />;
   if (countryError) return null;
 
   return (
     <Box bg={bgColor} minH="100vh" className="country-details-page">
-      <Box px={6} pb={6} position="relative" maxW="1400px" mx="auto">
+      <Box px={6} pb={6} position="relative" maxW="1500px" mx="auto">
         {/* Hero Header */}
         <HeroHeader 
           countryId={countryId} 
@@ -115,6 +122,9 @@ const CountryDetails = () => {
           factbookData={factbookData}
           navigate={navigate}
         />
+
+        {/* Divider */}
+        <Divider my={3} />
 
         {/* Country Insights Section */}
         <Flex gap="6">
@@ -129,6 +139,7 @@ const CountryDetails = () => {
                 queryClient.invalidateQueries(['allImages', countryId]);
                 queryClient.invalidateQueries(['years', countryId]);
                 queryClient.invalidateQueries(['albums', countryId]);
+                // Force immediate refresh of countries data to update map
                 refreshCountriesWithPhotos(true);
               }}
             />
@@ -137,7 +148,13 @@ const CountryDetails = () => {
 
         {/* Photo Gallery */}
         <Box mt={1}>
-          <PhotoManager countryId={countryId} />
+          <PhotoManager 
+            countryId={countryId} 
+            onUploadSuccess={() => {
+              // Force immediate refresh of countries data to update map
+              refreshCountriesWithPhotos(true);
+            }}
+          />
         </Box>
       </Box>
     </Box>
