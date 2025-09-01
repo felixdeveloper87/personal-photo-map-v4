@@ -200,6 +200,44 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
 
   /** Stores the IDs of images the user has selected for deletion/album creation */
   const [selectedImageIds, setSelectedImageIds] = useState([]);
+  
+  /** Selection mode state */
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+
+  /* ---------------- Selection Logic ---------------- */
+  
+  /**
+   * Toggle selection mode on/off
+   */
+  const toggleSelectionMode = () => {
+    const newSelectionMode = !isSelectionMode;
+    setIsSelectionMode(newSelectionMode);
+    if (isSelectionMode) {
+      setSelectedImageIds([]);
+    }
+  };
+
+  /**
+   * Check if an image is selected
+   */
+  const isImageSelected = (imageId) => {
+    const imageIdStr = String(imageId);
+    return selectedImageIds.some(id => String(id) === imageIdStr);
+  };
+
+  /**
+   * Handle image selection/deselection
+   */
+  const handleImageSelection = (imageId) => {
+    const imageIdStr = String(imageId);
+    const isCurrentlySelected = selectedImageIds.some(id => String(id) === imageIdStr);
+    
+    if (isCurrentlySelected) {
+      setSelectedImageIds(selectedImageIds.filter(id => String(id) !== imageIdStr));
+    } else {
+      setSelectedImageIds([...selectedImageIds, imageId]);
+    }
+  };
 
   /** Check if the user is logged in */
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -503,8 +541,6 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
    * @param {Array<string>} ids - The IDs of the images to delete.
    */
   const handleDeleteMultipleImages = (ids) => {
-    console.log('handleDeleteMultipleImages called with:', ids);
-    
     if (ids.length === 0) {
       showWarningToast(toast, 'Please select at least one image.');
       return;
@@ -696,7 +732,10 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
             images={images}
             onDeleteSelectedImages={handleDeleteMultipleImages}
             selectedImageIds={selectedImageIds}
-            setSelectedImageIds={setSelectedImageIds}
+            isSelectionMode={isSelectionMode}
+            toggleSelectionMode={toggleSelectionMode}
+            handleImageSelection={handleImageSelection}
+            isImageSelected={isImageSelected}
           />
         ) : (
           <Box 
@@ -723,7 +762,10 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
             images={allImages}
             onDeleteSelectedImages={handleDeleteMultipleImages}
             selectedImageIds={selectedImageIds}
-            setSelectedImageIds={setSelectedImageIds}
+            isSelectionMode={isSelectionMode}
+            toggleSelectionMode={toggleSelectionMode}
+            handleImageSelection={handleImageSelection}
+            isImageSelected={isImageSelected}
           />
         )
       )}

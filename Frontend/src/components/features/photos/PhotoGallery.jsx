@@ -62,13 +62,15 @@ const PhotoGallery = memo(function PhotoGallery({
   images,
   onDeleteSelectedImages,
   selectedImageIds = [],
-  setSelectedImageIds,
+  isSelectionMode = false,
+  toggleSelectionMode,
+  handleImageSelection,
+  isImageSelected,
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const fullscreenRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   // Responsive breakpoints
   const isMobile = useBreakpointValue({ base: true, sm: false, md: false, lg: false, xl: false });
@@ -104,45 +106,14 @@ const PhotoGallery = memo(function PhotoGallery({
     }
   };
 
-  // Toggle selection mode
-  const toggleSelectionMode = () => {
-    const newSelectionMode = !isSelectionMode;
-    setIsSelectionMode(newSelectionMode);
-    if (isSelectionMode) {
-      setSelectedImageIds([]);
-    }
-  };
 
-  // Check if image is selected - CORRIGIDO
-  const isImageSelected = (imageId) => {
-    // Convert both to strings for consistent comparison
-    const imageIdStr = String(imageId);
-    return selectedImageIds.some(id => String(id) === imageIdStr);
-  };
-
-  // Handle image selection - CORRIGIDO
-  const handleImageSelection = (imageId, event) => {
-    event?.stopPropagation?.(); // Previne o evento de bubble
-    
-    // Garantir que setSelectedImageIds existe antes de usar
-    if (!setSelectedImageIds) {
-      console.warn('setSelectedImageIds function not provided');
-      return;
-    }
-    
-    if (selectedImageIds.includes(imageId)) {
-      setSelectedImageIds(selectedImageIds.filter(id => id !== imageId));
-    } else {
-      setSelectedImageIds([...selectedImageIds, imageId]);
-    }
-  };
 
   // Handle image click - CORRIGIDO
   const handleImageClick = (index, event) => {
     if (isSelectionMode) {
       // Em modo de seleção, alterna a seleção da imagem
       const imageId = images[index].id;
-      handleImageSelection(imageId, event);
+      handleImageSelection(imageId);
     } else {
       // Modo normal - abre modal
       setCurrentImageIndex(index);
@@ -477,7 +448,10 @@ PhotoGallery.propTypes = {
   selectedImageIds: PropTypes.arrayOf(
     PropTypes.oneOfType([PropTypes.string, PropTypes.number])
   ),
-  setSelectedImageIds: PropTypes.func,
+  isSelectionMode: PropTypes.bool,
+  toggleSelectionMode: PropTypes.func,
+  handleImageSelection: PropTypes.func,
+  isImageSelected: PropTypes.func,
 };
 
 export default PhotoGallery;
