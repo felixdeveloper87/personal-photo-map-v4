@@ -13,8 +13,12 @@ import {
   HStack,
   Checkbox,
   useBreakpointValue,
+  Icon,
+  Tooltip,
+  Kbd,
 } from '@chakra-ui/react';
 import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
+import { IoCheckmark } from 'react-icons/io5';
 import countries from 'i18n-iso-countries';
 import en from 'i18n-iso-countries/langs/en.json';
 import { DeleteButton } from '../../ui/buttons/CustomButtons';
@@ -51,6 +55,8 @@ const PhotoGallery = memo(function PhotoGallery({
   toggleSelectionMode,
   handleImageSelection,
   isImageSelected,
+  onSelectAll,         // NEW: selecionar todos do conjunto mostrado
+  onClearSelection,    // NEW: limpar seleção
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -140,12 +146,15 @@ const PhotoGallery = memo(function PhotoGallery({
     );
   }
 
+  const total = images.length;
+  const selectedCount = selectedImageIds.length;
+
   return (
     <Box bg={bgColor} py={2}>
       {/* Selection Controls */}
       <Box mb={4}>
         <Flex justify="space-between" align="center" maxW="1200px" mx="auto" px={6}>
-          <HStack spacing={3}>
+          <HStack spacing={3} wrap="wrap">
             <Button
               size="sm"
               colorScheme={isSelectionMode ? 'blue' : 'gray'}
@@ -164,32 +173,61 @@ const PhotoGallery = memo(function PhotoGallery({
             </Button>
 
             {isSelectionMode && (
-              <HStack spacing={2}>
-                <Text fontSize="sm" color="gray.600">
-                  {selectedImageIds.length} selected
-                </Text>
-                <DeleteButton
-                  onClick={() => onDeleteSelectedImages?.(selectedImageIds)}
-                  isDisabled={selectedImageIds.length === 0}
-                  size="sm"
-                  colorScheme="red"
-                  variant="outline"
-                  borderRadius="full"
-                  px={4}
-                  leftIcon={<CloseIcon />}
-                  _hover={{ transform: 'translateY(-1px)', boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }}
-                  _active={{ transform: 'translateY(0)' }}
-                  transition="all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
-                >
-                  Delete Selected
-                </DeleteButton>
-              </HStack>
+              <>
+                <Tooltip label="Select all photos currently visible" hasArrow>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => onSelectAll?.(images)}
+                    borderRadius="full"
+                  >
+                    Select All ({total})
+                  </Button>
+                </Tooltip>
+
+                <Tooltip label="Clear current selection" hasArrow>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => onClearSelection?.()}
+                    borderRadius="full"
+                  >
+                    Unselect All
+                  </Button>
+                </Tooltip>
+
+                <HStack spacing={2}>
+                  <Text fontSize="sm" color="gray.600">
+                    {selectedCount} selected
+                  </Text>
+                  <DeleteButton
+                    onClick={() => onDeleteSelectedImages?.(selectedImageIds)}
+                    isDisabled={selectedCount === 0}
+                    size="sm"
+                    colorScheme="red"
+                    variant="outline"
+                    borderRadius="full"
+                    px={4}
+                    leftIcon={<CloseIcon />}
+                  >
+                    Delete Selected
+                  </DeleteButton>
+                </HStack>
+              </>
             )}
           </HStack>
+
+          {isSelectionMode && (
+            <HStack spacing={2} opacity={0.8}>
+              <Text fontSize="xs" color="gray.500">Tips:</Text>
+              <Kbd>Click</Kbd>
+              <Text fontSize="xs" color="gray.500">to toggle</Text>
+            </HStack>
+          )}
         </Flex>
       </Box>
 
-      {/* Grid Responsivo */}
+      {/* Grid */}
       <Box maxW="1400px" mx="auto" px={{ base: 2, sm: 4, md: 6 }}>
         <SimpleGrid
           columns={{ base: 2, sm: 3, md: 3, lg: 4, xl: 5 }}
@@ -242,33 +280,58 @@ const PhotoGallery = memo(function PhotoGallery({
                   aria-label={`Image from ${countryName}`}
                   onClick={() => handleImageClick(index)}
                 >
-                  {/* Overlay + Checkbox (fix: handle onChange e stopPropagation) */}
+                  {/* Overlay sutil quando selecionado */}
                   {isSelectionMode && (
                     <Box
                       position="absolute"
                       inset="0"
-                      bg={isSelected ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.05)'}
-                      zIndex={2}
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
+                      bg={isSelected ? 'rgba(59,130,246,0.14)' : 'transparent'}
+                      zIndex={1}
+                      pointerEvents="none"
                       transition="all 0.2s ease"
+                    />
+                  )}
+
+                  {/* Checkbox PRO no canto superior direito */}
+                  {isSelectionMode && (
+                    <Box
+                      position="absolute"
+                      top="10px"
+                      right="10px"
+                      zIndex={3}
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Checkbox
                         size={isMobile ? 'md' : 'lg'}
-                        colorScheme="blue"
                         isChecked={isSelected}
                         aria-label={isSelected ? 'Deselect photo' : 'Select photo'}
-                        bg="white"
-                        borderRadius="full"
-                        p={isMobile ? 2 : 3}
-                        boxShadow="0 4px 20px rgba(0,0,0,0.15)"
-                        border="2px solid"
-                        borderColor={isSelected ? 'blue.500' : 'gray.300'}
-                        _checked={{ bg: 'blue.500', borderColor: 'blue.500', transform: 'scale(1.08)' }}
-                        transition="all 0.2s ease"
                         onChange={() => handleImageSelection?.(image.id)}
+                        icon={<Icon as={IoCheckmark} boxSize={isMobile ? 3.5 : 4} />}
+                        colorScheme="blue"
+                        sx={{
+                          // “pill” pro
+                          rounded: 'full',
+                          p: isMobile ? 1 : 1.5,
+                          bg: useColorModeValue('whiteAlpha.900', 'blackAlpha.700'),
+                          backdropFilter: 'saturate(180%) blur(6px)',
+                          borderWidth: '2px',
+                          borderColor: isSelected ? 'blue.500' : useColorModeValue('gray.300', 'gray.600'),
+                          boxShadow: '0 6px 18px rgba(0,0,0,0.18)',
+                          transition: 'all 0.18s ease',
+                          _hover: {
+                            transform: 'translateY(-1px)',
+                            boxShadow: '0 10px 24px rgba(0,0,0,0.24)',
+                          },
+                          '& .chakra-checkbox__control': {
+                            rounded: 'full',
+                            border: 'none',
+                            bg: 'transparent',
+                          },
+                          '&[data-checked]': {
+                            bg: useColorModeValue('white', 'blackAlpha.700'),
+                            borderColor: 'blue.500',
+                          },
+                        }}
                       />
                     </Box>
                   )}
@@ -287,7 +350,7 @@ const PhotoGallery = memo(function PhotoGallery({
                         aspectRatio: '1/1',
                         minHeight: isMobile ? '120px' : '200px',
                         transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                        filter: isSelected ? 'brightness(0.95) contrast(1.05)' : 'none',
+                        filter: isSelected ? 'brightness(0.96) contrast(1.04)' : 'none',
                       }}
                       _groupHover={{ transform: isSelectionMode ? 'scale(1.01)' : 'scale(1.05)' }}
                     />
@@ -361,6 +424,8 @@ PhotoGallery.propTypes = {
   toggleSelectionMode: PropTypes.func,
   handleImageSelection: PropTypes.func,
   isImageSelected: PropTypes.func,
+  onSelectAll: PropTypes.func,
+  onClearSelection: PropTypes.func,
 };
 
 export default PhotoGallery;

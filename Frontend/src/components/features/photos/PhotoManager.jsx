@@ -38,15 +38,12 @@ import {
   AlbumSelectableButton,
 } from '../../ui/buttons/SelectableButtons';
 
-/** Headers com Authorization (se houver) */
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-/** ---------------- Fetchers (GET) ----------------
- * OBS: passamos `toast` e `handleAuthError` para evitar ReferenceError.
- */
+/* ---------------- Fetchers ---------------- */
 async function fetchYears(countryId, toast, handleAuthError) {
   const response = await fetch(buildApiUrl(`/api/images/${countryId}/available-years`), {
     headers: getAuthHeaders(),
@@ -87,10 +84,6 @@ async function fetchImages(countryId, year, albumId, showAllSelected, toast, han
 
 /**
  * PhotoManager
- * - Filtros por ano/álbum
- * - Seleção e deleção em massa
- * - Criação/remoção de álbuns (Premium)
- * - Deleção por ano e por país
  */
 const PhotoManager = ({ countryId, onUploadSuccess }) => {
   const toast = useToast();
@@ -99,7 +92,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   const { refreshCountriesWithPhotos, triggerMapUpdate } = useContext(CountriesContext);
   const navigate = useNavigate();
 
-  // Trata 401/expiração de sessão (agora no escopo correto)
+  // Trata 401/expiração de sessão
   const handleAuthError = async (response, toastInstance) => {
     if (response.status === 401) {
       toastInstance({
@@ -165,7 +158,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   const toggleSelectionMode = () => {
     setIsSelectionMode((prev) => {
       const next = !prev;
-      if (!next) setSelectedImageIds([]); // limpamos ao sair do modo de seleção
+      if (!next) setSelectedImageIds([]); // limpa ao sair
       return next;
     });
   };
@@ -181,6 +174,14 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
         : [...prev, imageId]
     );
   };
+
+  // helpers pro “select all” conforme conjunto atual
+  const selectAllFrom = (list) => {
+    const ids = list.map((img) => img.id);
+    setSelectedImageIds(ids);
+    if (!isSelectionMode) setIsSelectionMode(true);
+  };
+  const clearSelection = () => setSelectedImageIds([]);
 
   /* ---------------- useQuery ---------------- */
   const {
@@ -221,6 +222,17 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
   });
 
   /* ---------------- Mutations ---------------- */
+  const queryInvalidations = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries(['images']),
+      queryClient.invalidateQueries(['years']),
+      queryClient.invalidateQueries(['albums']),
+      queryClient.invalidateQueries(['allImages']),
+    ]);
+    await refreshCountriesWithPhotos(true);
+    triggerMapUpdate();
+  };
+
   const deleteImagesMutation = useMutation({
     mutationFn: async (ids) => {
       const response = await fetch(buildApiUrl('/api/images/delete-multiple'), {
@@ -234,18 +246,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
     onSuccess: async (_, ids) => {
       showSuccessToast(toast, `${ids.length} image(s) deleted successfully.`);
       triggerMapUpdate();
-      try {
-        await Promise.all([
-          queryClient.invalidateQueries(['images']),
-          queryClient.invalidateQueries(['years']),
-          queryClient.invalidateQueries(['albums']),
-          queryClient.invalidateQueries(['allImages']),
-        ]);
-        await refreshCountriesWithPhotos(true);
-        triggerMapUpdate();
-      } catch (e) {
-        console.error('❌ Post-delete processing error:', e);
-      }
+      try { await queryInvalidations(); } catch (e) { console.error('❌ Post-delete:', e); }
       setSelectedImageIds([]);
       setIsSelectionMode(false);
     },
@@ -283,18 +284,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
     onSuccess: async () => {
       showSuccessToast(toast, 'The album was deleted successfully.');
       triggerMapUpdate();
-      try {
-        await Promise.all([
-          queryClient.invalidateQueries(['albums']),
-          queryClient.invalidateQueries(['images']),
-          queryClient.invalidateQueries(['years']),
-          queryClient.invalidateQueries(['allImages']),
-        ]);
-        await refreshCountriesWithPhotos(true);
-        triggerMapUpdate();
-      } catch (e) {
-        console.error('❌ Album delete processing error:', e);
-      }
+      try { await queryInvalidations(); } catch (e) { console.error('❌ Album delete:', e); }
     },
     onError: () => showErrorToast(toast, 'There was an error deleting the album.'),
   });
@@ -311,18 +301,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
     onSuccess: async (_, { year }) => {
       showSuccessToast(toast, `All images from year ${year} were deleted successfully.`);
       triggerMapUpdate();
-      try {
-        await Promise.all([
-          queryClient.invalidateQueries(['images']),
-          queryClient.invalidateQueries(['years']),
-          queryClient.invalidateQueries(['albums']),
-          queryClient.invalidateQueries(['allImages']),
-        ]);
-        await refreshCountriesWithPhotos(true);
-        triggerMapUpdate();
-      } catch (e) {
-        console.error('❌ Year delete processing error:', e);
-      }
+      try { await queryInvalidations(); } catch (e) { console.error('❌ Year delete:', e); }
       setSelectedYear(null);
     },
     onError: (_, { year }) =>
@@ -342,18 +321,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
     onSuccess: async () => {
       showSuccessToast(toast, 'All images were deleted successfully.');
       triggerMapUpdate();
-      try {
-        await Promise.all([
-          queryClient.invalidateQueries(['images']),
-          queryClient.invalidateQueries(['years']),
-          queryClient.invalidateQueries(['albums']),
-          queryClient.invalidateQueries(['allImages']),
-        ]);
-        await refreshCountriesWithPhotos(true);
-        triggerMapUpdate();
-      } catch (e) {
-        console.error('❌ All-images delete processing error:', e);
-      }
+      try { await queryInvalidations(); } catch (e) { console.error('❌ All delete:', e); }
       setShowAllSelected(false);
     },
     onError: () =>
@@ -387,44 +355,38 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
     setSelectedYear((prev) => (prev === year ? null : year));
     setSelectedAlbum(null);
     setShowAllSelected(false);
+    setSelectedImageIds([]); // limpa seleção ao trocar o filtro
   };
 
   const toggleAlbumSelection = (albumId) => {
     setSelectedAlbum((prev) => (prev === albumId ? null : albumId));
     setSelectedYear(null);
     setShowAllSelected(false);
+    setSelectedImageIds([]); // limpa seleção ao trocar o filtro
   };
 
   const toggleShowAll = () => {
     setShowAllSelected((prev) => !prev);
     setSelectedYear(null);
     setSelectedAlbum(null);
+    setSelectedImageIds([]); // limpa seleção ao trocar o filtro
   };
 
   /* ---------------- Mappers ---------------- */
+  const mapImageDto = (image) => ({
+    url: image.filePath?.includes('s3.') ? image.filePath : buildApiUrl(image.filePath),
+    id: image.id,
+    year: image.year,
+    countryId: image.countryId,
+  });
+
   const allImages = useMemo(
-    () =>
-      Array.isArray(allImagesData)
-        ? allImagesData.map((image) => ({
-            url: image.filePath?.includes('s3.') ? image.filePath : buildApiUrl(image.filePath),
-            id: image.id,
-            year: image.year,
-            countryId: image.countryId, // manter se vier do backend
-          }))
-        : [],
+    () => (Array.isArray(allImagesData) ? allImagesData.map(mapImageDto) : []),
     [allImagesData]
   );
 
   const images = useMemo(
-    () =>
-      Array.isArray(imagesData)
-        ? imagesData.map((image) => ({
-            url: image.filePath?.includes('s3.') ? image.filePath : buildApiUrl(image.filePath),
-            id: image.id,
-            year: image.year,
-            countryId: image.countryId,
-          }))
-        : [],
+    () => (Array.isArray(imagesData) ? imagesData.map(mapImageDto) : []),
     [imagesData]
   );
 
@@ -432,6 +394,9 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
     () => (Array.isArray(albumsData) ? albumsData.filter((a) => a.images && a.images.length > 0) : []),
     [albumsData]
   );
+
+  // qual lista está ativa no momento?
+  const activeList = (selectedYear || selectedAlbum || showAllSelected) ? images : allImages;
 
   return (
     <Box>
@@ -506,15 +471,14 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
         images.length > 0 ? (
           <PhotoGallery
             images={images}
-            onDeleteSelectedImages={() => {
-              // abre confirmação; os IDs vêm do estado de seleção
-              onDeleteConfirmOpen();
-            }}
+            onDeleteSelectedImages={() => onDeleteConfirmOpen()}
             selectedImageIds={selectedImageIds}
             isSelectionMode={isSelectionMode}
             toggleSelectionMode={toggleSelectionMode}
             handleImageSelection={handleImageSelection}
             isImageSelected={isImageSelected}
+            onSelectAll={(list) => selectAllFrom(list)}     // NEW: select all (lista filtrada)
+            onClearSelection={clearSelection}               // NEW: unselect all
           />
         ) : (
           <Box
@@ -536,14 +500,14 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
         allImages.length > 0 && (
           <PhotoGallery
             images={allImages}
-            onDeleteSelectedImages={() => {
-              onDeleteConfirmOpen();
-            }}
+            onDeleteSelectedImages={() => onDeleteConfirmOpen()}
             selectedImageIds={selectedImageIds}
             isSelectionMode={isSelectionMode}
             toggleSelectionMode={toggleSelectionMode}
             handleImageSelection={handleImageSelection}
             isImageSelected={isImageSelected}
+            onSelectAll={(list) => selectAllFrom(list)}     // NEW
+            onClearSelection={clearSelection}               // NEW
           />
         )
       )}
