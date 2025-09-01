@@ -57,12 +57,19 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
   const headerBorderRadius = useBreakpointValue({ base: "8px", sm: "10px", md: "12px", lg: "14px" });
   const countryNameSize = useBreakpointValue({ base: "sm", sm: "md", md: "lg", lg: "xl" });
   const capitalTextSize = useBreakpointValue({ base: "xs", sm: "xs", md: "sm", lg: "sm" });
-  const flagHeight = useBreakpointValue({ base: "160px", sm: "180px", md: "260px", lg: "280px", xl: "320px" });
-  const flagBorderRadius = useBreakpointValue({ base: "10px", sm: "14px", md: "18px", lg: "22px" });
+  // Flag height balanced with infoboxes - more proportional sizing
+  const flagHeight = useBreakpointValue({ base: "180px", sm: "250px", md: "380px", lg: "280px", xl: "320px" });
+  const flagBorderRadius = useBreakpointValue({ base: "12px", sm: "14px", md: "16px", lg: "18px" });
   const infoBoxGap = useBreakpointValue({ base: 1, sm: 2, md: 3, lg: 4 });
   const sectionGap = useBreakpointValue({ base: 2, sm: 3, md: 4, lg: 6 });
 
-  // base =  0px - 480px
+  // Header background gradient for a subtle, attractive hero feel
+  const headerBg = useColorModeValue(
+    'linear-gradient(90deg, rgba(255,255,255,0.92) 0%, rgba(245,247,250,0.8) 100%)',
+    'linear-gradient(90deg, rgba(6,8,11,0.72) 0%, rgba(10,14,22,0.64) 100%)'
+  );
+
+   // base =  0px - 480px
   // sm = 481px - 768px 
   // md = 769px - 992px
   // lg = 993px - 1280px
@@ -72,7 +79,7 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
     <Box mb={2} position="relative">
       {/* Header: Nome do país, capital e botão de voltar alinhados */}
       <Box
-        bg={useColorModeValue('rgba(255,255,255,0.9)', 'rgba(0,0,0,0.8)')}
+        bg={headerBg}
         p={headerPadding}
         borderRadius={headerBorderRadius}
         display="flex"
@@ -86,6 +93,7 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
         maxW="1600px"
         mx="auto"
         minW="0"
+        boxShadow={useColorModeValue('0 6px 30px rgba(2,6,23,0.06)', '0 6px 30px rgba(2,6,23,0.6)')}
       >
         {/* Back Button */}
         <IconButton
@@ -124,7 +132,7 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
             direction={{ base: "column", sm: "row" }}
             align="center"
             justify="center"
-            gap={{ base: 1, sm: 2, md: 3, lg: 4 }}
+            gap={{ base: 1, sm: 2, md: 2, lg: 3 }}
             flexWrap="wrap"
           >
             <Heading
@@ -300,107 +308,88 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
           {/* Layout principal: esquerda (bandeira 1/3) vs direita (infoboxes 2/3) */}
           <Flex
             direction={{ base: "column", lg: "row" }}
-            gap={{ base: 1, sm: 2, md: 3, lg: 5 }}
+            gap={{ base: 1, lg: 4 }}
             align="flex-start"
             maxW="1600px"
             mx="auto"
             minW="0"
           >
-            {/* Lado Esquerdo: Bandeira (50% do espaço) */}
             <Box
-              width={{ base: "100%", lg: "50%" }}
+              width={{ base: "100%", lg: "35%" }}
+              maxW={{ lg: "400px" }}
               display="flex"
               flexDirection="column"
               alignItems="center"
-              mb={{ base: 1, lg: 0 }}
+              flexShrink={0}
             >
               <Box
                 width="100%"
+                maxW={{ base: '95%', lg: '100%' }}
                 height={flagHeight}
                 borderRadius={flagBorderRadius}
                 overflow="hidden"
                 boxShadow={{
-                  base: "0 8px 16px rgba(0, 0, 0, 0.15)",
-                  sm: "0 10px 20px rgba(0, 0, 0, 0.2)",
-                  md: "0 15px 30px rgba(0, 0, 0, 0.25)",
-                  lg: "0 20px 40px rgba(0, 0, 0, 0.3)"
+                  base: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                  sm: "0 6px 16px rgba(0, 0, 0, 0.12)",
+                  md: "0 8px 20px rgba(0, 0, 0, 0.15)",
+                  lg: "0 10px 24px rgba(0, 0, 0, 0.18)"
                 }}
                 bg="linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)"
                 _dark={{
                   bg: "linear-gradient(135deg, #1e293b 0%, #334155 100%)"
                 }}
                 _hover={{
-                  transform: { base: "scale(1.002)", sm: "scale(1.005)", md: "scale(1.01)", lg: "scale(1.015)" },
+                  transform: { base: "scale(1.01)", sm: "scale(1.02)", md: "scale(1.03)", lg: "scale(1.04)" },
                   boxShadow: {
-                    base: "0 12px 24px rgba(0, 0, 0, 0.2)",
-                    sm: "0 15px 30px rgba(0, 0, 0, 0.25)",
-                    md: "0 20px 40px rgba(0, 0, 0, 0.3)",
-                    lg: "0 25px 50px rgba(0, 0, 0, 0.4)"
+                    base: "0 6px 16px rgba(0, 0, 0, 0.15)",
+                    sm: "0 8px 20px rgba(0, 0, 0, 0.18)",
+                    md: "0 12px 28px rgba(0, 0, 0, 0.22)",
+                    lg: "0 16px 32px rgba(0, 0, 0, 0.25)"
                   }
                 }}
                 transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
+                border="1px solid"
+                borderColor={useColorModeValue('rgba(0,0,0,0.06)', 'rgba(255,255,255,0.08)')}
               >
                 <EnhancedFlag countryCode={countryId.toUpperCase()} isHero={false} />
               </Box>
             </Box>
 
-            {/* Lado Direito: Infoboxes e botões (50% do espaço) */}
+            {/* Lado Direito: Infoboxes e botões (65% em lg, 100% em mobile) */}
             <Box
               flex="1"
               display="flex"
               flexDirection="column"
-              gap={infoBoxGap}
-              minW="0"
-              w={{ base: "100%", lg: "50%" }}
+              w={{ base: "100%", lg: "65%" }}
+              alignSelf="stretch"
             >
               {/* Grid dinâmico de infoboxes - organizados automaticamente */}
               <Box
                 display="grid"
                 gridTemplateColumns={{
                   base: "repeat(2, 1fr)",
-                  sm: "repeat(3, 1fr)",
                   md: "repeat(3, 1fr)",
-                  lg: "repeat(2, 1fr)",
-                  xl: "repeat(3, 1fr)"
+                  lg: "repeat(3, 1fr)"
                 }}
-                gap={{ base: 1, sm: 1.5, md: 2, lg: 3 }}
+                gap={{ base: 1.5, sm: 2, md: 2, lg: 2.5 }}
                 w="full"
                 alignItems="stretch"
                 gridAutoRows="1fr"
-                minH={{ base: "auto", sm: "auto", md: "auto" }}
               >
 
                 {/* InfoBoxes principais */}
-                <InfoBox 
-                  icon={FaLanguage} 
-                  label="Language" 
-                  value={countryInfo?.officialLanguage} 
-                  colorScheme="orange" 
-                  size={{ base: "mobile", sm: "mobile", md: "default", lg: "default" }}
-                />
-                <InfoBox 
-                  icon={FaUsers} 
-                  label="Population" 
-                  value={countryInfo?.population ? formatPopulation(countryInfo.population) : undefined} 
-                  colorScheme="green" 
-                  size={{ base: "mobile", sm: "mobile", md: "default", lg: "default" }}
-                />
-                <InfoBox 
-                  icon={FaThermometerHalf} 
-                  label="Temperature" 
-                  value={weatherData?.temperature ? `${weatherData.temperature}°C` : undefined} 
-                  colorScheme="red" 
-                  size={{ base: "mobile", sm: "mobile", md: "default", lg: "default" }}
-                />
+                <InfoBox icon={FaLanguage} label="Language" value={countryInfo?.officialLanguage} colorScheme="orange" size={{ base: "default", sm: "default", md: "default", lg: "compact", xl: "compact" }} />
+                <InfoBox icon={FaUsers} label="Population" value={countryInfo?.population ? formatPopulation(countryInfo.population) : undefined} colorScheme="green" size={{ base: "default", sm: "default", md: "default", lg: "compact", xl: "compact" }} />
+                <InfoBox icon={FaThermometerHalf} label="Temperature" value={weatherData?.temperature ? `${weatherData.temperature}°C` : undefined} colorScheme="red" size={{ base: "default", sm: "default", md: "default", lg: "compact", xl: "compact" }} />
 
                 {/* See More com fundo destacado - cor mais sutil */}
                 <Box
-                  p={{ base: 2, sm: 2.5, md: 3, lg: 4 }}
+                  p={{ base: 2, sm: 3, md: 4, lg: 2, xl: 2.5 }}
                   bg="linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)"
-                  borderRadius={{ base: "lg", sm: "xl", md: "xl", lg: "xl" }}
+                  borderRadius="xl"
                   border="2px solid"
                   borderColor="gray.200"
                   _hover={{
@@ -416,27 +405,22 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
                   flexDirection="column"
                   alignItems="center"
                   justifyContent="center"
-                  gap={{ base: 1, sm: 1.5, md: 2 }}
+                  gap={{ base: 1, sm: 2, lg: 1 }}
                   h="100%"
-                  minH={{ base: "80px", sm: "90px", md: "100px", lg: "120px" }}
+                  minH={{ lg: "100px" }}
                 >
-                  <Box 
-                    p={{ base: 1, sm: 1.5, md: 2 }} 
-                    borderRadius="full" 
-                    bg="rgba(0, 0, 0, 0.1)" 
-                    color="gray.600"
-                  >
-                    <Icon as={FaBook} boxSize={{ base: 3, sm: 4, md: 5, lg: 6 }} />
+                  <Box p={{ base: 1, sm: 2 }} borderRadius="full" bg="rgba(0, 0, 0, 0.1)" color="gray.600">
+                    <Icon as={FaBook} boxSize={{ base: 4, sm: 5, md: 6 }} />
                   </Box>
-                  <Text fontSize={{ base: "xs", sm: "sm", md: "md", lg: "lg" }} fontWeight="bold">See more</Text>
-                  <Text fontSize={{ base: "xs", sm: "xs", md: "sm" }} opacity={0.8}>More indicators</Text>
+                  <Text fontSize={{ base: "sm", sm: "md", md: "lg" }} fontWeight="bold">See more</Text>
+                  <Text fontSize={{ base: "xs", sm: "sm" }} opacity={0.8}>More indicators</Text>
                 </Box>
 
                 {/* Check Flights com fundo destacado */}
                 <Box
-                  p={{ base: 2, sm: 2.5, md: 3, lg: 4 }}
+                  p={{ base: 2, sm: 3, md: 4, lg: 2, xl: 2.5 }}
                   bg="linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)"
-                  borderRadius={{ base: "lg", sm: "xl", md: "xl", lg: "xl" }}
+                  borderRadius="xl"
                   border="2px solid"
                   borderColor="teal.200"
                   _hover={{
@@ -459,29 +443,24 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
                   flexDirection="column"
                   alignItems="center"
                   justifyContent="center"
-                  gap={{ base: 1, sm: 1.5, md: 2 }}
+                  gap={{ base: 1, sm: 2, lg: 1 }}
                   h="100%"
-                  minH={{ base: "80px", sm: "90px", md: "100px", lg: "120px" }}
+                  minH={{ lg: "100px" }}
                 >
-                  <Box 
-                    p={{ base: 1, sm: 1.5, md: 2 }} 
-                    borderRadius="full" 
-                    bg="rgba(0, 0, 0, 0.1)" 
-                    color="gray.700"
-                  >
-                    <Icon as={FaPlane} boxSize={{ base: 3, sm: 4, md: 5, lg: 6 }} />
+                  <Box p={{ base: 1, sm: 2 }} borderRadius="full" bg="rgba(0, 0, 0, 0.1)" color="gray.700">
+                    <Icon as={FaPlane} boxSize={{ base: 4, sm: 5, md: 6 }} />
                   </Box>
-                  <Text fontSize={{ base: "xs", sm: "sm", md: "md", lg: "lg" }} fontWeight="bold">Check Flights</Text>
-                  <Text fontSize={{ base: "xs", sm: "xs", md: "sm" }} opacity={0.8}>
+                  <Text fontSize={{ base: "sm", sm: "md", md: "lg" }} fontWeight="bold">Check Flights</Text>
+                  <Text fontSize={{ base: "xs", sm: "sm" }} opacity={0.8}>
                     to {countries.getName(countryId.toUpperCase(), 'en')}
                   </Text>
                 </Box>
 
                 {/* Find Hotels com fundo destacado */}
                 <Box
-                  p={{ base: 2, sm: 2.5, md: 3, lg: 4 }}
+                  p={{ base: 2, sm: 3, md: 4, lg: 2, xl: 2.5 }}
                   bg="linear-gradient(135deg, #fff5e6 0%, #ffe4b3 100%)"
-                  borderRadius={{ base: "lg", sm: "xl", md: "xl", lg: "xl" }}
+                  borderRadius="xl"
                   border="2px solid"
                   borderColor="orange.200"
                   _hover={{
@@ -504,20 +483,15 @@ const HeroHeader = ({ countryId, countryInfo, weatherData, currentTime, exchange
                   flexDirection="column"
                   alignItems="center"
                   justifyContent="center"
-                  gap={{ base: 1, sm: 1.5, md: 2 }}
+                  gap={{ base: 1, sm: 2, lg: 1 }}
                   h="100%"
-                  minH={{ base: "80px", sm: "90px", md: "100px", lg: "120px" }}
+                  minH={{ lg: "100px" }}
                 >
-                  <Box 
-                    p={{ base: 1, sm: 1.5, md: 2 }} 
-                    borderRadius="full" 
-                    bg="rgba(0, 0, 0, 0.08)" 
-                    color="gray.700"
-                  >
-                    <Icon as={FaCity} boxSize={{ base: 3, sm: 4, md: 5, lg: 6 }} />
+                  <Box p={{ base: 1, sm: 2 }} borderRadius="full" bg="rgba(0, 0, 0, 0.08)" color="gray.700">
+                    <Icon as={FaCity} boxSize={{ base: 4, sm: 5, md: 6 }} />
                   </Box>
-                  <Text fontSize={{ base: "xs", sm: "sm", md: "md", lg: "lg" }} fontWeight="bold">Find Hotels</Text>
-                  <Text fontSize={{ base: "xs", sm: "xs", md: "sm" }} opacity={0.8}>
+                  <Text fontSize={{ base: "sm", sm: "md", md: "lg" }} fontWeight="bold">Find Hotels</Text>
+                  <Text fontSize={{ base: "xs", sm: "sm" }} opacity={0.8}>
                     in {countries.getName(countryId.toUpperCase(), 'en')}
                   </Text>
                 </Box>
