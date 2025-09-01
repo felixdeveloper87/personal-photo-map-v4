@@ -106,92 +106,38 @@ const InfoBox = ({
     }
   };
 
-  // Função para obter tamanho responsivo
-  const getProportionalSizes = () => {
-    // Tamanhos da bandeira para referência (mesmos valores do HeroHeader)
-    const flagHeight = useBreakpointValue({ 
-      base: "120px", 
-      sm: "180px", 
-      md: "220px", 
-      lg: "280px", 
-      xl: "320px" 
-    });
-    
-    // Converte a altura da bandeira para número (remove 'px')
-    const flagHeightNum = parseInt(flagHeight);
-    
-    // Calcula proporções baseadas na altura da bandeira
-    const baseSize = flagHeightNum * 0.4; // 40% da altura da bandeira
-    const minSize = Math.max(baseSize * 0.6, 60); // Mínimo de 60px
-    const maxSize = Math.min(baseSize * 1.2, 200); // Máximo de 200px
-    
-    return {
-      minW: `${Math.round(minSize)}px`,
-      minH: `${Math.round(minSize)}px`,
-      p: useBreakpointValue({ 
-        base: Math.max(2, Math.round(minSize / 30)), 
-        sm: Math.max(3, Math.round(minSize / 25)), 
-        md: Math.max(4, Math.round(minSize / 20)), 
-        lg: Math.max(5, Math.round(minSize / 18))
-      }),
-      borderRadius: useBreakpointValue({ 
-        base: "12px", 
-        sm: "14px", 
-        md: "16px", 
-        lg: "18px" 
-      }),
-      iconSize: useBreakpointValue({ 
-        base: Math.max(4, Math.round(minSize / 20)), 
-        sm: Math.max(5, Math.round(minSize / 18)), 
-        md: Math.max(6, Math.round(minSize / 16)), 
-        lg: Math.max(8, Math.round(minSize / 14))
-      }),
-      labelFontSize: useBreakpointValue({ 
-        base: "xs", 
-        sm: "sm", 
-        md: "md", 
-        lg: "lg" 
-      }),
-      valueFontSize: useBreakpointValue({ 
-        base: "sm", 
-        sm: "md", 
-        md: "lg", 
-        lg: "xl" 
-      }),
-      spacing: useBreakpointValue({ 
-        base: Math.max(1, Math.round(minSize / 40)), 
-        sm: Math.max(2, Math.round(minSize / 35)), 
-        md: Math.max(3, Math.round(minSize / 30)), 
-        lg: Math.max(4, Math.round(minSize / 25))
-      })
-    };
-  };
-
-  // Tamanhos padronizados para garantir consistência - AGORA RESPONSIVOS À BANDEIRA
+  // Tamanhos padronizados para garantir consistência
   const sizes = {
-    default: getProportionalSizes(),
-    large: (() => {
-      const base = getProportionalSizes();
-      return {
-        ...base,
-        minW: `${Math.round(parseInt(base.minW) * 1.2)}px`,
-        minH: `${Math.round(parseInt(base.minH) * 1.3)}px`,
-        p: Math.max(3, base.p + 1),
-        iconSize: Math.max(5, base.iconSize + 1)
-      };
-    })(),
-    mobile: (() => {
-      const base = getProportionalSizes();
-      return {
-        ...base,
-        minW: `${Math.round(parseInt(base.minW) * 0.8)}px`,
-        minH: `${Math.round(parseInt(base.minH) * 0.8)}px`,
-        p: Math.max(2, base.p - 1),
-        iconSize: Math.max(4, base.iconSize - 1),
-        labelFontSize: "xs",
-        valueFontSize: "sm"
-      };
-    })()
+    default: {
+      minW: isMobile ? "100px" : "140px",
+      minH: isMobile ? "100px" : "140px",
+      p: isMobile ? 3 : 4,
+      borderRadius: isMobile ? "12px" : "16px",
+      iconSize: isMobile ? 6 : 8,
+      labelFontSize: isMobile ? "xs" : "sm",
+      valueFontSize: isMobile ? "sm" : "md",
+      spacing: isMobile ? 2 : 3
+    },
+    large: {
+      minW: isMobile ? "80px" : "100px",
+      minH: isMobile ? "120px" : "180px",
+      p: isMobile ? 3 : 5,
+      borderRadius: isMobile ? "12px" : "20px",
+      iconSize: isMobile ? 5 : 6,
+      labelFontSize: isMobile ? "sm" : "md",
+      valueFontSize: isMobile ? "md" : "lg",
+      spacing: isMobile ? 2 : 3
+    },
+    mobile: {
+      minW: "60px",
+      minH: "60px",
+      p: 3,
+      borderRadius: "12px",
+      iconSize: 5,
+      labelFontSize: "xs",
+      valueFontSize: "sm",
+      spacing: 2
+    }
   };
 
   // Função para obter tamanho responsivo
