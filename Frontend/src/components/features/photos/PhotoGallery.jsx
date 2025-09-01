@@ -121,6 +121,12 @@ const PhotoGallery = memo(function PhotoGallery({
   const handleImageSelection = (imageId, event) => {
     event?.stopPropagation?.(); // Previne o evento de bubble
     
+    // Garantir que setSelectedImageIds existe antes de usar
+    if (!setSelectedImageIds) {
+      console.warn('setSelectedImageIds function not provided');
+      return;
+    }
+    
     if (selectedImageIds.includes(imageId)) {
       setSelectedImageIds(selectedImageIds.filter(id => id !== imageId));
     } else {
