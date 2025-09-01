@@ -190,31 +190,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
 
 
 
-  // Handle upload success
-  const handleUploadSuccess = async () => {   
-    try {
-      // 1. Trigger immediate map update for instant visual feedback
-      triggerMapUpdate();
-      
-      // 2. Use specialized upload refresh that bypasses cache
-      await refreshAfterUpload();
-  
-      await Promise.all([
-        queryClient.invalidateQueries(['allImages', countryId]),
-        queryClient.invalidateQueries(['years', countryId]),
-        queryClient.invalidateQueries(['albums', countryId]),
-        queryClient.refetchQueries(['allImages', countryId]),
-        queryClient.refetchQueries(['years', countryId]),
-        queryClient.refetchQueries(['albums', countryId])
-      ]);      
-      // 4. Final trigger for any remaining UI updates
-      triggerMapUpdate();
-      
-    } catch (error) {
-      console.error('❌ Error during upload success processing:', error);
-      showErrorToast(toast, 'Photos uploaded but page refresh failed. Please refresh manually.');
-    }
-  };
+
 
   /** Local UI state */
   const [selectedYear, setSelectedYear] = useState(null);
@@ -493,38 +469,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
 
   /* ---------------- Handlers ---------------- */
 
-  /**
-   * Called after a successful image upload from ImageUploader.
-   * Optionally invalidates queries or triggers re-fetch to show new images.
-   */
-  const handleUpload = async (newImages, year) => {   
-    try {
-      // 1. Trigger immediate map update for instant visual feedback
-      triggerMapUpdate();
-      
-      // 2. Invalidate queries to refetch new data
-      await Promise.all([
-        queryClient.invalidateQueries(['images']),
-        queryClient.invalidateQueries(['years']),
-        queryClient.invalidateQueries(['albums'])
-      ]);
-      
-      // 3. Optionally call an onUploadSuccess prop
-      if (onUploadSuccess) {
-        await onUploadSuccess();
-      }
-      
-      // 4. Refresh countries context with forced refresh
-      await refreshCountriesWithPhotos(true);
-      
-      // 5. Final trigger for any remaining UI updates
-      triggerMapUpdate();
-      
-    } catch (error) {
-      console.error('❌ Error in handleUpload:', error);
-      showErrorToast(toast, 'Upload completed but refresh failed. Please refresh the page.');
-    }
-  };
+
 
   /**
    * Attempts to create an album if user is Premium and
@@ -692,7 +637,7 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
                 {allImages.length === 0 && (
           <JourneyStarterSection 
             countryId={countryId}
-            onUploadSuccess={handleUploadSuccess}
+            onUploadSuccess={onUploadSuccess}
           />
         )}
 
