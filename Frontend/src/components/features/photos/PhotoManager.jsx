@@ -301,6 +301,8 @@ const PhotoManager = ({ countryId, onUploadSuccess }) => {
       !!isLoggedIn &&
       !!(selectedYear || selectedAlbum || showAllSelected),
     // Only fetch images if the user selects a year, album, or toggles 'Show All'
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
   });
 
   /* ---------------- Mutations (POST/DELETE) ---------------- */

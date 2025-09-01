@@ -110,10 +110,21 @@ const PhotoGallery = memo(function PhotoGallery({
 
   // Handle image click - CORRIGIDO
   const handleImageClick = (index, event) => {
+    console.log('Image clicked:', { 
+      index, 
+      imageId: images[index]?.id,
+      isSelectionMode, 
+      hasHandleImageSelection: !!handleImageSelection 
+    });
+    
     if (isSelectionMode) {
       // Em modo de seleção, alterna a seleção da imagem
       const imageId = images[index].id;
-      handleImageSelection(imageId);
+      if (handleImageSelection) {
+        handleImageSelection(imageId);
+      } else {
+        console.error('handleImageSelection function not provided');
+      }
     } else {
       // Modo normal - abre modal
       setCurrentImageIndex(index);
@@ -210,25 +221,32 @@ const PhotoGallery = memo(function PhotoGallery({
       <Box mb={4}>
         <Flex justify="space-between" align="center" maxW="1200px" mx="auto" px={6}>
           <HStack spacing={3}>
-            <Button
-              size="sm"
-              colorScheme={isSelectionMode ? 'blue' : 'gray'}
-              variant={isSelectionMode ? 'solid' : 'outline'}
-              onClick={toggleSelectionMode}
-              leftIcon={isSelectionMode ? <CheckIcon /> : undefined}
-              borderRadius="full"
-              px={6}
-              transition="all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
-              _hover={{
-                transform: 'translateY(-1px)',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-              }}
-              _active={{
-                transform: 'translateY(0)',
-              }}
-            >
-              {isSelectionMode ? 'Exit Selection' : 'Select Photos'}
-            </Button>
+                         <Button
+               size="sm"
+               colorScheme={isSelectionMode ? 'blue' : 'gray'}
+               variant={isSelectionMode ? 'solid' : 'outline'}
+               onClick={() => {
+                 console.log('Toggle selection mode clicked, current mode:', isSelectionMode);
+                 if (toggleSelectionMode) {
+                   toggleSelectionMode();
+                 } else {
+                   console.error('toggleSelectionMode function not provided');
+                 }
+               }}
+               leftIcon={isSelectionMode ? <CheckIcon /> : undefined}
+               borderRadius="full"
+               px={6}
+               transition="all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
+               _hover={{
+                 transform: 'translateY(-1px)',
+                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+               }}
+               _active={{
+                 transform: 'translateY(0)',
+               }}
+             >
+               {isSelectionMode ? 'Exit Selection' : 'Select Photos'}
+             </Button>
             
             {isSelectionMode && (
               <HStack spacing={2}>
@@ -272,8 +290,9 @@ const PhotoGallery = memo(function PhotoGallery({
             rowGap: { base: '6px', sm: '8px', md: '12px' } 
           }}
         >
-          {images.map((image, index) => {
-            const isSelected = isImageSelected(image.id);
+                     {images.map((image, index) => {
+             const isSelected = isImageSelected ? isImageSelected(image.id) : false;
+             console.log(`Rendering image ${image.id}, selected: ${isSelected}, isImageSelected function: ${!!isImageSelected}`);
             
             return (
               <motion.div
