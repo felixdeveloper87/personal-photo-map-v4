@@ -44,10 +44,10 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
   useEffect(() => {
     const loadWikipediaData = async () => {
       if (!countryId) return;
-      
+
       setIsLoadingWikipedia(true);
       setWikipediaError(null);
-      
+
       try {
         const data = await fetchWikipediaData(countryId);
         setWikipediaData(data);
@@ -103,9 +103,9 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
       animate: prefersReducedMotion
         ? {}
         : {
-            y: [0, -10, 0],
-            transition: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
-          },
+          y: [0, -10, 0],
+          transition: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
+        },
     }),
     [prefersReducedMotion]
   );
@@ -115,8 +115,8 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
       prefersReducedMotion
         ? {}
         : {
-            '&:hover::after': { left: '100%' },
-          },
+          '&:hover::after': { left: '100%' },
+        },
     [prefersReducedMotion]
   );
 
@@ -272,32 +272,48 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                 }}
               >
                 <VStack spacing={4} align="stretch">
-                  {/* Header */}
-                  <HStack justify="space-between" align="center">
-                    <HStack spacing={3}>
-                      <Icon as={FaGlobe} color={accentColor} boxSize={5} />
-                      <Text
-                        fontSize={{ base: 'lg', md: 'xl' }}
-                        fontWeight="bold"
-                        color={accentColor}
-                      >
-                        About this country
-                      </Text>
-                    </HStack>
-                    <Badge
-                      colorScheme="blue"
-                      variant="subtle"
-                      px={3}
-                      py={1}
-                      borderRadius="full"
-                      fontSize="xs"
+                  {/* Header with enhanced styling */}
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    mb={6}
+                    p={4}
+                    bg={useColorModeValue('blue.50', 'blue.900')}
+                    borderRadius="xl"
+                    border="1px solid"
+                    borderColor={useColorModeValue('blue.200', 'blue.700')}
+                  >
+                    <Box
+                      p={2}
+                      bg={useColorModeValue('blue.100', 'blue.800')}
+                      borderRadius="lg"
+                      mr={4}
                     >
-                      <HStack spacing={1}>
-                        <Icon as={FaInfoCircle} boxSize={3} />
-                        <Text>Wikipedia</Text>
-                      </HStack>
-                    </Badge>
-                  </HStack>
+                      <Icon as={FaWikipediaW} color="blue.500" boxSize={6} />
+                    </Box>
+                    <Box>
+                      <Text
+                        fontSize={{ base: 'xl', md: '2xl' }}
+                        fontWeight="black"
+                        bgGradient={useColorModeValue(
+                          'linear(to-r, blue.600, purple.600)',
+                          'linear(to-r, blue.300, purple.300)'
+                        )}
+                        bgClip="text"
+                        lineHeight="1.2"
+                      >
+                        About {countryName}
+                      </Text>
+                      <Text
+                        fontSize="sm"
+                        color={useColorModeValue('blue.600', 'blue.300')}
+                        fontWeight="medium"
+                        mt={1}
+                      >
+                        Knowledge from Wikipedia
+                      </Text>
+                    </Box>
+                  </Box>
 
                   <Divider borderColor={borderColor} />
 
@@ -312,7 +328,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                     {wikipediaData.summary}
                   </Text>
 
-                  {/* Call to Action */}
+                  {/* Wikipedia Link */}
                   <Box
                     mt={4}
                     p={4}
@@ -321,14 +337,43 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                     border="1px solid"
                     borderColor={useColorModeValue('blue.200', 'blue.700')}
                   >
-                    <Text
-                      fontSize={{ base: 'sm', md: 'md' }}
-                      color={useColorModeValue('blue.700', 'blue.200')}
-                      fontWeight="semibold"
-                      textAlign="center"
-                    >
-                      ✨ Now it's your turn to explore and document this amazing land!
-                    </Text>
+                    <Box display="flex" alignItems="center" justifyContent="space-between">
+                      <Text
+                        fontSize="sm"
+                        color={useColorModeValue('gray.600', 'gray.300')}
+                        fontWeight="medium"
+                      >
+                        Want to learn more?
+                      </Text>
+                      <Text
+                        as="a"
+                        href={wikipediaData.content_urls.desktop.page}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        fontSize="sm"
+                        fontWeight="bold"
+                        color={accentColor}
+                        textDecoration="none"
+                        px={4}
+                        py={2}
+                        bg={useColorModeValue('white', 'gray.600')}
+                        borderRadius="lg"
+                        border="1px solid"
+                        borderColor={useColorModeValue('gray.200', 'gray.500')}
+                        _hover={{
+                          textDecoration: 'none',
+                          bg: useColorModeValue('gray.50', 'gray.500'),
+                          transform: 'translateY(-1px)',
+                          boxShadow: useColorModeValue(
+                            '0 4px 12px rgba(0,0,0,0.1)',
+                            '0 4px 12px rgba(0,0,0,0.3)'
+                          )
+                        }}
+                        transition="all 0.2s ease"
+                      >
+                        Read on Wikipedia →
+                      </Text>
+                    </Box>
                   </Box>
                 </VStack>
               </Box>
