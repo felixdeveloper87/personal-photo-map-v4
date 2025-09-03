@@ -53,7 +53,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
         setWikipediaData(data);
       } catch (error) {
         console.warn('Erro ao carregar dados da Wikipedia:', error);
-        setWikipediaError('Não foi possível carregar informações do país');
+        setWikipediaError('Unable to load country information');
       } finally {
         setIsLoadingWikipedia(false);
       }
@@ -233,7 +233,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
               <VStack spacing={4}>
                 <Spinner size="lg" color={accentColor} thickness="4px" />
                 <Text fontSize="sm" color={textColor} fontWeight="medium">
-                  🌍 Carregando informações sobre este país...
+                  🌍 Loading information about this country...
                 </Text>
               </VStack>
             </Box>
@@ -281,7 +281,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                         fontWeight="bold"
                         color={accentColor}
                       >
-                        Sobre este país
+                        About this country
                       </Text>
                     </HStack>
                     <Badge
@@ -327,7 +327,7 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                       fontWeight="semibold"
                       textAlign="center"
                     >
-                      ✨ Agora é sua vez de explorar e documentar esta incrível terra!
+                      ✨ Now it's your turn to explore and document this amazing land!
                     </Text>
                   </Box>
                 </VStack>
