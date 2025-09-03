@@ -16,7 +16,7 @@ import {
   Badge,
   Divider,
 } from '@chakra-ui/react';
-import { FaRocket, FaGlobe, FaInfoCircle } from 'react-icons/fa';
+import { FaRocket, FaWikipediaW } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import EnhancedImageUploaderModal from '../../modals/EnhancedImageUploaderModal';
 import { fetchWikipediaData } from '../CountryDetails/services';
