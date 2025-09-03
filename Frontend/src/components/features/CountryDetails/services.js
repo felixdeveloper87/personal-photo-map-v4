@@ -133,11 +133,13 @@ export const fetchWikipediaData = async (countryId) => {
     
     const data = await response.json();
     
-    // Extrair apenas o resumo
+    // Extrair resumo e URLs
     const summary = data.extract || null;
+    const contentUrls = data.content_urls || null;
     
     return {
       summary,
+      content_urls: contentUrls,
       culture: 'Cultural heritage information available'
     };
   } catch (error) {

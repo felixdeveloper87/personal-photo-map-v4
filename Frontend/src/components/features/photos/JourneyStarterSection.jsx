@@ -349,34 +349,50 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
                       >
                         Want to learn more?
                       </Text>
-                      <Text
-                        as="a"
-                        href={wikipediaData.content_urls.desktop.page}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        fontSize="sm"
-                        fontWeight="bold"
-                        color={accentColor}
-                        textDecoration="none"
-                        px={4}
-                        py={2}
-                        bg={useColorModeValue('white', 'gray.600')}
-                        borderRadius="lg"
-                        border="1px solid"
-                        borderColor={useColorModeValue('gray.200', 'gray.500')}
-                        _hover={{
-                          textDecoration: 'none',
-                          bg: useColorModeValue('gray.50', 'gray.500'),
-                          transform: 'translateY(-1px)',
-                          boxShadow: useColorModeValue(
-                            '0 4px 12px rgba(0,0,0,0.1)',
-                            '0 4px 12px rgba(0,0,0,0.3)'
-                          )
-                        }}
-                        transition="all 0.2s ease"
-                      >
-                        Read on Wikipedia →
-                      </Text>
+                      {wikipediaData.content_urls?.desktop?.page ? (
+                        <Text
+                          as="a"
+                          href={wikipediaData.content_urls.desktop.page}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          fontSize="sm"
+                          fontWeight="bold"
+                          color={accentColor}
+                          textDecoration="none"
+                          px={4}
+                          py={2}
+                          bg={useColorModeValue('white', 'gray.600')}
+                          borderRadius="lg"
+                          border="1px solid"
+                          borderColor={useColorModeValue('gray.200', 'gray.500')}
+                          _hover={{
+                            textDecoration: 'none',
+                            bg: useColorModeValue('gray.50', 'gray.500'),
+                            transform: 'translateY(-1px)',
+                            boxShadow: useColorModeValue(
+                              '0 4px 12px rgba(0,0,0,0.1)',
+                              '0 4px 12px rgba(0,0,0,0.3)'
+                            )
+                          }}
+                          transition="all 0.2s ease"
+                        >
+                          Read on Wikipedia →
+                        </Text>
+                      ) : (
+                        <Text
+                          fontSize="sm"
+                          fontWeight="bold"
+                          color={useColorModeValue('gray.500', 'gray.400')}
+                          px={4}
+                          py={2}
+                          bg={useColorModeValue('gray.100', 'gray.700')}
+                          borderRadius="lg"
+                          border="1px solid"
+                          borderColor={useColorModeValue('gray.200', 'gray.600')}
+                        >
+                          Link unavailable
+                        </Text>
+                      )}
                     </Box>
                   </Box>
                 </VStack>
