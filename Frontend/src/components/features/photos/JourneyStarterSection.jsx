@@ -20,6 +20,11 @@ import { FaRocket, FaWikipediaW } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import EnhancedImageUploaderModal from '../../modals/EnhancedImageUploaderModal';
 import { fetchWikipediaData } from '../CountryDetails/services';
+import { countries } from 'country-data';
+import { en } from 'country-data/locales';
+
+// Register English locale
+countries.registerLocale(en);
 
 const MotionBox = motion(Box);
 const MotionButton = motion(Button);
@@ -35,6 +40,9 @@ const JourneyStarterSection = ({ countryId, onUploadSuccess }) => {
   const [wikipediaData, setWikipediaData] = useState(null);
   const [isLoadingWikipedia, setIsLoadingWikipedia] = useState(false);
   const [wikipediaError, setWikipediaError] = useState(null);
+
+  // Obter nome do país
+  const countryName = countries.getName(countryId?.toUpperCase(), 'en') || countryId?.toUpperCase() || 'this country';
 
   // A11y ids
   const titleId = useId();
