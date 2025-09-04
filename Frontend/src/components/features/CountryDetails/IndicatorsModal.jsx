@@ -35,7 +35,11 @@ import {
   FaGlobe,
   FaMapMarkedAlt,
   FaChevronDown,
-  FaChevronUp
+  FaChevronUp,
+  FaFlag,
+  FaBuilding,
+  FaMountain,
+  FaUserFriends
 } from 'react-icons/fa';
 import InfoBox from './InfoBox';
 
@@ -108,6 +112,10 @@ const IndicatorsModal = ({
     let count = 2; // Language, Capital
     if (factbookData?.religion && factbookData.religion !== 'N/A') count++;
     if (factbookData?.culture && factbookData.culture !== 'N/A') count++;
+    if (factbookData?.government && factbookData.government !== 'N/A') count++;
+    if (factbookData?.economy && factbookData.economy !== 'N/A') count++;
+    if (factbookData?.geography && factbookData.geography !== 'N/A') count++;
+    if (factbookData?.people && factbookData.people !== 'N/A') count++;
     return count;
   };
 
@@ -471,6 +479,42 @@ const IndicatorsModal = ({
                 colorScheme="teal" 
                 size="compact"
               />
+              {factbookData?.government && factbookData.government !== 'N/A' && (
+                <InfoBox 
+                  icon={FaFlag} 
+                  label="Government Type" 
+                  value={factbookData.government} 
+                  colorScheme="red" 
+                  size="compact"
+                />
+              )}
+              {factbookData?.economy && factbookData.economy !== 'N/A' && (
+                <InfoBox 
+                  icon={FaBuilding} 
+                  label="Economy Type" 
+                  value={factbookData.economy} 
+                  colorScheme="green" 
+                  size="compact"
+                />
+              )}
+              {factbookData?.geography && factbookData.geography !== 'N/A' && (
+                <InfoBox 
+                  icon={FaMountain} 
+                  label="Geography" 
+                  value={factbookData.geography} 
+                  colorScheme="yellow" 
+                  size="compact"
+                />
+              )}
+              {factbookData?.people && factbookData.people !== 'N/A' && (
+                <InfoBox 
+                  icon={FaUserFriends} 
+                  label="Population Size" 
+                  value={factbookData.people} 
+                  colorScheme="cyan" 
+                  size="compact"
+                />
+              )}
             </SimpleGrid>
           </Box>
         </Collapse>
