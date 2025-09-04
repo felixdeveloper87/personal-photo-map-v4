@@ -150,9 +150,14 @@ const CountryDetails = () => {
         <Box mt={1}>
           <PhotoManager 
             countryId={countryId} 
-            onUploadSuccess={() => {
+            onUploadSuccess={async () => {
+              // Refresh all photo-related queries
+              await queryClient.invalidateQueries(['allImages', countryId]);
+              await queryClient.invalidateQueries(['years', countryId]);
+              await queryClient.invalidateQueries(['albums', countryId]);
+              await queryClient.invalidateQueries(['userPhotos', countryId]);
               // Force immediate refresh of countries data to update map
-              refreshCountriesWithPhotos(true);
+              await refreshCountriesWithPhotos(true);
             }}
           />
         </Box>
