@@ -94,9 +94,12 @@ const UserStatisticsModal = ({ isOpen, onClose }) => {
                   Countries with Photos
                 </Text>
                 <VStack spacing={2} align="stretch" maxH="300px" overflowY="auto">
-                  {countriesWithPhotos.map((country, index) => (
+                  {countriesWithPhotos
+                    .filter(country => country.countryName) // Filter out countries without names
+                    .sort((a, b) => (b.photoCount || 0) - (a.photoCount || 0)) // Sort by photo count descending
+                    .map((country, index) => (
                     <HStack
-                      key={index}
+                      key={country.countryId || index}
                       justify="space-between"
                       p={3}
                       bg={statBg}
@@ -104,9 +107,9 @@ const UserStatisticsModal = ({ isOpen, onClose }) => {
                       border="1px solid"
                       borderColor={borderColor}
                     >
-                      <Text fontWeight="medium">{country.name}</Text>
+                      <Text fontWeight="medium">{country.countryName || 'Unknown Country'}</Text>
                       <Badge colorScheme="blue" variant="subtle">
-                        {country.photoCount} photo{country.photoCount !== 1 ? 's' : ''}
+                        {country.photoCount || 0} photo{(country.photoCount || 0) !== 1 ? 's' : ''}
                       </Badge>
                     </HStack>
                   ))}
