@@ -447,26 +447,26 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                         transition={{ delay: index * 0.03 }}
                         bg="linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1))"
                         color={headingColor}
-                        p={3}
+                        p={2}
                         borderRadius="md"
                         textAlign="center"
                         border="1px solid"
                         borderColor="rgba(59, 130, 246, 0.2)"
                         _hover={{ 
                           bg: "linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2))",
-                          transform: 'scale(1.02)'
+                          transform: 'scale(1.05)'
                         }}
                         cursor="pointer"
                         fontSize="sm"
-                        position="relative"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                        minH="40px"
                       >
-                        {/* Mini Flag */}
+                        {/* Flag Only */}
                         <Box
-                          position="absolute"
-                          top={2}
-                          right={2}
-                          width="20px"
-                          height="15px"
+                          width="32px"
+                          height="24px"
                           borderRadius="sm"
                           overflow="hidden"
                           border="1px solid"
@@ -475,16 +475,6 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                         >
                           <EnhancedFlag countryCode={country.code} />
                         </Box>
-                        
-                        {/* Country Name and Code */}
-                        <VStack spacing={1} align="center">
-                          <Text fontWeight="bold" noOfLines={1} fontSize="xs" pr={6}>
-                            {country.name || 'Unknown'}
-                          </Text>
-                          <Text opacity={0.7} fontSize="2xs">
-                            {country.code || 'N/A'}
-                          </Text>
-                        </VStack>
                       </MotionBox>
                     ))}
                     {countryNamesList.length > 12 && (
