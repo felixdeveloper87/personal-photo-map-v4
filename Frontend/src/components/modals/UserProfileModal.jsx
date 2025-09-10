@@ -461,12 +461,12 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                         display="flex"
                         alignItems="center"
                         justifyContent="center"
-                        minH="40px"
+                        minH="50px"
                       >
                         {/* Flag Only */}
                         <Box
-                          width="32px"
-                          height="24px"
+                          width="48px"
+                          height="36px"
                           borderRadius="sm"
                           overflow="hidden"
                           border="1px solid"
