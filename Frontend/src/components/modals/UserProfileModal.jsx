@@ -143,8 +143,8 @@ const UserProfileModal = ({ isOpen, onClose }) => {
   const countryNamesList = countriesWithPhotos?.map((item) => {
     if (typeof item === 'object' && item !== null) {
       return { 
-        code: String(item.id || '').toUpperCase(), 
-        name: item.name || String(item.id || '').toUpperCase() 
+        code: String(item.countryId || '').toUpperCase(), 
+        name: item.countryName || String(item.countryId || '').toUpperCase() 
       };
     } else {
       const countryCode = String(item || '').toUpperCase();
@@ -435,9 +435,12 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                     {countryNamesList.length} / 195 countries ({((countryNamesList.length / 195) * 100).toFixed(1)}%)
                   </Text>
                   <SimpleGrid columns={countryGridColumns} spacing={3}>
-                    {countryNamesList.slice(0, 12).map((country, index) => (
+                    {countryNamesList
+                      .filter(country => country.name && country.name !== 'UNKNOWN') // Filter out invalid countries
+                      .slice(0, 12)
+                      .map((country, index) => (
                       <MotionBox
-                        key={index}
+                        key={country.code || index}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.03 }}
@@ -455,8 +458,8 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                         cursor="pointer"
                         fontSize="sm"
                       >
-                        <Text fontWeight="bold" noOfLines={1}>{country.name}</Text>
-                        <Text opacity={0.7} fontSize="xs">{country.code}</Text>
+                        <Text fontWeight="bold" noOfLines={1}>{country.name || 'Unknown'}</Text>
+                        <Text opacity={0.7} fontSize="xs">{country.code || 'N/A'}</Text>
                       </MotionBox>
                     ))}
                     {countryNamesList.length > 12 && (
