@@ -49,6 +49,7 @@ import {
   FaEdit,
 } from 'react-icons/fa';
 import BaseModal from './BaseModal';
+import EnhancedFlag from '../features/CountryDetails/EnhancedFlag';
 
 // Configuring the ISO country library to use English as the default locale
 countries.registerLocale(en);
@@ -457,9 +458,33 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                         }}
                         cursor="pointer"
                         fontSize="sm"
+                        position="relative"
                       >
-                        <Text fontWeight="bold" noOfLines={1}>{country.name || 'Unknown'}</Text>
-                        <Text opacity={0.7} fontSize="xs">{country.code || 'N/A'}</Text>
+                        {/* Mini Flag */}
+                        <Box
+                          position="absolute"
+                          top={2}
+                          right={2}
+                          width="20px"
+                          height="15px"
+                          borderRadius="sm"
+                          overflow="hidden"
+                          border="1px solid"
+                          borderColor="rgba(255, 255, 255, 0.3)"
+                          boxShadow="sm"
+                        >
+                          <EnhancedFlag countryCode={country.code} />
+                        </Box>
+                        
+                        {/* Country Name and Code */}
+                        <VStack spacing={1} align="center">
+                          <Text fontWeight="bold" noOfLines={1} fontSize="xs" pr={6}>
+                            {country.name || 'Unknown'}
+                          </Text>
+                          <Text opacity={0.7} fontSize="2xs">
+                            {country.code || 'N/A'}
+                          </Text>
+                        </VStack>
                       </MotionBox>
                     ))}
                     {countryNamesList.length > 12 && (
