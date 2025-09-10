@@ -1,4 +1,8 @@
-
+/*
+ * Arquivo de Funções JavaScript para Estilos de Mapa
+ * Funções para selecionar países de destaque, obter estilos do oceano
+ * e criar estilos para os países, com cache para otimizar o desempenho.
+ */
 
 // Estilos estáticos para evitar recriações
 const STATIC_COLORS = {
@@ -30,32 +34,29 @@ const STATIC_COLORS = {
 // Cache para estilos de países - evita recriação
 const countryStyleCache = new Map();
 
-// Função para selecionar países de destaque 
-export const selectHighlightedCountries = (countriesWithPhotos) => {
+// Função para selecionar países de destaque
+export const selectHighlightCountries = (countriesWithPhotos) => {
   const maxCountries = 3;
   if (countriesWithPhotos.length > 0) {
-    const selectedCountries = countriesWithPhotos
+    return countriesWithPhotos
       .slice(0, maxCountries)
       .map(country => country.countryId)
       .sort(() => Math.random() - 0.5);
-    
-    return selectedCountries;
   } else {
     const fallbackCountries = [
-      'us', 'br', 'gb', 'fr', 'de', 'it', 'es', 'jp', 'ca', 'au', 
+      'us', 'br', 'gb', 'fr', 'de', 'it', 'es', 'jp', 'ca', 'au',
       'mx', 'ar', 'za', 'in', 'cn', 'ru', 'kr', 'th', 've', 'co'
     ];
-    
-    const selectedFallback = fallbackCountries
+
+    return fallbackCountries
       .sort(() => Math.random() - 0.5)
       .slice(0, maxCountries);
-    return selectedFallback;
   }
 };
 
 // Função para obter a cor do oceano baseada no tema - otimizada
 export const getOceanColor = (colorMode) => {
-  return colorMode === 'dark' ? 'transparent' : '#BAE6FD';
+  return colorMode === 'dark' ? 'transparent' : '#B3E5FC';
 };
 
 // Função para obter a opacidade do oceano baseada no tema - otimizada
@@ -86,7 +87,7 @@ export const getOceanStyles = (colorMode) => {
 export const createCountryStyleBase = (colors, countriesWithPhotos, highlightedCountries, isLoggedIn, isEffectActive, highlightIntensity, colorMode) => {
   // Chave única para o cache
   const cacheKey = `${isLoggedIn}-${isEffectActive}-${highlightIntensity}-${colorMode}-${countriesWithPhotos.length}-${highlightedCountries.length}`;
-  
+
   if (countryStyleCache.has(cacheKey)) {
     return countryStyleCache.get(cacheKey);
   }
@@ -105,10 +106,6 @@ export const createCountryStyle = (colors) => {
     const countryId = feature.properties.iso_a2.toLowerCase();
     const hasPhotos = countriesWithPhotos.some((country) => country.countryId === countryId);
     const isHighlighted = highlightedCountries.includes(countryId);
-    
-    // Debug logging for specific countries
-    if (countryId === 'br' || countryId === 'us' || countryId === 'gb') {
-    }
 
     // Países destacados para usuários LOGADOS com cores de verão - ESTÁTICO
     if (isLoggedIn && isEffectActive && isHighlighted && hasPhotos) {
@@ -116,7 +113,7 @@ export const createCountryStyle = (colors) => {
       const colorSets = STATIC_COLORS.summerColors[colorMode === 'dark' ? 'dark' : 'light'];
       const colorIndex = Math.floor(randomColor * colorSets.length);
       const colorSet = colorSets[colorIndex];
-      
+
       return {
         fillColor: colorSet.fill,
         weight: 2,
@@ -133,9 +130,9 @@ export const createCountryStyle = (colors) => {
       const colorSets = STATIC_COLORS.summerColors[colorMode === 'dark' ? 'dark' : 'light'];
       const colorIndex = Math.floor(randomColor * colorSets.length);
       const colorSet = colorSets[colorIndex];
-      
+
       const opacity = 0.6 + (highlightIntensity * 0.2);
-      
+
       return {
         fillColor: colorSet.fill,
         weight: 2,
@@ -162,10 +159,10 @@ export const createCountryStyle = (colors) => {
     // Default style - IGUAL para usuários logados e não logados
     return {
       fillColor: colorMode === 'dark' ? '#4B5563' : '#E5E7EB',
-      weight: 1.5, 
-      color: '#94A3B8', 
-      fillOpacity: colorMode === 'dark' ? 0.7 : 0.5, 
-      transition: 'all 0.2s ease', 
+      weight: 1.5,
+      color: '#94A3B8',
+      fillOpacity: colorMode === 'dark' ? 0.7 : 0.5,
+      transition: 'all 0.2s ease',
       className: 'country-gradient-gray',
     };
   };
