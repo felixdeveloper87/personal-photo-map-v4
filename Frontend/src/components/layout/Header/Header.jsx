@@ -253,6 +253,7 @@ const Header = () => {
                 fullname={fullname}
                 isPremium={isPremium}
                 onProfileClick={profileModal.onOpen}
+                size={buttonSize}
               />
             )}
 
@@ -270,9 +271,7 @@ const Header = () => {
                   navigate(`/countries/${p.country}?year=${p.year}`)
                 }
                 onTimelineClick={() => navigate("/timeline")}
-                // Prop opcional para componentes internos adotarem tamanho
                 buttonSize={buttonSize}
-              // Você pode também passar paddings/margens responsivos, se necessário
               />
             )}
           </HStack>

@@ -6,7 +6,8 @@ const HeaderUser = ({
   styles, 
   fullname, 
   isPremium, 
-  onProfileClick
+  onProfileClick,
+  size = "sm"
 }) => {
   return (
     <Box my={2}>
@@ -15,6 +16,7 @@ const HeaderUser = ({
         fullname={fullname}
         isPremium={isPremium}
         styles={styles}
+        size={size}
       />
     </Box>
   );

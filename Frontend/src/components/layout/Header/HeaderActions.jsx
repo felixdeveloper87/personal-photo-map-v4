@@ -13,7 +13,8 @@ const HeaderActions = ({
   onPhotoStorageClick,
   countriesWithPhotos,
   onSearch,
-  onTimelineClick
+  onTimelineClick,
+  buttonSize = "sm"
 }) => {
   return (
     <Box my={2}>
@@ -23,7 +24,7 @@ const HeaderActions = ({
           <>
             <ModernPhotoStorageButton
               onClick={onPhotoStorageClick}
-              size="md"
+              size={buttonSize}
               aria-label="Photo Storage"
             />
           </>
@@ -33,7 +34,7 @@ const HeaderActions = ({
         {isLoggedIn && !isPremium && (
           <ModernUpgradeToPremiumButton
             onClick={onPremiumClick}
-            size="md"
+            size={buttonSize}
           />
         )}
 
@@ -49,7 +50,7 @@ const HeaderActions = ({
                   searchTrigger.click();
                 }
               }}
-              size="md"
+              size={buttonSize}
               aria-label="Search Photos"
             />
             
@@ -59,7 +60,7 @@ const HeaderActions = ({
             />
             <ModernTimelineButton
               onClick={onTimelineClick}
-              size="md"
+              size={buttonSize}
               _hover={{
                 transform: "translateY(-2px) scale(1.02)",
                 boxShadow: "0 8px 25px rgba(0, 0, 0, 0.15)",
