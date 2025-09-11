@@ -123,6 +123,33 @@ const UserProfileModal = ({ isOpen, onClose }) => {
     ) || 'World Explorer';
   };
 
+  const getContinentCount = () => {
+    const continentMap = {
+      'US': 'North America', 'CA': 'North America', 'MX': 'North America',
+      'BR': 'South America', 'AR': 'South America', 'CL': 'South America',
+      'FR': 'Europe', 'DE': 'Europe', 'IT': 'Europe', 'ES': 'Europe', 'UK': 'Europe',
+      'JP': 'Asia', 'CN': 'Asia', 'IN': 'Asia', 'TH': 'Asia', 'KR': 'Asia',
+      'AU': 'Oceania', 'NZ': 'Oceania',
+      'EG': 'Africa', 'ZA': 'Africa', 'MA': 'Africa', 'KE': 'Africa'
+    };
+
+    if (!countriesWithPhotos || countriesWithPhotos.length === 0) return 0;
+
+    const continents = new Set();
+    countriesWithPhotos.forEach(item => {
+      let countryCode = '';
+      if (typeof item === 'object' && item !== null) {
+        countryCode = String(item.id || '').toUpperCase();
+      } else {
+        countryCode = String(item || '').toUpperCase();
+      }
+      const continent = continentMap[countryCode] || 'Other';
+      continents.add(continent);
+    });
+
+    return continents.size;
+  };
+
   const calculateTravelScore = () => {
     const photosScore = Math.min((photoCount || 0) * 2, 200);
     const countriesScore = Math.min((countryCount || 0) * 10, 300);
@@ -336,6 +363,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                 </Stat>
               </Box>
 
+
               <Box
                 bg={bgColor}
                 borderRadius="lg"
@@ -346,10 +374,10 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                 _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
                 transition="all 0.2s"
               >
-                <Icon as={FaFire} w={5} h={5} color="orange.400" mb={2} />
+                <Icon as={FaGlobe} w={5} h={5} color="teal.400" mb={2} />
                 <Stat>
-                  <StatNumber fontSize="xl" color={headingColor}>{userStats.travelScore}</StatNumber>
-                  <StatLabel color={textColor} fontSize="sm">Travel Score</StatLabel>
+                  <StatNumber fontSize="xl" color={headingColor}>{getContinentCount()}</StatNumber>
+                  <StatLabel color={textColor} fontSize="sm">Continents</StatLabel>
                 </Stat>
               </Box>
 

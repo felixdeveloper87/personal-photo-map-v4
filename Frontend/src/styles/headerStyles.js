@@ -120,6 +120,7 @@ export const headerContainerStyles = (backgroundPattern) => ({
   backdropFilter: "blur(24px)",
   borderBottom: "1px solid",
   borderColor: "rgba(226, 232, 240, 0.2)",
+  py: 2, // Reduced from default padding
   _before: {
     content: '""',
     position: 'absolute',
