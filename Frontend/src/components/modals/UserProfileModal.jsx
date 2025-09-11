@@ -67,6 +67,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
     favoriteContinent: 'Unknown',
     travelScore: 0
   });
+  const [continentCount, setContinentCount] = useState(0);
 
   // Responsive values
   const gridColumns = useBreakpointValue({ base: 2, sm: 2, md: 4, lg: 4 });
@@ -93,6 +94,20 @@ const UserProfileModal = ({ isOpen, onClose }) => {
       });
     }
   }, [isLoggedIn, photoCount, countryCount, countriesWithPhotos]);
+
+  // Load continent count when countries data changes
+  useEffect(() => {
+    if (isLoggedIn && countriesWithPhotos && countriesWithPhotos.length > 0) {
+      getContinentCount().then(count => {
+        setContinentCount(count);
+      }).catch(error => {
+        console.error('Error loading continent count:', error);
+        setContinentCount(0);
+      });
+    } else {
+      setContinentCount(0);
+    }
+  }, [isLoggedIn, countriesWithPhotos]);
 
   const getFavoriteContinent = () => {
     const continentMap = {
@@ -123,29 +138,69 @@ const UserProfileModal = ({ isOpen, onClose }) => {
     ) || 'World Explorer';
   };
 
-  const getContinentCount = () => {
-    const continentMap = {
-      'US': 'North America', 'CA': 'North America', 'MX': 'North America',
-      'BR': 'South America', 'AR': 'South America', 'CL': 'South America',
-      'FR': 'Europe', 'DE': 'Europe', 'IT': 'Europe', 'ES': 'Europe', 'UK': 'Europe',
-      'JP': 'Asia', 'CN': 'Asia', 'IN': 'Asia', 'TH': 'Asia', 'KR': 'Asia',
-      'AU': 'Oceania', 'NZ': 'Oceania',
-      'EG': 'Africa', 'ZA': 'Africa', 'MA': 'Africa', 'KE': 'Africa'
-    };
-
+  const getContinentCount = async () => {
     if (!countriesWithPhotos || countriesWithPhotos.length === 0) return 0;
 
     const continents = new Set();
-    countriesWithPhotos.forEach(item => {
-      let countryCode = '';
-      if (typeof item === 'object' && item !== null) {
-        countryCode = String(item.id || '').toUpperCase();
-      } else {
-        countryCode = String(item || '').toUpperCase();
-      }
-      const continent = continentMap[countryCode] || 'Other';
-      continents.add(continent);
-    });
+    
+    // Process countries in batches to avoid overwhelming the API
+    const batchSize = 5;
+    const batches = [];
+    for (let i = 0; i < countriesWithPhotos.length; i += batchSize) {
+      batches.push(countriesWithPhotos.slice(i, i + batchSize));
+    }
+
+    for (const batch of batches) {
+      const promises = batch.map(async (item) => {
+        let countryCode = '';
+        if (typeof item === 'object' && item !== null) {
+          countryCode = String(item.countryId || item.id || item.code || '').toUpperCase();
+        } else {
+          countryCode = String(item || '').toUpperCase();
+        }
+        
+        // Skip if country code is empty or invalid
+        if (!countryCode || countryCode === 'UNKNOWN' || countryCode === 'NULL') return null;
+
+        try {
+          const response = await fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`);
+          if (!response.ok) return null;
+          
+          const data = await response.json();
+          const country = data[0];
+          
+          // Get continent from region or subregion
+          const region = country.region || '';
+          const subregion = country.subregion || '';
+          
+          // Map regions to continents
+          if (region === 'Americas') {
+            if (subregion === 'South America') return 'South America';
+            return 'North America';
+          } else if (region === 'Europe') {
+            return 'Europe';
+          } else if (region === 'Asia') {
+            return 'Asia';
+          } else if (region === 'Africa') {
+            return 'Africa';
+          } else if (region === 'Oceania') {
+            return 'Oceania';
+          } else if (region === 'Antarctic') {
+            return 'Antarctica';
+          }
+          
+          return region || 'Unknown';
+        } catch (error) {
+          console.warn(`Failed to fetch continent for ${countryCode}:`, error);
+          return null;
+        }
+      });
+
+      const results = await Promise.all(promises);
+      results.forEach(continent => {
+        if (continent) continents.add(continent);
+      });
+    }
 
     return continents.size;
   };
@@ -376,7 +431,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
               >
                 <Icon as={FaGlobe} w={5} h={5} color="teal.400" mb={2} />
                 <Stat>
-                  <StatNumber fontSize="xl" color={headingColor}>{getContinentCount()}</StatNumber>
+                  <StatNumber fontSize="xl" color={headingColor}>{continentCount}</StatNumber>
                   <StatLabel color={textColor} fontSize="sm">Continents</StatLabel>
                 </Stat>
               </Box>
