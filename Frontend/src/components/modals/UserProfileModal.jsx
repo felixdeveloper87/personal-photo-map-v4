@@ -67,11 +67,11 @@ const UserProfileModal = ({ isOpen, onClose }) => {
     favoriteContinent: 'Unknown',
     travelScore: 0
   });
-  
+
   // Responsive values
   const gridColumns = useBreakpointValue({ base: 2, sm: 2, md: 4, lg: 4 });
   const countryGridColumns = useBreakpointValue({ base: 2, sm: 3, md: 4, lg: 6 });
-  
+
   // Theme colors
   const cardBg = useColorModeValue("rgba(255, 255, 255, 0.9)", "rgba(26, 32, 44, 0.9)");
   const cardBorder = useColorModeValue("rgba(255, 255, 255, 0.3)", "rgba(255, 255, 255, 0.1)");
@@ -103,9 +103,9 @@ const UserProfileModal = ({ isOpen, onClose }) => {
       'AU': 'Oceania', 'NZ': 'Oceania',
       'EG': 'Africa', 'ZA': 'Africa', 'MA': 'Africa', 'KE': 'Africa'
     };
-    
+
     if (!countriesWithPhotos || countriesWithPhotos.length === 0) return 'World Explorer';
-    
+
     const continentCounts = {};
     countriesWithPhotos.forEach(item => {
       let countryCode = '';
@@ -117,8 +117,8 @@ const UserProfileModal = ({ isOpen, onClose }) => {
       const continent = continentMap[countryCode] || 'Other';
       continentCounts[continent] = (continentCounts[continent] || 0) + 1;
     });
-    
-    return Object.keys(continentCounts).reduce((a, b) => 
+
+    return Object.keys(continentCounts).reduce((a, b) =>
       continentCounts[a] > continentCounts[b] ? a : b
     ) || 'World Explorer';
   };
@@ -137,14 +137,14 @@ const UserProfileModal = ({ isOpen, onClose }) => {
     if (photoCount >= 100) badges.push({ name: "Photo Enthusiast", icon: FaCamera, color: "green" });
     if (photoCount >= 500) badges.push({ name: "Memory Keeper", icon: FaHeart, color: "red" });
     if (isPremium) badges.push({ name: "Premium Explorer", icon: FaStar, color: "yellow" });
-    
+
     return badges;
   };
 
   const countryNamesList = countriesWithPhotos?.map((item) => {
     if (typeof item === 'object' && item !== null) {
-      return { 
-        code: String(item.countryId || '').toUpperCase(), 
+      return {
+        code: String(item.countryId || '').toUpperCase(),
         name: item.countryName || String(item.countryId || '').toUpperCase(),
         photoCount: item.photoCount || 0
       };
@@ -214,7 +214,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                   transform="translate(30px, -30px)"
                 />
               )}
-              
+
               <Flex align="center" justify="space-between" position="relative">
                 <HStack spacing={4}>
                   <Box position="relative">
@@ -239,7 +239,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                       </Circle>
                     )}
                   </Box>
-                  
+
                   <VStack spacing={2} align="start">
                     <HStack spacing={3} align="center">
                       <Heading as="h2" size="lg" color={headingColor}>
@@ -261,14 +261,14 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                         </Badge>
                       )}
                     </HStack>
-                    
+
                     <HStack spacing={2} align="center">
                       <Icon as={FaEnvelope} color={textColor} w={4} h={4} />
                       <Text color={textColor} fontSize="sm">
                         {email}
                       </Text>
                     </HStack>
-                    
+
                     <HStack spacing={2} align="center">
                       <Icon as={FaMapMarkerAlt} color={textColor} w={4} h={4} />
                       <Text color={textColor} fontSize="sm">
@@ -277,7 +277,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                     </HStack>
                   </VStack>
                 </HStack>
-                
+
                 <Tooltip label="Edit Profile" hasArrow>
                   <IconButton
                     aria-label="Edit Profile"
@@ -372,45 +372,6 @@ const UserProfileModal = ({ isOpen, onClose }) => {
             </SimpleGrid>
           </MotionBox>
 
-          {/* Travel Badges */}
-          {getTravelBadges().length > 0 && (
-            <MotionBox variants={itemVariants} mb={6}>
-              <Heading as="h3" size="md" mb={4} color={headingColor}>
-                <Icon as={FaMedal} mr={2} color="yellow.400" />
-                Achievements
-              </Heading>
-              <Box
-                p={4}
-                borderRadius="lg"
-                bg={bgColor}
-                border="1px solid"
-                borderColor={borderColor}
-              >
-                <SimpleGrid columns={3} spacing={3}>
-                  {getTravelBadges().map((badge, index) => (
-                    <MotionBox
-                      key={index}
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: index * 0.1, duration: 0.2 }}
-                      bg={`${badge.color}.100`}
-                      color={`${badge.color}.800`}
-                      p={3}
-                      borderRadius="md"
-                      textAlign="center"
-                      border="1px solid"
-                      borderColor={`${badge.color}.200`}
-                      _hover={{ transform: "scale(1.02)" }}
-                    >
-                      <Icon as={badge.icon} w={5} h={5} mb={2} />
-                      <Text fontWeight="bold" fontSize="sm">{badge.name}</Text>
-                    </MotionBox>
-                  ))}
-                </SimpleGrid>
-              </Box>
-            </MotionBox>
-          )}
-
           {/* Countries Section */}
           <MotionBox variants={itemVariants} mb={6}>
             <Heading as="h3" size="md" mb={4} color={headingColor}>
@@ -443,7 +404,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                       .map((country, index) => {
                         // Get photo count from the country data
                         const photoCount = country.photoCount || 0;
-                        
+
                         return (
                           <MotionBox
                             key={country.code || index}
@@ -457,7 +418,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                             textAlign="center"
                             border="1px solid"
                             borderColor="rgba(59, 130, 246, 0.2)"
-                            _hover={{ 
+                            _hover={{
                               bg: "linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2))",
                               transform: 'scale(1.05)'
                             }}
@@ -482,7 +443,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                             >
                               <EnhancedFlag countryCode={country.code} />
                             </Box>
-                            
+
                             {/* Photo Count */}
                             <HStack spacing={1} align="center">
                               <Icon as={FaCamera} w={3} h={3} color="blue.400" />
