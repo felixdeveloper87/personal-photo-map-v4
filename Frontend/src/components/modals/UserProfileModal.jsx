@@ -145,12 +145,13 @@ const UserProfileModal = ({ isOpen, onClose }) => {
     if (typeof item === 'object' && item !== null) {
       return { 
         code: String(item.countryId || '').toUpperCase(), 
-        name: item.countryName || String(item.countryId || '').toUpperCase() 
+        name: item.countryName || String(item.countryId || '').toUpperCase(),
+        photoCount: item.photoCount || 0
       };
     } else {
       const countryCode = String(item || '').toUpperCase();
       const countryName = countries.getName(countryCode, 'en');
-      return { code: countryCode, name: countryName || countryCode };
+      return { code: countryCode, name: countryName || countryCode, photoCount: 0 };
     }
   }) || [];
 
@@ -439,44 +440,59 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                     {countryNamesList
                       .filter(country => country.name && country.name !== 'UNKNOWN') // Filter out invalid countries
                       .slice(0, 12)
-                      .map((country, index) => (
-                      <MotionBox
-                        key={country.code || index}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.03 }}
-                        bg="linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1))"
-                        color={headingColor}
-                        p={2}
-                        borderRadius="md"
-                        textAlign="center"
-                        border="1px solid"
-                        borderColor="rgba(59, 130, 246, 0.2)"
-                        _hover={{ 
-                          bg: "linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2))",
-                          transform: 'scale(1.05)'
-                        }}
-                        cursor="pointer"
-                        fontSize="sm"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
-                        minH="50px"
-                      >
-                        {/* Flag Only */}
-                        <Box
-                          width="48px"
-                          height="36px"
-                          borderRadius="sm"
-                          overflow="hidden"
-                          border="1px solid"
-                          borderColor="rgba(255, 255, 255, 0.3)"
-                          boxShadow="sm"
-                        >
-                          <EnhancedFlag countryCode={country.code} />
-                        </Box>
-                      </MotionBox>
-                    ))}
+                      .map((country, index) => {
+                        // Get photo count from the country data
+                        const photoCount = country.photoCount || 0;
+                        
+                        return (
+                          <MotionBox
+                            key={country.code || index}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.03 }}
+                            bg="linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1))"
+                            color={headingColor}
+                            p={3}
+                            borderRadius="md"
+                            textAlign="center"
+                            border="1px solid"
+                            borderColor="rgba(59, 130, 246, 0.2)"
+                            _hover={{ 
+                              bg: "linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2))",
+                              transform: 'scale(1.05)'
+                            }}
+                            cursor="pointer"
+                            fontSize="sm"
+                            display="flex"
+                            flexDirection="column"
+                            alignItems="center"
+                            justifyContent="center"
+                            minH="70px"
+                            gap={2}
+                          >
+                            {/* Flag */}
+                            <Box
+                              width="48px"
+                              height="36px"
+                              borderRadius="sm"
+                              overflow="hidden"
+                              border="1px solid"
+                              borderColor="rgba(255, 255, 255, 0.3)"
+                              boxShadow="sm"
+                            >
+                              <EnhancedFlag countryCode={country.code} />
+                            </Box>
+                            
+                            {/* Photo Count */}
+                            <HStack spacing={1} align="center">
+                              <Icon as={FaCamera} w={3} h={3} color="blue.400" />
+                              <Text fontSize="xs" fontWeight="bold" color={textColor}>
+                                {photoCount}
+                              </Text>
+                            </HStack>
+                          </MotionBox>
+                        );
+                      })}
                     {countryNamesList.length > 12 && (
                       <Box
                         bg="gray.100"
@@ -486,10 +502,20 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                         textAlign="center"
                         fontSize="sm"
                         display="flex"
+                        flexDirection="column"
                         alignItems="center"
                         justifyContent="center"
+                        gap={1}
                       >
-                        +{countryNamesList.length - 12} more
+                        <Text fontWeight="bold">+{countryNamesList.length - 12} more</Text>
+                        <HStack spacing={1}>
+                          <Icon as={FaCamera} w={3} h={3} color="gray.500" />
+                          <Text fontSize="xs">
+                            {countryNamesList
+                              .slice(12)
+                              .reduce((total, country) => total + (country.photoCount || 0), 0)} photos
+                          </Text>
+                        </HStack>
                       </Box>
                     )}
                   </SimpleGrid>
