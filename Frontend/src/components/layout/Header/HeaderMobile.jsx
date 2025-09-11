@@ -179,38 +179,7 @@ const HeaderMobile = ({
               </Flex>
 
               {/* Botão My Profile - Explícito e separado */}
-              <Button
-                onClick={() => {
-                  console.log('My Profile clicked in mobile menu');
-                  onProfileClick();
-                }}
-                leftIcon={<FaUserCircle />}
-                variant="ghost"
-                colorScheme="blue"
-                size="sm"
-                w="full"
-                h={{ base: "36px", sm: "38px" }}
-                borderRadius="md"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                gap={2}
-                fontSize={{ base: "xs", sm: "sm" }}
-                fontWeight="500"
-                px={{ base: 2, sm: 3 }}
-                bg={useColorModeValue('blue.50', 'blue.900')}
-                color={useColorModeValue('blue.600', 'blue.200')}
-                _hover={{
-                  bg: useColorModeValue('blue.100', 'blue.800'),
-                  transform: "translateY(-1px)",
-                }}
-                _active={{
-                  transform: "translateY(0)"
-                }}
-                transition="all 0.2s ease"
-              >
-                My Profile
-              </Button>
+              
 
               {/* Botões responsivos - Grid adaptável */}
               <Box w="full">
