@@ -41,7 +41,6 @@ import {
 import UserProfileModal from "../../modals/UserProfileModal";
 import PremiumBenefitsModal from "../../modals/PremiumBenefitsModal";
 import PhotoStorageModal from "../../modals/PhotoStorageModal";
-import UserStatisticsModal from "../../modals/UserStatisticsModal";
 import LoginModal from "../../modals/LoginModal";
 import RegisterModal from "../../modals/RegisterModal";
 
@@ -58,7 +57,6 @@ const Header = () => {
   // Disclosures
   const mobileMenu = useDisclosure();
   const photoStorageModal = useDisclosure();
-  const userStatisticsModal = useDisclosure();
   const profileModal = useDisclosure();
   const premiumModal = useDisclosure();
   const loginModal = useDisclosure();
@@ -267,7 +265,6 @@ const Header = () => {
                 isPremium={isPremium}
                 onPremiumClick={premiumModal.onOpen}
                 onPhotoStorageClick={photoStorageModal.onOpen}
-                onCountriesClick={userStatisticsModal.onOpen}
                 countriesWithPhotos={countriesWithPhotos}
                 onSearch={(p) =>
                   navigate(`/countries/${p.country}?year=${p.year}`)
@@ -346,10 +343,6 @@ const Header = () => {
           photoStorageModal.onOpen();
           mobileMenu.onClose();
         }}
-        onCountriesClick={() => {
-          userStatisticsModal.onOpen();
-          mobileMenu.onClose();
-        }}
         onTimelineClick={() => {
           navigate("/timeline");
           mobileMenu.onClose();
@@ -396,10 +389,6 @@ const Header = () => {
       <PhotoStorageModal
         isOpen={photoStorageModal.isOpen}
         onClose={photoStorageModal.onClose}
-      />
-      <UserStatisticsModal
-        isOpen={userStatisticsModal.isOpen}
-        onClose={userStatisticsModal.onClose}
       />
       <LoginModal
         isOpen={loginModal.isOpen}

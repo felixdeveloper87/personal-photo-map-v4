@@ -1,6 +1,6 @@
 import React from 'react';
 import { HStack, Box } from '@chakra-ui/react';
-import { ModernUpgradeToPremiumButton, ModernPhotoStorageButton, ModernCountriesVisitedButton, ModernTimelineButton, ModernSearchButton } from '../../ui/buttons/HeaderButtons';
+import { ModernUpgradeToPremiumButton, ModernPhotoStorageButton, ModernTimelineButton, ModernSearchButton } from '../../ui/buttons/HeaderButtons';
 import SearchForm from '../../features/SearchForm';
 
 const HeaderActions = ({ 
@@ -11,7 +11,6 @@ const HeaderActions = ({
   isPremium, 
   onPremiumClick,
   onPhotoStorageClick,
-  onCountriesClick,
   countriesWithPhotos,
   onSearch,
   onTimelineClick
@@ -26,12 +25,6 @@ const HeaderActions = ({
               onClick={onPhotoStorageClick}
               size="md"
               aria-label="Photo Storage"
-            />
-
-            <ModernCountriesVisitedButton
-              onClick={onCountriesClick}
-              size="md"
-              aria-label="Countries Visited"
             />
           </>
         )}
