@@ -26,6 +26,7 @@ export {
     ModernThemeToggleButton,
     ModernUpgradeToPremiumButton,
     ModernPhotoStorageButton,
+    ModernUserProfileButton,
     ModernTimelineButton,
     ModernSearchButton,
     ModernMapButton,

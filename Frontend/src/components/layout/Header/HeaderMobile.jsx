@@ -19,6 +19,7 @@ import {
   ModernLoginButton, 
   ModernRegisterButton,
   ModernPhotoStorageButton,
+  ModernUserProfileButton,
   ModernSearchButton,
   ModernTimelineButton
 } from "../../ui/buttons/HeaderButtons";
@@ -238,11 +239,8 @@ const HeaderMobile = ({
                   />
 
                   {/* User Profile Button */}
-                  <Button
+                  <ModernUserProfileButton
                     onClick={onProfileClick}
-                    leftIcon={<FaUserCircle />}
-                    variant="ghost"
-                    colorScheme="blue"
                     w="full"
                     h={{ base: "36px", sm: "38px" }}
                     size="xs"
@@ -255,19 +253,7 @@ const HeaderMobile = ({
                     fontSize={{ base: "10px", sm: "xs" }}
                     fontWeight="500"
                     px={{ base: 1, sm: 1.5 }}
-                    bg={useColorModeValue('blue.50', 'blue.900')}
-                    color={useColorModeValue('blue.600', 'blue.200')}
-                    _hover={{
-                      bg: useColorModeValue('blue.100', 'blue.800'),
-                      transform: "translateY(-1px)",
-                    }}
-                    _active={{
-                      transform: "translateY(0)"
-                    }}
-                    transition="all 0.2s ease"
-                  >
-                    Profile
-                  </Button>
+                  />
 
                   {/* Search Button */}
                   <ModernSearchButton

@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, useColorModeValue, Box, Text, HStack, Icon } from "@chakra-ui/react";
 import { motion } from "framer-motion";
-import { FaMoon, FaSun, FaCrown, FaImages, FaMap, FaSignOutAlt, FaClock, FaSearch, FaUser, FaGlobe, FaSignInAlt, FaUserPlus } from "react-icons/fa";
+import { FaMoon, FaSun, FaCrown, FaImages, FaMap, FaSignOutAlt, FaClock, FaSearch, FaUser, FaGlobe, FaSignInAlt, FaUserPlus, FaUserCircle } from "react-icons/fa";
 
 const MotionButton = motion.create ? motion.create(Button) : motion(Button);
 
@@ -242,6 +242,81 @@ export const ModernPhotoStorageButton = ({ onClick, children = "Photo Storage", 
   );
 };
 
+/* =========================
+   ModernUserProfileButton
+   ========================= */
+export const ModernUserProfileButton = ({ onClick, children = "Profile", ...props }) => {
+  const bgGradient = useColorModeValue(
+    "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 25%, #3b82f6 50%, #1d4ed8 75%, #3b82f6 100%)",
+    "linear-gradient(135deg, #60a5fa 0%, #3b82f6 25%, #60a5fa 50%, #3b82f6 75%, #60a5fa 100%)"
+  );
+
+  const hoverGradient = useColorModeValue(
+    "linear-gradient(135deg, #1d4ed8 0%, #1e40af 25%, #1d4ed8 50%, #1e40af 75%, #1d4ed8 100%)",
+    "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 25%, #3b82f6 50%, #1d4ed8 75%, #3b82f6 100%)"
+  );
+
+  const shadowColor = useColorModeValue("rgba(59, 130, 246, 0.35)", "rgba(96, 165, 250, 0.4)");
+  const borderColor = useColorModeValue("rgba(255, 255, 255, 0.3)", "rgba(255, 255, 255, 0.2)");
+  const textColor = useColorModeValue("white", "white");
+
+  return (
+    <MotionButton
+      onClick={onClick}
+      bgGradient={bgGradient}
+      color={textColor}
+      size="md"
+      px={4}
+      py={6}
+      minW="80px"
+      borderRadius="2xl"
+      fontWeight="700"
+      letterSpacing="wider"
+      position="relative"
+      overflow="hidden"
+      border="2px solid"
+      borderColor={borderColor}
+      backdropFilter="blur(20px)"
+      _before={{
+        content: '""',
+        position: "absolute",
+        top: 0,
+        left: "-100%",
+        width: "100%",
+        height: "100%",
+        background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+        transition: "left 0.8s ease-out"
+      }}
+      _after={{
+        content: '""',
+        position: "absolute",
+        top: "-50%",
+        left: "-50%",
+        width: "200%",
+        height: "200%",
+        background: "radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%)",
+        opacity: 0,
+        transition: "opacity 0.3s ease"
+      }}
+      _hover={{
+        bgGradient: hoverGradient,
+        transform: "translateY(-3px) scale(1.05)",
+        boxShadow: `0 20px 40px ${shadowColor}, 0 0 0 1px ${borderColor}`,
+        _before: { left: "100%" },
+        _after: { opacity: 1 }
+      }}
+      _active={{ transform: "translateY(-1px) scale(0.98)", boxShadow: `0 10px 25px ${shadowColor}` }}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      {...props}
+    >
+      <Box position="relative" zIndex={2}>
+        <FaUserCircle size="20px" />
+      </Box>
+    </MotionButton>
+  );
+};
 
 /* =========================
    ModernLogoutButton
