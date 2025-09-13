@@ -283,19 +283,27 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
             channels: originalAudioBuffer.numberOfChannels
           });
           
-          // Ajustar duração do áudio para corresponder exatamente à duração do vídeo
-          const targetLength = audioContext.sampleRate * videoDuration;
+          // Ajustar duração do áudio para corresponder à duração do vídeo + margem de segurança
+          const safetyMargin = 2; // 2 segundos extra para garantir que não falte áudio
+          const targetDuration = videoDuration + safetyMargin;
+          const targetLength = audioContext.sampleRate * targetDuration;
           const adjustedBuffer = audioContext.createBuffer(
             originalAudioBuffer.numberOfChannels,
             targetLength,
             audioContext.sampleRate
           );
           
+          console.log('Durações calculadas:', {
+            videoDurationOriginal: videoDuration,
+            audioDurationWithMargin: targetDuration,
+            originalAudioDuration: originalAudioBuffer.duration
+          });
+          
           for (let channel = 0; channel < originalAudioBuffer.numberOfChannels; channel++) {
             const sourceData = originalAudioBuffer.getChannelData(channel);
             const targetData = adjustedBuffer.getChannelData(channel);
             
-            if (originalAudioBuffer.duration < videoDuration) {
+            if (originalAudioBuffer.duration < targetDuration) {
               // Áudio mais curto - repetir com fade entre repetições
               console.log('Áudio mais curto que vídeo - repetindo...');
               for (let i = 0; i < targetLength; i++) {
@@ -312,7 +320,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
                   targetData[i] *= fadeAmount;
                 }
               }
-            } else if (originalAudioBuffer.duration > videoDuration) {
+            } else if (originalAudioBuffer.duration > targetDuration) {
               // Áudio mais longo - cortar com fade out
               console.log('Áudio mais longo que vídeo - cortando...');
               for (let i = 0; i < targetLength; i++) {
@@ -702,18 +710,24 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
 
       const years = Object.keys(imagesByYear).sort((a, b) => Number(a) - Number(b));
       
+      // Marcar tempo de início da geração
+      const generationStartTime = Date.now();
+      console.log('Iniciando geração em:', generationStartTime);
+      
       // Iniciar gravação e áudio simultaneamente para melhor sincronização
       mediaRecorder.start();
       
       // Iniciar áudio se configurado - com timing preciso
+      let audioStartTime = null;
       if (audioSetup) {
         try {
           if (audioSetup.audioSource) {
             // Método tradicional: BufferSource
-            const startTime = audioSetup.audioContext ? audioSetup.audioContext.currentTime + 0.1 : undefined;
-            console.log('Iniciando audioSource (BufferSource) com startTime:', startTime);
-            audioSetup.audioSource.start(startTime);
-            console.log('AudioSource (BufferSource) iniciado com sucesso');
+            const contextStartTime = audioSetup.audioContext ? audioSetup.audioContext.currentTime + 0.1 : undefined;
+            console.log('Iniciando audioSource (BufferSource) com startTime:', contextStartTime);
+            audioSetup.audioSource.start(contextStartTime);
+            audioStartTime = Date.now();
+            console.log('AudioSource (BufferSource) iniciado com sucesso em:', audioStartTime);
           } else if (audioSetup.audioElement) {
             // Método alternativo: MediaElement
             console.log('Iniciando audioElement (MediaElement)...');
@@ -722,7 +736,8 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
             if (playPromise) {
               await playPromise;
             }
-            console.log('AudioElement (MediaElement) iniciado com sucesso');
+            audioStartTime = Date.now();
+            console.log('AudioElement (MediaElement) iniciado com sucesso em:', audioStartTime);
           }
         } catch (error) {
           console.error('Erro ao iniciar áudio:', error);
@@ -793,6 +808,14 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
 
       // Finalizar gravação
       setProgress(100); // Garantir que chegue a 100%
+      
+      const generationEndTime = Date.now();
+      const totalGenerationTime = (generationEndTime - generationStartTime) / 1000; // em segundos
+      console.log('Tempo total de geração:', totalGenerationTime, 'segundos');
+      
+      // Calcular quanto tempo o áudio deveria tocar baseado no tempo real de geração
+      const expectedAudioDuration = Math.max(totalVideoDuration, totalGenerationTime);
+      console.log('Duração esperada do áudio:', expectedAudioDuration, 'segundos');
       
       // Aguardar um pouco antes de parar para garantir que todos os frames foram processados
       await new Promise(resolve => setTimeout(resolve, 500));
