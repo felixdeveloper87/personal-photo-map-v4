@@ -49,7 +49,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
   // Video settings
   const [settings, setSettings] = useState({
     duration: 1.5, // segundos por foto
-    transition: 'fade', // fade, slide, zoom, kenBurns, wipe, spiral, bounce, flip3d
+    transition: 'dynamic', // dynamic, fade, slide, zoom, kenBurns, wipe, spiral, bounce, flip3d
     resolution: '1080p',
     fps: 30,
     showYearText: true,
@@ -60,6 +60,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
     selectedPresetMusic: 'ambient1',
     transitionDuration: 0.8, // Duração da transição em segundos
     enableParticles: false, // Efeitos de partículas
+    dynamicMode: 'smart', // 'smart', 'random', 'sequential'
   });
 
   // Audio settings
@@ -491,6 +492,58 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
     ctx.restore();
   };
 
+  // Função para seleção inteligente de transições
+  const getDynamicTransition = (imageIndex, totalImages, year, previousYear) => {
+    const transitions = ['fade', 'slide', 'zoom', 'kenBurns', 'wipe', 'spiral', 'bounce', 'flip3d'];
+    
+    if (settings.transition !== 'dynamic') {
+      return settings.transition;
+    }
+    
+    switch (settings.dynamicMode) {
+      case 'smart':
+        // Lógica inteligente baseada no contexto
+        
+        // Primeira foto: sempre fade suave
+        if (imageIndex === 0) return 'fade';
+        
+        // Mudança de ano: efeito mais dramático
+        if (year !== previousYear) {
+          const yearTransitions = ['wipe', 'spiral', 'flip3d'];
+          return yearTransitions[Math.floor(Math.random() * yearTransitions.length)];
+        }
+        
+        // A cada 5 fotos: efeito especial
+        if (imageIndex % 5 === 0) {
+          return 'kenBurns';
+        }
+        
+        // A cada 3 fotos: efeito divertido
+        if (imageIndex % 3 === 0) {
+          const funTransitions = ['bounce', 'spiral'];
+          return funTransitions[Math.floor(Math.random() * funTransitions.length)];
+        }
+        
+        // Última foto: fade out elegante
+        if (imageIndex === totalImages - 1) return 'fade';
+        
+        // Padrão: alternar entre básicas
+        const basicTransitions = ['fade', 'slide', 'zoom'];
+        return basicTransitions[imageIndex % basicTransitions.length];
+        
+      case 'random':
+        // Seleção completamente aleatória
+        return transitions[Math.floor(Math.random() * transitions.length)];
+        
+      case 'sequential':
+        // Sequência ordenada através de todas as transições
+        return transitions[imageIndex % transitions.length];
+        
+      default:
+        return 'fade';
+    }
+  };
+
   // Função avançada para desenhar imagem com transições dinâmicas
   const drawImageWithTransition = (ctx, img, canvas, transitionType, progress, previousImg = null) => {
     const { width, height } = canvas;
@@ -890,6 +943,9 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       let currentFrame = 0;
 
       // Processar cada ano
+      let globalImageIndex = 0;
+      let previousYear = null;
+      
       for (let yearIndex = 0; yearIndex < years.length; yearIndex++) {
         const year = years[yearIndex];
         const yearImages = imagesByYear[year];
@@ -900,6 +956,16 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
           
           try {
             const img = await loadImage(image.url);
+            
+            // Selecionar transição dinâmica para esta imagem
+            const selectedTransition = getDynamicTransition(
+              globalImageIndex, 
+              images.length, 
+              parseInt(year), 
+              previousYear
+            );
+            
+            console.log(`Foto ${globalImageIndex + 1}: Using transition "${selectedTransition}" for year ${year}`);
             
             // Tempo de início para esta imagem
             const imageStartTime = Date.now();
@@ -913,11 +979,10 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               ctx.fillStyle = '#000000';
               ctx.fillRect(0, 0, canvas.width, canvas.height);
               
-              // Desenhar imagem com transição
-              drawImageWithTransition(ctx, img, canvas, settings.transition, transitionProgress);
+              // Desenhar imagem com transição selecionada dinamicamente
+              drawImageWithTransition(ctx, img, canvas, selectedTransition, transitionProgress);
               
               // Adicionar texto overlay
-              const globalImageIndex = yearIndex * yearImages.length + imgIndex;
               addTextOverlay(ctx, canvas, year, globalImageIndex, images.length);
               
               // Sincronização mais precisa - aguardar o tempo correto para o próximo frame
@@ -934,10 +999,17 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               const progressPercent = Math.min(Math.round((currentFrame / totalFrames) * 100), 100);
               setProgress(progressPercent);
             }
+            
+            // Atualizar índices
+            globalImageIndex++;
+            previousYear = parseInt(year);
+            
           } catch (error) {
             console.error('Erro ao carregar imagem:', error);
             // Continuar com próxima imagem, mas ainda contar os frames
             currentFrame += framesPerImage;
+            globalImageIndex++;
+            previousYear = parseInt(year);
             const progressPercent = Math.min(Math.round((currentFrame / totalFrames) * 100), 100);
             setProgress(progressPercent);
           }
@@ -1062,12 +1134,15 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               color={textColor}
               borderColor={borderColor}
             >
+              <optgroup label="🤖 Smart & Dynamic">
+                <option value="dynamic">🎯 Smart Dynamic - AI selects best transitions</option>
+              </optgroup>
               <optgroup label="🎬 Basic Transitions">
                 <option value="fade">Fade - Classic crossfade</option>
                 <option value="slide">Slide - Horizontal movement</option>
                 <option value="zoom">Zoom - Scale in effect</option>
               </optgroup>
-              <optgroup label="✨ Dynamic Transitions">
+              <optgroup label="✨ Advanced Transitions">
                 <option value="kenBurns">Ken Burns - Cinematic pan & zoom</option>
                 <option value="wipe">Circular Wipe - Expanding circle reveal</option>
                 <option value="spiral">Spiral - Rotating entrance</option>
@@ -1076,6 +1151,29 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               </optgroup>
             </Select>
           </FormControl>
+
+          {/* Controles dinâmicos - só aparecem quando dynamic está selecionado */}
+          {settings.transition === 'dynamic' && (
+            <FormControl>
+              <FormLabel color={textColor}>Dynamic Mode</FormLabel>
+              <Select
+                value={settings.dynamicMode}
+                onChange={(e) => setSettings({ ...settings, dynamicMode: e.target.value })}
+                bg={inputBg}
+                color={textColor}
+                borderColor={borderColor}
+              >
+                <option value="smart">🧠 Smart - Context-aware selection</option>
+                <option value="random">🎲 Random - Completely random</option>
+                <option value="sequential">📋 Sequential - Ordered cycle</option>
+              </Select>
+              <Text fontSize="xs" color={mutedTextColor} mt={1}>
+                {settings.dynamicMode === 'smart' && 'Chooses transitions based on photo context (year changes, position, etc.)'}
+                {settings.dynamicMode === 'random' && 'Randomly selects a different transition for each photo'}
+                {settings.dynamicMode === 'sequential' && 'Cycles through all transitions in order'}
+              </Text>
+            </FormControl>
+          )}
 
           <FormControl>
             <FormLabel color={textColor}>Transition Duration: {settings.transitionDuration}s</FormLabel>
@@ -1444,11 +1542,21 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               {/* Informações sobre efeitos selecionados */}
               <Box mt={2}>
                 <Text fontWeight="semibold" fontSize="sm">
-                  🎬 Transition: {settings.transition.charAt(0).toUpperCase() + settings.transition.slice(1)}
+                  🎬 Transition: {settings.transition === 'dynamic' 
+                    ? `Dynamic (${settings.dynamicMode.charAt(0).toUpperCase() + settings.dynamicMode.slice(1)})` 
+                    : settings.transition.charAt(0).toUpperCase() + settings.transition.slice(1)}
                   {settings.enableParticles && ' ✨ + Particles'}
                 </Text>
                 <Text fontSize="xs">
                   Duration: {settings.transitionDuration}s per transition
+                  {settings.transition === 'dynamic' && (
+                    <>
+                      {' • '}
+                      {settings.dynamicMode === 'smart' && 'AI selects contextually appropriate transitions'}
+                      {settings.dynamicMode === 'random' && 'Each photo gets a random transition effect'}
+                      {settings.dynamicMode === 'sequential' && 'Cycles through all available transitions'}
+                    </>
+                  )}
                   {['kenBurns', 'spiral', 'flip3d'].includes(settings.transition) && ' (Advanced Effect)'}
                 </Text>
               </Box>
