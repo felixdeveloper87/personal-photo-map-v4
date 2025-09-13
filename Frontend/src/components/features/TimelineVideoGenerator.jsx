@@ -186,24 +186,44 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       audioContextRef.current = audioContext;
       
-      let audioSource;
+      let audioBuffer;
       
       if (settings.musicSource === 'upload' && audioFile) {
         // Usar arquivo enviado pelo usuário
         const arrayBuffer = await audioFile.arrayBuffer();
-        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-        audioSource = audioContext.createBufferSource();
-        audioSource.buffer = audioBuffer;
-        audioSource.loop = true; // Loop para cobrir todo o vídeo
+        audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        
+        // Se o áudio for mais curto que o vídeo, precisamos repetir
+        if (audioBuffer.duration < videoDuration) {
+          const repetitions = Math.ceil(videoDuration / audioBuffer.duration);
+          const extendedLength = audioContext.sampleRate * videoDuration;
+          const extendedBuffer = audioContext.createBuffer(
+            audioBuffer.numberOfChannels,
+            extendedLength,
+            audioContext.sampleRate
+          );
+          
+          for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
+            const sourceData = audioBuffer.getChannelData(channel);
+            const targetData = extendedBuffer.getChannelData(channel);
+            
+            for (let i = 0; i < extendedLength; i++) {
+              targetData[i] = sourceData[i % sourceData.length];
+            }
+          }
+          
+          audioBuffer = extendedBuffer;
+        }
       } else if (settings.musicSource === 'preset') {
         // Usar música preset gerada
-        const audioBuffer = await generatePresetMusic(settings.selectedPresetMusic, videoDuration);
-        audioSource = audioContext.createBufferSource();
-        audioSource.buffer = audioBuffer;
-        audioSource.loop = true;
+        audioBuffer = await generatePresetMusic(settings.selectedPresetMusic, videoDuration);
       } else {
         return null; // Sem áudio
       }
+      
+      // Criar source
+      const audioSource = audioContext.createBufferSource();
+      audioSource.buffer = audioBuffer;
       
       // Configurar volume
       const gainNode = audioContext.createGain();
@@ -216,7 +236,14 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       
       mediaStreamDestinationRef.current = destination;
       
-      return { audioSource, audioStream: destination.stream };
+      console.log('Áudio conectado:', {
+        bufferDuration: audioBuffer.duration,
+        sampleRate: audioBuffer.sampleRate,
+        channels: audioBuffer.numberOfChannels,
+        streamTracks: destination.stream.getAudioTracks().length
+      });
+      
+      return { audioSource, audioStream: destination.stream, audioContext };
     } catch (error) {
       console.error('Erro ao configurar áudio:', error);
       toast({
@@ -351,7 +378,15 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       // Configurar áudio se habilitado
       let audioSetup = null;
       if (settings.musicEnabled && settings.musicSource !== 'none') {
+        console.log('Configurando áudio:', {
+          musicSource: settings.musicSource,
+          musicVolume: settings.musicVolume,
+          hasAudioFile: !!audioFile,
+          audioFileName: audioFile?.name,
+          videoDuration: totalVideoDuration
+        });
         audioSetup = await setupAudioForRecording(totalVideoDuration);
+        console.log('Áudio configurado:', !!audioSetup);
       }
       
       // Configurar MediaRecorder com ou sem áudio
@@ -365,10 +400,21 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
         stream = new MediaStream([...videoTracks, ...audioTracks]);
       }
       
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'video/webm;codecs=vp9',
+      // Configurar MediaRecorder com suporte aprimorado para áudio
+      let mediaRecorderOptions = {
         videoBitsPerSecond: 8000000, // 8 Mbps
-      });
+      };
+      
+      // Tentar diferentes codecs para melhor compatibilidade de áudio
+      if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
+        mediaRecorderOptions.mimeType = 'video/webm;codecs=vp9,opus';
+      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
+        mediaRecorderOptions.mimeType = 'video/webm;codecs=vp8,opus';
+      } else if (MediaRecorder.isTypeSupported('video/webm')) {
+        mediaRecorderOptions.mimeType = 'video/webm';
+      }
+      
+      const mediaRecorder = new MediaRecorder(stream, mediaRecorderOptions);
 
       mediaRecorderRef.current = mediaRecorder;
 
@@ -401,11 +447,14 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
 
       const years = Object.keys(imagesByYear).sort((a, b) => Number(a) - Number(b));
       
+      // Iniciar gravação e áudio simultaneamente para melhor sincronização
       mediaRecorder.start();
       
-      // Iniciar áudio se configurado
+      // Iniciar áudio se configurado - com timing preciso
       if (audioSetup && audioSetup.audioSource) {
-        audioSetup.audioSource.start();
+        // Usar currentTime do audioContext para sincronização precisa
+        const startTime = audioSetup.audioContext ? audioSetup.audioContext.currentTime + 0.1 : undefined;
+        audioSetup.audioSource.start(startTime);
       }
 
       // Calcular total de frames
@@ -425,6 +474,9 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
           try {
             const img = await loadImage(image.url);
             
+            // Tempo de início para esta imagem
+            const imageStartTime = Date.now();
+            
             // Animar a imagem
             for (let frame = 0; frame < framesPerImage; frame++) {
               const transitionProgress = Math.min(frame / (settings.fps * 0.5), 1); // 0.5s de transição
@@ -441,8 +493,14 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               const globalImageIndex = yearIndex * yearImages.length + imgIndex;
               addTextOverlay(ctx, canvas, year, globalImageIndex, images.length);
               
-              // Aguardar próximo frame
-              await new Promise(resolve => setTimeout(resolve, 1000 / settings.fps));
+              // Sincronização mais precisa - aguardar o tempo correto para o próximo frame
+              const targetTime = imageStartTime + (frame + 1) * (1000 / settings.fps);
+              const currentTime = Date.now();
+              const waitTime = Math.max(0, targetTime - currentTime);
+              
+              if (waitTime > 0) {
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+              }
               
               // Atualizar progresso
               currentFrame++;
@@ -461,7 +519,23 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
 
       // Finalizar gravação
       setProgress(100); // Garantir que chegue a 100%
+      
+      // Aguardar um pouco antes de parar para garantir que todos os frames foram processados
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Parar o áudio se estiver rodando
+      if (audioSetup && audioSetup.audioSource) {
+        try {
+          audioSetup.audioSource.stop();
+        } catch (error) {
+          console.warn('Erro ao parar áudio:', error);
+        }
+      }
+      
+      // Parar a gravação
       mediaRecorder.stop();
+      
+      console.log('Gravação finalizada com áudio:', !!audioSetup);
 
     } catch (error) {
       console.error('Erro ao gerar vídeo:', error);

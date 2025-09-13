@@ -60,6 +60,8 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
   const bgColor = useColorModeValue('white', 'gray.800');
   const textColor = useColorModeValue('gray.800', 'white');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const cardBg = useColorModeValue('gray.50', 'gray.700');
+  const mutedTextColor = useColorModeValue('gray.600', 'gray.300');
 
   // Fetch photos
   const { data: images = [], isLoading, error } = useQuery({
@@ -152,32 +154,32 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                   </Text>
                   
                   <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} w="100%">
-                    <VStack p={4} bg="blue.50" borderRadius="md" border="1px solid" borderColor="blue.200">
-                      <FaImages size={24} color="#3182CE" />
-                      <Text fontSize="2xl" fontWeight="bold" color="blue.600">
+                    <VStack p={4} bg={useColorModeValue("blue.50", "blue.900")} borderRadius="md" border="1px solid" borderColor={useColorModeValue("blue.200", "blue.600")}>
+                      <FaImages size={24} color={useColorModeValue("#3182CE", "#63B3ED")} />
+                      <Text fontSize="2xl" fontWeight="bold" color={useColorModeValue("blue.600", "blue.300")}>
                         {totalPhotos}
                       </Text>
-                      <Text fontSize="sm" color="blue.600">
+                      <Text fontSize="sm" color={useColorModeValue("blue.600", "blue.300")}>
                         Total de Fotos
                       </Text>
                     </VStack>
 
-                    <VStack p={4} bg="green.50" borderRadius="md" border="1px solid" borderColor="green.200">
-                      <FaCalendar size={24} color="#38A169" />
-                      <Text fontSize="2xl" fontWeight="bold" color="green.600">
+                    <VStack p={4} bg={useColorModeValue("green.50", "green.900")} borderRadius="md" border="1px solid" borderColor={useColorModeValue("green.200", "green.600")}>
+                      <FaCalendar size={24} color={useColorModeValue("#38A169", "#68D391")} />
+                      <Text fontSize="2xl" fontWeight="bold" color={useColorModeValue("green.600", "green.300")}>
                         {years.length}
                       </Text>
-                      <Text fontSize="sm" color="green.600">
+                      <Text fontSize="sm" color={useColorModeValue("green.600", "green.300")}>
                         Anos Diferentes
                       </Text>
                     </VStack>
 
-                    <VStack p={4} bg="purple.50" borderRadius="md" border="1px solid" borderColor="purple.200">
-                      <FaVideo size={24} color="#805AD5" />
-                      <Text fontSize="2xl" fontWeight="bold" color="purple.600">
+                    <VStack p={4} bg={useColorModeValue("purple.50", "purple.900")} borderRadius="md" border="1px solid" borderColor={useColorModeValue("purple.200", "purple.600")}>
+                      <FaVideo size={24} color={useColorModeValue("#805AD5", "#B794F6")} />
+                      <Text fontSize="2xl" fontWeight="bold" color={useColorModeValue("purple.600", "purple.300")}>
                         {Math.round((totalPhotos * 1.5) / 60)}min
                       </Text>
-                      <Text fontSize="sm" color="purple.600">
+                      <Text fontSize="sm" color={useColorModeValue("purple.600", "purple.300")}>
                         Duração Estimada
                       </Text>
                     </VStack>
@@ -241,12 +243,12 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                       w="60px"
                       h="60px"
                       justify="center"
-                      bg="gray.100"
+                      bg={useColorModeValue("gray.100", "gray.700")}
                       borderRadius="md"
                       border="2px dashed"
                       borderColor={borderColor}
                     >
-                      <Text fontSize="xs" color="gray.500">
+                      <Text fontSize="xs" color={mutedTextColor}>
                         +{totalPhotos - 8}
                       </Text>
                     </VStack>
@@ -265,17 +267,17 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
               </Alert>
 
               {/* Funcionalidades */}
-              <Box p={4} bg="gray.50" borderRadius="lg">
-                <Text fontSize="md" fontWeight="semibold" mb={2}>
+              <Box p={4} bg={cardBg} borderRadius="lg" border={`1px solid ${borderColor}`}>
+                <Text fontSize="md" fontWeight="semibold" mb={2} color={textColor}>
                   Funcionalidades do Gerador:
                 </Text>
                 <VStack align="start" spacing={1}>
-                  <Text fontSize="sm">• Transições automáticas entre fotos (fade, slide, zoom)</Text>
-                  <Text fontSize="sm">• Organização cronológica por ano</Text>
-                  <Text fontSize="sm">• Múltiplas resoluções (720p, 1080p, 1440p)</Text>
-                  <Text fontSize="sm">• Texto overlay com ano e contador</Text>
-                  <Text fontSize="sm">• Configurações personalizáveis</Text>
-                  <Text fontSize="sm">• Download direto do vídeo final</Text>
+                  <Text fontSize="sm" color={mutedTextColor}>• Transições automáticas entre fotos (fade, slide, zoom)</Text>
+                  <Text fontSize="sm" color={mutedTextColor}>• Organização cronológica por ano</Text>
+                  <Text fontSize="sm" color={mutedTextColor}>• Múltiplas resoluções (720p, 1080p, 1440p)</Text>
+                  <Text fontSize="sm" color={mutedTextColor}>• Texto overlay com ano e contador</Text>
+                  <Text fontSize="sm" color={mutedTextColor}>• Configurações personalizáveis</Text>
+                  <Text fontSize="sm" color={mutedTextColor}>• Download direto do vídeo final</Text>
                 </VStack>
               </Box>
 
