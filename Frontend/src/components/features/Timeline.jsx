@@ -20,7 +20,8 @@ import { useQuery } from '@tanstack/react-query';
 import { CountriesContext } from '../../context/CountriesContext';
 import { AuthContext } from '../../context/AuthContext';
 import ConversionModal from '../modals/ConversionModal';
-import { FaGlobe } from 'react-icons/fa';
+import TimelineVideoModal from '../modals/TimelineVideoModal';
+import { FaGlobe, FaVideo } from 'react-icons/fa';
 
 // Lazy loading of PhotoGallery
 const LazyPhotoGallery = lazy(() => import('./photos/PhotoGallery'));
@@ -61,6 +62,7 @@ const Timeline = ({ selectedYear }) => {
   const { isLoggedIn } = useContext(AuthContext);
   const [collapsedYears, setCollapsedYears] = useState({});
   const conversionModal = useDisclosure();
+  const videoModal = useDisclosure();
 
   // Responsive values
   const fontSize = useBreakpointValue({ base: 'lg', md: 'xl', lg: '2xl' });
@@ -193,17 +195,45 @@ const Timeline = ({ selectedYear }) => {
   return (
     <Box minH="100vh" bgGradient={bgGradient} p={padding}>
       <VStack spacing={6} align="stretch" maxW="1200px" mx="auto">
-        <Heading
-          as="h1"
-          size={fontSize}
-          textAlign="center"
-          color={textColor}
-          fontWeight="bold"
-          letterSpacing="tight"
-          mb={4}
-        >
-          {selectedYear ? `Timeline for ${selectedYear}` : 'Your Photo Timeline'}
-        </Heading>
+        <VStack spacing={4} mb={6}>
+          <Heading
+            as="h1"
+            size={fontSize}
+            textAlign="center"
+            color={textColor}
+            fontWeight="bold"
+            letterSpacing="tight"
+          >
+            {selectedYear ? `Timeline for ${selectedYear}` : 'Your Photo Timeline'}
+          </Heading>
+          
+          {/* Botão para gerar vídeo timeline */}
+          {sortedYears.length > 0 && (
+            <Button
+              leftIcon={<FaVideo />}
+              colorScheme="purple"
+              size="lg"
+              onClick={videoModal.onOpen}
+              px={8}
+              py={6}
+              fontSize="md"
+              fontWeight="bold"
+              borderRadius="xl"
+              bgGradient="linear(to-r, purple.500, pink.500)"
+              _hover={{
+                bgGradient: "linear(to-r, purple.600, pink.600)",
+                transform: 'translateY(-2px)',
+                boxShadow: 'xl'
+              }}
+              _active={{
+                transform: 'translateY(0)',
+              }}
+              transition="all 0.3s ease"
+            >
+              Criar Vídeo Timeline ({images.length} fotos)
+            </Button>
+          )}
+        </VStack>
 
         {sortedYears.length > 0 ? (
           <VStack spacing={3} align="stretch">
@@ -280,6 +310,12 @@ const Timeline = ({ selectedYear }) => {
       <ConversionModal
         isOpen={conversionModal.isOpen}
         onClose={conversionModal.onClose}
+      />
+      
+      {/* Video Generator Modal */}
+      <TimelineVideoModal
+        isOpen={videoModal.isOpen}
+        onClose={videoModal.onClose}
       />
     </Box>
   );

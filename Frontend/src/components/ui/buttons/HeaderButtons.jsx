@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, useColorModeValue, Box, Text, HStack, Icon } from "@chakra-ui/react";
 import { motion } from "framer-motion";
-import { FaMoon, FaSun, FaCrown, FaImages, FaMap, FaSignOutAlt, FaClock, FaSearch, FaUser, FaGlobe, FaSignInAlt, FaUserPlus, FaUserCircle } from "react-icons/fa";
+import { FaMoon, FaSun, FaCrown, FaImages, FaMap, FaSignOutAlt, FaClock, FaSearch, FaUser, FaGlobe, FaSignInAlt, FaUserPlus, FaUserCircle, FaVideo } from "react-icons/fa";
 
 const MotionButton = motion.create ? motion.create(Button) : motion(Button);
 

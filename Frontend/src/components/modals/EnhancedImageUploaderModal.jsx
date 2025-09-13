@@ -44,6 +44,7 @@ import BaseModal from './BaseModal';
 import { CountriesContext } from '../../context/CountriesContext';
 import { buildApiUrl } from '../../utils/apiConfig';
 import * as EXIF from 'exif-js';
+import { extractPhotoMetadata as extractMetadata } from '../../utils/photoMetadataExtractor';
 
 const CURRENT_YEAR = new Date().getFullYear();
 const RECENT_YEARS = Array.from({ length: 16 }, (_, i) => CURRENT_YEAR - i); // 16 years grid
@@ -89,50 +90,28 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
     return { Authorization: `Bearer ${token}` }; // Do not set Content-Type with FormData
   };
 
-  const extractPhotoMetadata = async (file) =>
-    new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const exif = EXIF.readFromBinaryFile(e.target.result) || {};
-          // Priority: DateTimeOriginal > DateTime > DateTimeDigitized
-          const dateStr =
-            exif.DateTimeOriginal || exif.DateTime || exif.DateTimeDigitized || null;
-
-          let year;
-          if (dateStr && typeof dateStr === 'string' && dateStr.includes(':')) {
-            // "YYYY:MM:DD HH:mm:ss"
-            year = parseInt(dateStr.split(':')[0], 10);
-          }
-
-          if (!year || Number.isNaN(year)) {
-            const fileDate = new Date(file.lastModified);
-            resolve({
-              year: fileDate.getFullYear(),
-              date: fileDate.toISOString(),
-              hasGPS: !!(exif.GPSLatitude && exif.GPSLongitude),
-              original: null,
-            });
-          } else {
-            resolve({
-              year,
-              date: dateStr,
-              hasGPS: !!(exif.GPSLatitude && exif.GPSLongitude),
-              original: exif,
-            });
-          }
-        } catch {
-          const fileDate = new Date(file.lastModified);
-          resolve({
-            year: fileDate.getFullYear(),
-            date: fileDate.toISOString(),
-            hasGPS: false,
-            original: null,
-          });
-        }
+  const extractPhotoMetadata = async (file) => {
+    try {
+      // Usar nossa função melhorada de extração de metadados
+      const metadata = await extractMetadata(file);
+      return {
+        year: metadata.year,
+        date: metadata.photoDate,
+        hasGPS: metadata.hasGPS,
+        original: metadata.originalExif,
       };
-      reader.readAsArrayBuffer(file);
-    });
+    } catch (error) {
+      console.error('Erro ao extrair metadados:', error);
+      // Fallback para dados básicos do arquivo
+      const fileDate = new Date(file.lastModified);
+      return {
+        year: fileDate.getFullYear(),
+        date: fileDate.toISOString(),
+        hasGPS: false,
+        original: null,
+      };
+    }
+  };
 
   const readAllExif = async (files) => {
     const meta = {};
