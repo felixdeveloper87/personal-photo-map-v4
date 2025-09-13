@@ -113,7 +113,7 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
         <ModalHeader>
           <HStack>
             <FaVideo />
-            <Text>Gerador de Vídeo Timeline</Text>
+            <Text>Timeline Video Generator</Text>
           </HStack>
         </ModalHeader>
         <ModalCloseButton />
@@ -121,20 +121,20 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
           {isLoading ? (
             <VStack spacing={4} py={8}>
               <Spinner size="xl" color="blue.500" />
-              <Text>Carregando suas fotos...</Text>
+              <Text>Loading your photos...</Text>
             </VStack>
           ) : error ? (
             <Alert status="error">
               <AlertIcon />
               <AlertDescription>
-                Erro ao carregar fotos: {error.message}
+                Error loading photos: {error.message}
               </AlertDescription>
             </Alert>
           ) : totalPhotos === 0 ? (
             <Alert status="info">
               <AlertIcon />
               <AlertDescription>
-                Você ainda não possui fotos no seu timeline. Faça upload de algumas fotos primeiro para gerar um vídeo.
+                You don't have photos in your timeline yet. Upload some photos first to generate a video.
               </AlertDescription>
             </Alert>
           ) : showGenerator ? (

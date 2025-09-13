@@ -69,16 +69,19 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
   const bgColor = useColorModeValue('white', 'gray.800');
   const textColor = useColorModeValue('gray.800', 'white');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const cardBg = useColorModeValue('gray.50', 'gray.700');
+  const inputBg = useColorModeValue('white', 'gray.600');
+  const mutedTextColor = useColorModeValue('gray.600', 'gray.300');
 
-  // Músicas pré-definidas (usando Web Audio API para gerar tons)
+  // Preset music (generated using Web Audio API)
   const presetMusics = {
-    ambient1: { name: 'Ambiente Calmo', description: 'Tom relaxante para memórias' },
-    upbeat1: { name: 'Energético', description: 'Ritmo animado para aventuras' },
-    nostalgic1: { name: 'Nostálgico', description: 'Melancólico para lembranças' },
-    cinematic1: { name: 'Cinematográfico', description: 'Épico para grandes momentos' },
+    ambient1: { name: 'Calm Ambient', description: 'Relaxing tone for memories' },
+    upbeat1: { name: 'Energetic', description: 'Animated rhythm for adventures' },
+    nostalgic1: { name: 'Nostalgic', description: 'Melancholic for special moments' },
+    cinematic1: { name: 'Cinematic', description: 'Epic for great moments' },
   };
 
-  // Função para carregar imagem
+  // Function to load image
   const loadImage = (src) => {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -89,7 +92,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
     });
   };
 
-  // Função para gerar música preset usando Web Audio API
+  // Function to generate preset music using Web Audio API
   const generatePresetMusic = async (musicType, durationSeconds) => {
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const sampleRate = audioContext.sampleRate;
@@ -107,34 +110,34 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
         
         switch (musicType) {
           case 'ambient1':
-            // Tom ambiente suave com múltiplas frequências
+            // Soft ambient tone with multiple frequencies
             value = Math.sin(2 * Math.PI * 220 * time) * 0.1 +
                    Math.sin(2 * Math.PI * 330 * time) * 0.08 +
                    Math.sin(2 * Math.PI * 440 * time) * 0.06;
-            value *= Math.sin(2 * Math.PI * 0.5 * time); // Modulação lenta
+            value *= Math.sin(2 * Math.PI * 0.5 * time); // Slow modulation
             break;
             
           case 'upbeat1':
-            // Ritmo mais animado
+            // More animated rhythm
             value = Math.sin(2 * Math.PI * 440 * time) * 0.2 +
                    Math.sin(2 * Math.PI * 880 * time) * 0.1;
-            value *= (1 + Math.sin(2 * Math.PI * 4 * time)) * 0.5; // Batida rápida
+            value *= (1 + Math.sin(2 * Math.PI * 4 * time)) * 0.5; // Fast beat
             break;
             
           case 'nostalgic1':
-            // Tom melancólico
+            // Melancholic tone
             value = Math.sin(2 * Math.PI * 294 * time) * 0.15 + // D4
                    Math.sin(2 * Math.PI * 349 * time) * 0.12 + // F4
                    Math.sin(2 * Math.PI * 440 * time) * 0.1;  // A4
-            value *= Math.exp(-time * 0.1); // Fade out gradual
+            value *= Math.exp(-time * 0.1); // Gradual fade out
             break;
             
           case 'cinematic1':
-            // Som épico cinematográfico
+            // Epic cinematic sound
             value = Math.sin(2 * Math.PI * 110 * time) * 0.3 + // Bass
                    Math.sin(2 * Math.PI * 220 * time) * 0.2 +
                    Math.sin(2 * Math.PI * 440 * time) * 0.15;
-            value *= (1 + Math.sin(2 * Math.PI * 0.25 * time)) * 0.5; // Crescendo lento
+            value *= (1 + Math.sin(2 * Math.PI * 0.25 * time)) * 0.5; // Slow crescendo
             break;
             
           default:
@@ -148,16 +151,16 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
     return audioBuffer;
   };
 
-  // Função para lidar com upload de arquivo de áudio
+  // Function to handle audio file upload
   const handleAudioUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
     
-    // Verificar se é arquivo de áudio
+    // Check if it's an audio file
     if (!file.type.startsWith('audio/')) {
       toast({
-        title: 'Erro',
-        description: 'Por favor, selecione um arquivo de áudio válido (MP3, WAV, OGG)',
+        title: 'Error',
+        description: 'Please select a valid audio file (MP3, WAV, OGG)',
         status: 'error',
         duration: 3000,
       });
@@ -169,8 +172,8 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
     setAudioUrl(url);
     
     toast({
-      title: 'Áudio carregado',
-      description: `Arquivo "${file.name}" pronto para uso`,
+      title: 'Audio loaded',
+      description: `File "${file.name}" ready to use`,
       status: 'success',
       duration: 3000,
     });
@@ -506,13 +509,13 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
     <Box p={6} bg={bgColor} borderRadius="lg" border={`1px solid ${borderColor}`}>
       <VStack spacing={6} align="stretch">
         <Text fontSize="xl" fontWeight="bold" color={textColor}>
-          Gerador de Vídeo Timeline
+          Timeline Video Generator
         </Text>
 
-        {/* Configurações */}
+        {/* Settings */}
         <VStack spacing={4} align="stretch">
           <FormControl>
-            <FormLabel>Duração por foto (segundos)</FormLabel>
+            <FormLabel color={textColor}>Duration per photo (seconds)</FormLabel>
             <NumberInput
               value={settings.duration}
               onChange={(value) => setSettings({ ...settings, duration: Number(value) })}
@@ -529,10 +532,13 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
           </FormControl>
 
           <FormControl>
-            <FormLabel>Tipo de transição</FormLabel>
+            <FormLabel color={textColor}>Transition type</FormLabel>
             <Select
               value={settings.transition}
               onChange={(e) => setSettings({ ...settings, transition: e.target.value })}
+              bg={inputBg}
+              color={textColor}
+              borderColor={borderColor}
             >
               <option value="fade">Fade</option>
               <option value="slide">Slide</option>
@@ -541,10 +547,13 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
           </FormControl>
 
           <FormControl>
-            <FormLabel>Resolução</FormLabel>
+            <FormLabel color={textColor}>Resolution</FormLabel>
             <Select
               value={settings.resolution}
               onChange={(e) => setSettings({ ...settings, resolution: e.target.value })}
+              bg={inputBg}
+              color={textColor}
+              borderColor={borderColor}
             >
               <option value="720p">720p (1280x720)</option>
               <option value="1080p">1080p (1920x1080)</option>
@@ -554,7 +563,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
 
           <HStack justify="space-between">
             <FormControl display="flex" alignItems="center">
-              <FormLabel mb="0">Mostrar ano</FormLabel>
+              <FormLabel mb="0" color={textColor}>Show year</FormLabel>
               <Switch
                 isChecked={settings.showYearText}
                 onChange={(e) => setSettings({ ...settings, showYearText: e.target.checked })}
@@ -562,7 +571,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
             </FormControl>
 
             <FormControl display="flex" alignItems="center">
-              <FormLabel mb="0">Mostrar contador</FormLabel>
+              <FormLabel mb="0" color={textColor}>Show counter</FormLabel>
               <Switch
                 isChecked={settings.showPhotoCount}
                 onChange={(e) => setSettings({ ...settings, showPhotoCount: e.target.checked })}
@@ -570,11 +579,11 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
             </FormControl>
           </HStack>
 
-          {/* Configurações de Áudio */}
-          <Divider />
+          {/* Audio Settings */}
+          <Divider borderColor={borderColor} />
           
           <FormControl display="flex" alignItems="center">
-            <FormLabel mb="0" fontWeight="bold">Música de fundo</FormLabel>
+            <FormLabel mb="0" fontWeight="bold" color={textColor}>Background music</FormLabel>
             <Switch
               isChecked={settings.musicEnabled}
               onChange={(e) => setSettings({ ...settings, musicEnabled: e.target.checked })}
@@ -582,25 +591,31 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
           </FormControl>
 
           {settings.musicEnabled && (
-            <VStack spacing={4} align="stretch" p={4} bg="gray.50" borderRadius="md">
+            <VStack spacing={4} align="stretch" p={4} bg={cardBg} borderRadius="md" border={`1px solid ${borderColor}`}>
               <FormControl>
-                <FormLabel>Fonte da música</FormLabel>
+                <FormLabel color={textColor}>Music source</FormLabel>
                 <Select
                   value={settings.musicSource}
                   onChange={(e) => setSettings({ ...settings, musicSource: e.target.value })}
+                  bg={inputBg}
+                  color={textColor}
+                  borderColor={borderColor}
                 >
-                  <option value="none">Sem música</option>
-                  <option value="preset">Música pré-definida</option>
-                  <option value="upload">Enviar arquivo próprio</option>
+                  <option value="none">No music</option>
+                  <option value="preset">Preset music</option>
+                  <option value="upload">Upload your own file</option>
                 </Select>
               </FormControl>
 
               {settings.musicSource === 'preset' && (
                 <FormControl>
-                  <FormLabel>Estilo musical</FormLabel>
+                  <FormLabel color={textColor}>Musical style</FormLabel>
                   <Select
                     value={settings.selectedPresetMusic}
                     onChange={(e) => setSettings({ ...settings, selectedPresetMusic: e.target.value })}
+                    bg={inputBg}
+                    color={textColor}
+                    borderColor={borderColor}
                   >
                     {Object.entries(presetMusics).map(([key, music]) => (
                       <option key={key} value={key}>
@@ -613,7 +628,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
 
               {settings.musicSource === 'upload' && (
                 <FormControl>
-                  <FormLabel>Upload de arquivo de áudio</FormLabel>
+                  <FormLabel color={textColor}>Upload audio file</FormLabel>
                   <Input
                     type="file"
                     accept="audio/*"
@@ -628,19 +643,22 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
                     colorScheme="blue"
                     variant="outline"
                     w="100%"
+                    borderColor={borderColor}
+                    color={textColor}
+                    _hover={{ bg: useColorModeValue('gray.100', 'gray.600') }}
                   >
-                    {audioFile ? `Arquivo: ${audioFile.name}` : 'Selecionar Arquivo de Áudio'}
+                    {audioFile ? `File: ${audioFile.name}` : 'Select Audio File'}
                   </Button>
                   {audioFile && (
                     <Text fontSize="sm" color="green.500" mt={2}>
-                      ✓ Arquivo carregado: {audioFile.name}
+                      ✓ File loaded: {audioFile.name}
                     </Text>
                   )}
                 </FormControl>
               )}
 
               <FormControl>
-                <FormLabel>Volume da música: {Math.round(settings.musicVolume * 100)}%</FormLabel>
+                <FormLabel color={textColor}>Music volume: {Math.round(settings.musicVolume * 100)}%</FormLabel>
                 <Slider
                   value={settings.musicVolume}
                   onChange={(value) => setSettings({ ...settings, musicVolume: value })}
@@ -649,17 +667,17 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
                   step={0.1}
                   colorScheme="blue"
                 >
-                  <SliderTrack>
+                  <SliderTrack bg={useColorModeValue('gray.200', 'gray.600')}>
                     <SliderFilledTrack />
                   </SliderTrack>
                   <SliderThumb />
                 </Slider>
               </FormControl>
 
-              {/* Preview do áudio */}
+              {/* Audio preview */}
               {audioUrl && (
                 <Box>
-                  <FormLabel>Preview do áudio</FormLabel>
+                  <FormLabel color={textColor}>Audio preview</FormLabel>
                   <audio
                     ref={audioRef}
                     src={audioUrl}
@@ -672,19 +690,19 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
           )}
         </VStack>
 
-        <Divider />
+        <Divider borderColor={borderColor} />
 
-        {/* Canvas oculto para geração */}
+        {/* Hidden canvas for generation */}
         <canvas
           ref={canvasRef}
           style={{ display: 'none' }}
         />
 
-        {/* Progresso */}
+        {/* Progress */}
         {isGenerating && (
           <VStack spacing={3}>
-            <Text fontWeight="semibold">
-              {progress === 100 ? 'Finalizando vídeo...' : `Gerando vídeo... ${progress}%`}
+            <Text fontWeight="semibold" color={textColor}>
+              {progress === 100 ? 'Finalizing video...' : `Generating video... ${progress}%`}
             </Text>
             <Progress 
               value={progress} 
@@ -695,17 +713,17 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               hasStripe={progress < 100}
             />
             {progress < 100 && (
-              <Text fontSize="sm" color="gray.500">
-                Processando frames do vídeo timeline...
+              <Text fontSize="sm" color={mutedTextColor}>
+                Processing timeline video frames...
               </Text>
             )}
           </VStack>
         )}
 
-        {/* Vídeo gerado */}
+        {/* Generated video */}
         {videoUrl && (
           <VStack spacing={3}>
-            <Text color="green.500" fontWeight="bold">Vídeo gerado com sucesso!</Text>
+            <Text color="green.500" fontWeight="bold">Video generated successfully!</Text>
             <video
               ref={videoRef}
               src={videoUrl}
@@ -715,7 +733,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
           </VStack>
         )}
 
-        {/* Botões */}
+        {/* Buttons */}
         <HStack spacing={4} justify="center">
           {!isGenerating && !videoUrl && (
             <Button
@@ -725,7 +743,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               onClick={generateVideo}
               isDisabled={!images || images.length === 0}
             >
-              Gerar Vídeo ({images?.length || 0} fotos)
+              Generate Video ({images?.length || 0} photos)
             </Button>
           )}
 
@@ -736,7 +754,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               size="lg"
               onClick={stopGeneration}
             >
-              Parar Geração
+              Stop Generation
             </Button>
           )}
 
@@ -747,30 +765,36 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               size="lg"
               onClick={downloadVideo}
             >
-              Download Vídeo
+              Download Video
             </Button>
           )}
 
-          <Button variant="outline" onClick={onClose}>
-            Fechar
+          <Button 
+            variant="outline" 
+            onClick={onClose}
+            borderColor={borderColor}
+            color={textColor}
+            _hover={{ bg: useColorModeValue('gray.100', 'gray.600') }}
+          >
+            Close
           </Button>
         </HStack>
 
-        {/* Informações */}
-        <Alert status="info">
+        {/* Information */}
+        <Alert status="info" bg={useColorModeValue('blue.50', 'blue.900')} borderColor={borderColor}>
           <AlertIcon />
-          <AlertDescription>
-            O vídeo será gerado inteiramente no seu navegador, sem enviar dados para nenhum servidor.
-            O processo pode demorar alguns minutos dependendo da quantidade de fotos e configurações.
+          <AlertDescription color={textColor}>
+            The video will be generated entirely in your browser, without sending data to any server.
+            The process may take a few minutes depending on the number of photos and settings.
             {settings.musicEnabled && (
               <Box mt={2}>
-                <Text fontWeight="semibold">🎵 Música de fundo habilitada:</Text>
+                <Text fontWeight="semibold">🎵 Background music enabled:</Text>
                 <Text fontSize="sm">
                   {settings.musicSource === 'preset' 
-                    ? `Estilo: ${presetMusics[settings.selectedPresetMusic]?.name}` 
+                    ? `Style: ${presetMusics[settings.selectedPresetMusic]?.name}` 
                     : settings.musicSource === 'upload' && audioFile
-                    ? `Arquivo: ${audioFile.name}`
-                    : 'Configuração de áudio pendente'
+                    ? `File: ${audioFile.name}`
+                    : 'Audio configuration pending'
                   }
                 </Text>
               </Box>
