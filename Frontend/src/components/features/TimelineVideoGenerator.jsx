@@ -432,24 +432,45 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
   const drawImageWithTransition = (ctx, img, canvas, transitionType, progress) => {
     const { width, height } = canvas;
     
+    // Detectar se é formato vertical (Stories/Reels)
+    const isVerticalFormat = height > width;
+    
     // Calcular proporções para manter aspect ratio
     const imgAspect = img.width / img.height;
     const canvasAspect = width / height;
     
     let drawWidth, drawHeight, offsetX, offsetY;
     
-    if (imgAspect > canvasAspect) {
-      // Imagem é mais larga
-      drawHeight = height;
-      drawWidth = height * imgAspect;
-      offsetX = (width - drawWidth) / 2;
-      offsetY = 0;
+    if (isVerticalFormat) {
+      // Para formatos verticais, priorizar preenchimento da largura
+      if (imgAspect > canvasAspect) {
+        // Imagem mais larga que canvas - ajustar por altura para preencher melhor
+        drawHeight = height;
+        drawWidth = height * imgAspect;
+        offsetX = (width - drawWidth) / 2;
+        offsetY = 0;
+      } else {
+        // Imagem mais alta - ajustar por largura
+        drawWidth = width;
+        drawHeight = width / imgAspect;
+        offsetX = 0;
+        offsetY = (height - drawHeight) / 2;
+      }
     } else {
-      // Imagem é mais alta
-      drawWidth = width;
-      drawHeight = width / imgAspect;
-      offsetX = 0;
-      offsetY = (height - drawHeight) / 2;
+      // Para formatos horizontais, manter lógica original
+      if (imgAspect > canvasAspect) {
+        // Imagem é mais larga
+        drawHeight = height;
+        drawWidth = height * imgAspect;
+        offsetX = (width - drawWidth) / 2;
+        offsetY = 0;
+      } else {
+        // Imagem é mais alta
+        drawWidth = width;
+        drawHeight = width / imgAspect;
+        offsetX = 0;
+        offsetY = (height - drawHeight) / 2;
+      }
     }
 
     ctx.save();
@@ -486,6 +507,8 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
     if (!settings.showYearText && !settings.showPhotoCount) return;
 
     const { width, height } = canvas;
+    const isVerticalFormat = height > width;
+    
     ctx.save();
     
     // Configurar estilo do texto
@@ -495,19 +518,36 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
     ctx.textAlign = 'center';
     
     if (settings.showYearText) {
-      ctx.font = 'bold 48px Arial';
+      // Ajustar tamanho da fonte baseado no formato
+      const yearFontSize = isVerticalFormat ? 64 : 48;
+      ctx.font = `bold ${yearFontSize}px Arial`;
       const yearText = year.toString();
-      const yearY = height - 100;
+      
+      // Posicionar texto para formato vertical (mais espaço na parte inferior)
+      const yearY = isVerticalFormat ? height - 150 : height - 100;
       ctx.strokeText(yearText, width / 2, yearY);
       ctx.fillText(yearText, width / 2, yearY);
     }
     
     if (settings.showPhotoCount) {
-      ctx.font = 'bold 24px Arial';
+      // Ajustar tamanho da fonte baseado no formato
+      const countFontSize = isVerticalFormat ? 32 : 24;
+      ctx.font = `bold ${countFontSize}px Arial`;
       const countText = `${photoIndex + 1} / ${totalPhotos}`;
-      const countY = height - 50;
+      
+      // Posicionar contador para formato vertical
+      const countY = isVerticalFormat ? height - 80 : height - 50;
       ctx.strokeText(countText, width / 2, countY);
       ctx.fillText(countText, width / 2, countY);
+    }
+    
+    // Adicionar indicador de formato para Stories/Reels
+    if (isVerticalFormat) {
+      ctx.font = 'bold 20px Arial';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      const formatText = width === 1080 && height === 1920 ? '📱 Stories' : 
+                        width === 1080 && height === 1350 ? '📱 Reel' : '📱 Vertical';
+      ctx.fillText(formatText, width / 2, 40);
     }
     
     ctx.restore();
@@ -538,6 +578,10 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
         '720p': { width: 1280, height: 720 },
         '1080p': { width: 1920, height: 1080 },
         '1440p': { width: 2560, height: 1440 },
+        // Formatos verticais para Stories/Reels
+        'stories-hd': { width: 1080, height: 1920 }, // 9:16 - Instagram Stories, TikTok
+        'stories-4k': { width: 1440, height: 2560 }, // 9:16 - 4K vertical
+        'reel-standard': { width: 1080, height: 1350 }, // 4:5 - Instagram Feed
       };
       
       const resolution = resolutions[settings.resolution];
@@ -926,7 +970,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
           </FormControl>
 
           <FormControl>
-            <FormLabel color={textColor}>Resolution</FormLabel>
+            <FormLabel color={textColor}>Resolution & Format</FormLabel>
             <Select
               value={settings.resolution}
               onChange={(e) => setSettings({ ...settings, resolution: e.target.value })}
@@ -934,9 +978,16 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               color={textColor}
               borderColor={borderColor}
             >
-              <option value="720p">720p (1280x720)</option>
-              <option value="1080p">1080p (1920x1080)</option>
-              <option value="1440p">1440p (2560x1440)</option>
+              <optgroup label="📺 Horizontal (Landscape)">
+                <option value="720p">720p (1280x720) - YouTube, Web</option>
+                <option value="1080p">1080p (1920x1080) - Full HD</option>
+                <option value="1440p">1440p (2560x1440) - 2K</option>
+              </optgroup>
+              <optgroup label="📱 Vertical (Stories/Reels)">
+                <option value="stories-hd">Stories HD (1080x1920) - Instagram, TikTok</option>
+                <option value="stories-4k">Stories 4K (1440x2560) - Premium Quality</option>
+                <option value="reel-standard">Instagram Feed (1080x1350) - 4:5 Ratio</option>
+              </optgroup>
             </Select>
           </FormControl>
 
@@ -1210,6 +1261,24 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
                 </Text>
               </Box>
             )}
+            
+            {/* Informações sobre formato do vídeo */}
+            <Box mt={2}>
+              <Text fontWeight="semibold">
+                {['stories-hd', 'stories-4k', 'reel-standard'].includes(settings.resolution) 
+                  ? '📱 Vertical Format (Stories/Reels)'
+                  : '📺 Horizontal Format (Traditional)'
+                }
+              </Text>
+              <Text fontSize="sm">
+                {settings.resolution === 'stories-hd' && 'Perfect for Instagram Stories, TikTok, YouTube Shorts'}
+                {settings.resolution === 'stories-4k' && 'High-quality vertical format for premium content'}
+                {settings.resolution === 'reel-standard' && 'Optimized for Instagram Feed posts (4:5 ratio)'}
+                {!['stories-hd', 'stories-4k', 'reel-standard'].includes(settings.resolution) && 
+                  'Traditional landscape format for YouTube, web, and presentations'
+                }
+              </Text>
+            </Box>
           </AlertDescription>
         </Alert>
       </VStack>
