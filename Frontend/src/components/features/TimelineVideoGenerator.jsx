@@ -20,8 +20,8 @@ import {
   SliderFilledTrack,
   SliderThumb,
   Switch,
-  useColorModeValue,
   Divider,
+  useColorModeValue,
   Alert,
   AlertIcon,
   AlertDescription,
@@ -53,12 +53,30 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
     showYearText: true,
     showPhotoCount: true,
     musicEnabled: false,
+    musicSource: 'none', // 'none', 'upload', 'preset'
+    musicVolume: 0.5,
+    selectedPresetMusic: 'ambient1',
   });
+
+  // Audio settings
+  const [audioFile, setAudioFile] = useState(null);
+  const [audioUrl, setAudioUrl] = useState(null);
+  const audioRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const mediaStreamDestinationRef = useRef(null);
 
   // Cores do tema
   const bgColor = useColorModeValue('white', 'gray.800');
   const textColor = useColorModeValue('gray.800', 'white');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
+
+  // Músicas pré-definidas (usando Web Audio API para gerar tons)
+  const presetMusics = {
+    ambient1: { name: 'Ambiente Calmo', description: 'Tom relaxante para memórias' },
+    upbeat1: { name: 'Energético', description: 'Ritmo animado para aventuras' },
+    nostalgic1: { name: 'Nostálgico', description: 'Melancólico para lembranças' },
+    cinematic1: { name: 'Cinematográfico', description: 'Épico para grandes momentos' },
+  };
 
   // Função para carregar imagem
   const loadImage = (src) => {
@@ -69,6 +87,142 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       img.onerror = reject;
       img.src = src;
     });
+  };
+
+  // Função para gerar música preset usando Web Audio API
+  const generatePresetMusic = async (musicType, durationSeconds) => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const sampleRate = audioContext.sampleRate;
+    const numberOfChannels = 2;
+    const length = sampleRate * durationSeconds;
+    
+    const audioBuffer = audioContext.createBuffer(numberOfChannels, length, sampleRate);
+    
+    for (let channel = 0; channel < numberOfChannels; channel++) {
+      const channelData = audioBuffer.getChannelData(channel);
+      
+      for (let i = 0; i < length; i++) {
+        const time = i / sampleRate;
+        let value = 0;
+        
+        switch (musicType) {
+          case 'ambient1':
+            // Tom ambiente suave com múltiplas frequências
+            value = Math.sin(2 * Math.PI * 220 * time) * 0.1 +
+                   Math.sin(2 * Math.PI * 330 * time) * 0.08 +
+                   Math.sin(2 * Math.PI * 440 * time) * 0.06;
+            value *= Math.sin(2 * Math.PI * 0.5 * time); // Modulação lenta
+            break;
+            
+          case 'upbeat1':
+            // Ritmo mais animado
+            value = Math.sin(2 * Math.PI * 440 * time) * 0.2 +
+                   Math.sin(2 * Math.PI * 880 * time) * 0.1;
+            value *= (1 + Math.sin(2 * Math.PI * 4 * time)) * 0.5; // Batida rápida
+            break;
+            
+          case 'nostalgic1':
+            // Tom melancólico
+            value = Math.sin(2 * Math.PI * 294 * time) * 0.15 + // D4
+                   Math.sin(2 * Math.PI * 349 * time) * 0.12 + // F4
+                   Math.sin(2 * Math.PI * 440 * time) * 0.1;  // A4
+            value *= Math.exp(-time * 0.1); // Fade out gradual
+            break;
+            
+          case 'cinematic1':
+            // Som épico cinematográfico
+            value = Math.sin(2 * Math.PI * 110 * time) * 0.3 + // Bass
+                   Math.sin(2 * Math.PI * 220 * time) * 0.2 +
+                   Math.sin(2 * Math.PI * 440 * time) * 0.15;
+            value *= (1 + Math.sin(2 * Math.PI * 0.25 * time)) * 0.5; // Crescendo lento
+            break;
+            
+          default:
+            value = 0;
+        }
+        
+        channelData[i] = value * settings.musicVolume;
+      }
+    }
+    
+    return audioBuffer;
+  };
+
+  // Função para lidar com upload de arquivo de áudio
+  const handleAudioUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Verificar se é arquivo de áudio
+    if (!file.type.startsWith('audio/')) {
+      toast({
+        title: 'Erro',
+        description: 'Por favor, selecione um arquivo de áudio válido (MP3, WAV, OGG)',
+        status: 'error',
+        duration: 3000,
+      });
+      return;
+    }
+    
+    setAudioFile(file);
+    const url = URL.createObjectURL(file);
+    setAudioUrl(url);
+    
+    toast({
+      title: 'Áudio carregado',
+      description: `Arquivo "${file.name}" pronto para uso`,
+      status: 'success',
+      duration: 3000,
+    });
+  };
+
+  // Função para configurar áudio para gravação
+  const setupAudioForRecording = async (videoDuration) => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      audioContextRef.current = audioContext;
+      
+      let audioSource;
+      
+      if (settings.musicSource === 'upload' && audioFile) {
+        // Usar arquivo enviado pelo usuário
+        const arrayBuffer = await audioFile.arrayBuffer();
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        audioSource = audioContext.createBufferSource();
+        audioSource.buffer = audioBuffer;
+        audioSource.loop = true; // Loop para cobrir todo o vídeo
+      } else if (settings.musicSource === 'preset') {
+        // Usar música preset gerada
+        const audioBuffer = await generatePresetMusic(settings.selectedPresetMusic, videoDuration);
+        audioSource = audioContext.createBufferSource();
+        audioSource.buffer = audioBuffer;
+        audioSource.loop = true;
+      } else {
+        return null; // Sem áudio
+      }
+      
+      // Configurar volume
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = settings.musicVolume;
+      
+      // Conectar áudio ao destino
+      const destination = audioContext.createMediaStreamDestination();
+      audioSource.connect(gainNode);
+      gainNode.connect(destination);
+      
+      mediaStreamDestinationRef.current = destination;
+      
+      return { audioSource, audioStream: destination.stream };
+    } catch (error) {
+      console.error('Erro ao configurar áudio:', error);
+      toast({
+        title: 'Erro no áudio',
+        description: 'Não foi possível configurar o áudio. O vídeo será gerado sem som.',
+        status: 'warning',
+        duration: 5000,
+      });
+      return null;
+    }
   };
 
   // Função para desenhar imagem com transição
@@ -187,8 +341,26 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       canvas.width = resolution.width;
       canvas.height = resolution.height;
 
-      // Configurar MediaRecorder
-      const stream = canvas.captureStream(settings.fps);
+      // Calcular duração total do vídeo
+      const totalVideoDuration = images.length * settings.duration;
+      
+      // Configurar áudio se habilitado
+      let audioSetup = null;
+      if (settings.musicEnabled && settings.musicSource !== 'none') {
+        audioSetup = await setupAudioForRecording(totalVideoDuration);
+      }
+      
+      // Configurar MediaRecorder com ou sem áudio
+      let stream = canvas.captureStream(settings.fps);
+      
+      if (audioSetup && audioSetup.audioStream) {
+        // Combinar vídeo e áudio
+        const audioTracks = audioSetup.audioStream.getAudioTracks();
+        const videoTracks = stream.getVideoTracks();
+        
+        stream = new MediaStream([...videoTracks, ...audioTracks]);
+      }
+      
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'video/webm;codecs=vp9',
         videoBitsPerSecond: 8000000, // 8 Mbps
@@ -226,6 +398,11 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       const years = Object.keys(imagesByYear).sort((a, b) => Number(a) - Number(b));
       
       mediaRecorder.start();
+      
+      // Iniciar áudio se configurado
+      if (audioSetup && audioSetup.audioSource) {
+        audioSetup.audioSource.start();
+      }
 
       // Calcular total de frames
       const framesPerImage = settings.duration * settings.fps;
@@ -391,6 +568,107 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               />
             </FormControl>
           </HStack>
+
+          {/* Configurações de Áudio */}
+          <Divider />
+          
+          <FormControl display="flex" alignItems="center">
+            <FormLabel mb="0" fontWeight="bold">Música de fundo</FormLabel>
+            <Switch
+              isChecked={settings.musicEnabled}
+              onChange={(e) => setSettings({ ...settings, musicEnabled: e.target.checked })}
+            />
+          </FormControl>
+
+          {settings.musicEnabled && (
+            <VStack spacing={4} align="stretch" p={4} bg="gray.50" borderRadius="md">
+              <FormControl>
+                <FormLabel>Fonte da música</FormLabel>
+                <Select
+                  value={settings.musicSource}
+                  onChange={(e) => setSettings({ ...settings, musicSource: e.target.value })}
+                >
+                  <option value="none">Sem música</option>
+                  <option value="preset">Música pré-definida</option>
+                  <option value="upload">Enviar arquivo próprio</option>
+                </Select>
+              </FormControl>
+
+              {settings.musicSource === 'preset' && (
+                <FormControl>
+                  <FormLabel>Estilo musical</FormLabel>
+                  <Select
+                    value={settings.selectedPresetMusic}
+                    onChange={(e) => setSettings({ ...settings, selectedPresetMusic: e.target.value })}
+                  >
+                    {Object.entries(presetMusics).map(([key, music]) => (
+                      <option key={key} value={key}>
+                        {music.name} - {music.description}
+                      </option>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
+
+              {settings.musicSource === 'upload' && (
+                <FormControl>
+                  <FormLabel>Upload de arquivo de áudio</FormLabel>
+                  <Input
+                    type="file"
+                    accept="audio/*"
+                    onChange={handleAudioUpload}
+                    style={{ display: 'none' }}
+                    id="audio-upload"
+                  />
+                  <Button
+                    as="label"
+                    htmlFor="audio-upload"
+                    cursor="pointer"
+                    colorScheme="blue"
+                    variant="outline"
+                    w="100%"
+                  >
+                    {audioFile ? `Arquivo: ${audioFile.name}` : 'Selecionar Arquivo de Áudio'}
+                  </Button>
+                  {audioFile && (
+                    <Text fontSize="sm" color="green.500" mt={2}>
+                      ✓ Arquivo carregado: {audioFile.name}
+                    </Text>
+                  )}
+                </FormControl>
+              )}
+
+              <FormControl>
+                <FormLabel>Volume da música: {Math.round(settings.musicVolume * 100)}%</FormLabel>
+                <Slider
+                  value={settings.musicVolume}
+                  onChange={(value) => setSettings({ ...settings, musicVolume: value })}
+                  min={0}
+                  max={1}
+                  step={0.1}
+                  colorScheme="blue"
+                >
+                  <SliderTrack>
+                    <SliderFilledTrack />
+                  </SliderTrack>
+                  <SliderThumb />
+                </Slider>
+              </FormControl>
+
+              {/* Preview do áudio */}
+              {audioUrl && (
+                <Box>
+                  <FormLabel>Preview do áudio</FormLabel>
+                  <audio
+                    ref={audioRef}
+                    src={audioUrl}
+                    controls
+                    style={{ width: '100%' }}
+                  />
+                </Box>
+              )}
+            </VStack>
+          )}
         </VStack>
 
         <Divider />
@@ -483,6 +761,19 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
           <AlertDescription>
             O vídeo será gerado inteiramente no seu navegador, sem enviar dados para nenhum servidor.
             O processo pode demorar alguns minutos dependendo da quantidade de fotos e configurações.
+            {settings.musicEnabled && (
+              <Box mt={2}>
+                <Text fontWeight="semibold">🎵 Música de fundo habilitada:</Text>
+                <Text fontSize="sm">
+                  {settings.musicSource === 'preset' 
+                    ? `Estilo: ${presetMusics[settings.selectedPresetMusic]?.name}` 
+                    : settings.musicSource === 'upload' && audioFile
+                    ? `Arquivo: ${audioFile.name}`
+                    : 'Configuração de áudio pendente'
+                  }
+                </Text>
+              </Box>
+            )}
           </AlertDescription>
         </Alert>
       </VStack>
