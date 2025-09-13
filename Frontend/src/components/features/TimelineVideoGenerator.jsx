@@ -15,6 +15,7 @@ import {
   NumberDecrementStepper,
   FormControl,
   FormLabel,
+  Input,
   Slider,
   SliderTrack,
   SliderFilledTrack,
