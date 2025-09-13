@@ -227,6 +227,11 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       
       mediaRecorder.start();
 
+      // Calcular total de frames
+      const framesPerImage = settings.duration * settings.fps;
+      const totalFrames = images.length * framesPerImage;
+      let currentFrame = 0;
+
       // Processar cada ano
       for (let yearIndex = 0; yearIndex < years.length; yearIndex++) {
         const year = years[yearIndex];
@@ -238,7 +243,6 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
           
           try {
             const img = await loadImage(image.url);
-            const framesPerImage = settings.duration * settings.fps;
             
             // Animar a imagem
             for (let frame = 0; frame < framesPerImage; frame++) {
@@ -253,25 +257,29 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               drawImageWithTransition(ctx, img, canvas, settings.transition, transitionProgress);
               
               // Adicionar texto overlay
-              const globalIndex = yearIndex * yearImages.length + imgIndex;
-              addTextOverlay(ctx, canvas, year, globalIndex, images.length);
+              const globalImageIndex = yearIndex * yearImages.length + imgIndex;
+              addTextOverlay(ctx, canvas, year, globalImageIndex, images.length);
               
               // Aguardar próximo frame
               await new Promise(resolve => setTimeout(resolve, 1000 / settings.fps));
               
               // Atualizar progresso
-              const totalFrames = images.length * framesPerImage;
-              const currentFrame = globalIndex * framesPerImage + frame;
-              setProgress(Math.round((currentFrame / totalFrames) * 100));
+              currentFrame++;
+              const progressPercent = Math.min(Math.round((currentFrame / totalFrames) * 100), 100);
+              setProgress(progressPercent);
             }
           } catch (error) {
             console.error('Erro ao carregar imagem:', error);
-            // Continuar com próxima imagem
+            // Continuar com próxima imagem, mas ainda contar os frames
+            currentFrame += framesPerImage;
+            const progressPercent = Math.min(Math.round((currentFrame / totalFrames) * 100), 100);
+            setProgress(progressPercent);
           }
         }
       }
 
       // Finalizar gravação
+      setProgress(100); // Garantir que chegue a 100%
       mediaRecorder.stop();
 
     } catch (error) {
@@ -396,8 +404,22 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
         {/* Progresso */}
         {isGenerating && (
           <VStack spacing={3}>
-            <Text>Gerando vídeo... {progress}%</Text>
-            <Progress value={progress} colorScheme="blue" size="lg" borderRadius="md" />
+            <Text fontWeight="semibold">
+              {progress === 100 ? 'Finalizando vídeo...' : `Gerando vídeo... ${progress}%`}
+            </Text>
+            <Progress 
+              value={progress} 
+              colorScheme={progress === 100 ? "green" : "blue"} 
+              size="lg" 
+              borderRadius="md"
+              isAnimated={progress < 100}
+              hasStripe={progress < 100}
+            />
+            {progress < 100 && (
+              <Text fontSize="sm" color="gray.500">
+                Processando frames do vídeo timeline...
+              </Text>
+            )}
           </VStack>
         )}
 
