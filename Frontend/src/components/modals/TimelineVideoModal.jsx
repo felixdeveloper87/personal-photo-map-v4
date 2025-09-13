@@ -93,13 +93,13 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
       <Modal isOpen={isOpen} onClose={onClose} size="md">
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Gerador de Vídeo Timeline</ModalHeader>
+          <ModalHeader>Timeline Video Generator</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <Alert status="warning">
               <AlertIcon />
               <AlertDescription>
-                Você precisa estar logado para gerar vídeos do timeline.
+                You need to be logged in to generate timeline videos.
               </AlertDescription>
             </Alert>
           </ModalBody>
@@ -109,9 +109,14 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="6xl" scrollBehavior="inside">
+    <Modal isOpen={isOpen} onClose={onClose} size={{ base: "full", md: "6xl" }} scrollBehavior="inside">
       <ModalOverlay />
-      <ModalContent maxH="90vh">
+      <ModalContent 
+        maxH={{ base: "100vh", md: "90vh" }}
+        mx={{ base: 0, md: 4 }}
+        my={{ base: 0, md: 4 }}
+        borderRadius={{ base: 0, md: "lg" }}
+      >
         <ModalHeader>
           <HStack>
             <FaVideo />
@@ -119,7 +124,11 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
           </HStack>
         </ModalHeader>
         <ModalCloseButton />
-        <ModalBody pb={6}>
+        <ModalBody 
+          pb={{ base: 4, md: 6 }}
+          px={{ base: 4, md: 6 }}
+          pt={{ base: 4, md: 6 }}
+        >
           {isLoading ? (
             <VStack spacing={4} py={8}>
               <Spinner size="xl" color="blue.500" />
@@ -150,17 +159,17 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
               <Box p={4} bg={bgColor} borderRadius="lg" border={`1px solid ${borderColor}`}>
                 <VStack spacing={4}>
                   <Text fontSize="lg" fontWeight="bold" color={textColor}>
-                    Resumo do seu Timeline
+                    Your Timeline Summary
                   </Text>
                   
-                  <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} w="100%">
+                  <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={{ base: 3, md: 4 }} w="100%">
                     <VStack p={4} bg={useColorModeValue("blue.50", "blue.900")} borderRadius="md" border="1px solid" borderColor={useColorModeValue("blue.200", "blue.600")}>
                       <FaImages size={24} color={useColorModeValue("#3182CE", "#63B3ED")} />
                       <Text fontSize="2xl" fontWeight="bold" color={useColorModeValue("blue.600", "blue.300")}>
                         {totalPhotos}
                       </Text>
                       <Text fontSize="sm" color={useColorModeValue("blue.600", "blue.300")}>
-                        Total de Fotos
+                        Total Photos
                       </Text>
                     </VStack>
 
@@ -170,7 +179,7 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                         {years.length}
                       </Text>
                       <Text fontSize="sm" color={useColorModeValue("green.600", "green.300")}>
-                        Anos Diferentes
+                        Different Years
                       </Text>
                     </VStack>
 
@@ -180,7 +189,7 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                         {Math.round((totalPhotos * 1.5) / 60)}min
                       </Text>
                       <Text fontSize="sm" color={useColorModeValue("purple.600", "purple.300")}>
-                        Duração Estimada
+                        Estimated Duration
                       </Text>
                     </VStack>
                   </SimpleGrid>
@@ -190,7 +199,7 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
               {/* Anos com fotos */}
               <Box>
                 <Text fontSize="md" fontWeight="semibold" mb={3} color={textColor}>
-                  Anos disponíveis no seu timeline:
+                  Years available in your timeline:
                 </Text>
                 <HStack wrap="wrap" spacing={2}>
                   {years.map(year => (
@@ -202,7 +211,7 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                       py={1}
                       borderRadius="full"
                     >
-                      {year} ({imagesByYear[year].length} fotos)
+                      {year} ({imagesByYear[year].length} photos)
                     </Badge>
                   ))}
                 </HStack>
@@ -211,16 +220,16 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
               {/* Preview de algumas fotos */}
               <Box>
                 <Text fontSize="md" fontWeight="semibold" mb={3} color={textColor}>
-                  Preview das suas fotos:
+                  Preview of your photos:
                 </Text>
-                <SimpleGrid columns={{ base: 4, md: 8 }} spacing={2}>
+                <SimpleGrid columns={{ base: 3, sm: 4, md: 6, lg: 8 }} spacing={{ base: 2, md: 2 }}>
                   {images.slice(0, 8).map((img, index) => (
                     <Box key={img.id} position="relative">
                       <Image
                         src={img.url}
-                        alt={`Foto ${index + 1}`}
-                        w="60px"
-                        h="60px"
+                        alt={`Photo ${index + 1}`}
+                        w={{ base: "50px", md: "60px" }}
+                        h={{ base: "50px", md: "60px" }}
                         objectFit="cover"
                         borderRadius="md"
                         border="2px solid"
@@ -240,8 +249,8 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                   ))}
                   {totalPhotos > 8 && (
                     <VStack
-                      w="60px"
-                      h="60px"
+                      w={{ base: "50px", md: "60px" }}
+                      h={{ base: "50px", md: "60px" }}
                       justify="center"
                       bg={useColorModeValue("gray.100", "gray.700")}
                       borderRadius="md"
@@ -260,24 +269,24 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
               <Alert status="info">
                 <AlertIcon />
                 <AlertDescription>
-                  <strong>100% Gratuito e Privado:</strong> O vídeo será gerado inteiramente no seu navegador
-                  usando tecnologias web modernas. Nenhuma foto será enviada para servidores externos.
-                  O processo usa HTML5 Canvas e Media Recording API.
+                  <strong>100% Free and Private:</strong> The video will be generated entirely in your browser
+                  using modern web technologies. No photos will be sent to external servers.
+                  The process uses HTML5 Canvas and Media Recording API.
                 </AlertDescription>
               </Alert>
 
               {/* Funcionalidades */}
               <Box p={4} bg={cardBg} borderRadius="lg" border={`1px solid ${borderColor}`}>
                 <Text fontSize="md" fontWeight="semibold" mb={2} color={textColor}>
-                  Funcionalidades do Gerador:
+                  Generator Features:
                 </Text>
                 <VStack align="start" spacing={1}>
-                  <Text fontSize="sm" color={mutedTextColor}>• Transições automáticas entre fotos (fade, slide, zoom)</Text>
-                  <Text fontSize="sm" color={mutedTextColor}>• Organização cronológica por ano</Text>
-                  <Text fontSize="sm" color={mutedTextColor}>• Múltiplas resoluções (720p, 1080p, 1440p)</Text>
-                  <Text fontSize="sm" color={mutedTextColor}>• Texto overlay com ano e contador</Text>
-                  <Text fontSize="sm" color={mutedTextColor}>• Configurações personalizáveis</Text>
-                  <Text fontSize="sm" color={mutedTextColor}>• Download direto do vídeo final</Text>
+                  <Text fontSize="sm" color={mutedTextColor}>• Automatic transitions between photos (fade, slide, zoom)</Text>
+                  <Text fontSize="sm" color={mutedTextColor}>• Chronological organization by year</Text>
+                  <Text fontSize="sm" color={mutedTextColor}>• Multiple resolutions including Stories/Reels format</Text>
+                  <Text fontSize="sm" color={mutedTextColor}>• Text overlay with year and counter</Text>
+                  <Text fontSize="sm" color={mutedTextColor}>• Background music support (upload or presets)</Text>
+                  <Text fontSize="sm" color={mutedTextColor}>• Direct download of final video</Text>
                 </VStack>
               </Box>
 
@@ -286,11 +295,13 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                 <Button
                   leftIcon={<FaVideo />}
                   colorScheme="blue"
-                  size="lg"
+                  size={{ base: "md", md: "lg" }}
                   onClick={() => setShowGenerator(true)}
-                  px={8}
+                  px={{ base: 6, md: 8 }}
+                  w={{ base: "100%", sm: "auto" }}
+                  maxW="300px"
                 >
-                  Começar a Gerar Vídeo
+                  Start Generating Video
                 </Button>
               </HStack>
             </VStack>

@@ -3,6 +3,7 @@ import {
   Box,
   VStack,
   HStack,
+  Stack,
   Text,
   Button,
   Progress,
@@ -922,21 +923,26 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       <Alert status="warning">
         <AlertIcon />
         <AlertDescription>
-          Você precisa estar logado para gerar vídeos do timeline.
+          You need to be logged in to generate timeline videos.
         </AlertDescription>
       </Alert>
     );
   }
 
   return (
-    <Box p={6} bg={bgColor} borderRadius="lg" border={`1px solid ${borderColor}`}>
-      <VStack spacing={6} align="stretch">
+    <Box 
+      p={{ base: 4, md: 6 }} 
+      bg={bgColor} 
+      borderRadius="lg" 
+      border={`1px solid ${borderColor}`}
+    >
+      <VStack spacing={{ base: 4, md: 6 }} align="stretch">
         <Text fontSize="xl" fontWeight="bold" color={textColor}>
           Timeline Video Generator
         </Text>
 
         {/* Settings */}
-        <VStack spacing={4} align="stretch">
+        <VStack spacing={{ base: 3, md: 4 }} align="stretch">
           <FormControl>
             <FormLabel color={textColor}>Duration per photo (seconds)</FormLabel>
             <NumberInput
@@ -991,7 +997,11 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
             </Select>
           </FormControl>
 
-          <HStack justify="space-between">
+          <Stack 
+            direction={{ base: "column", sm: "row" }} 
+            justify="space-between" 
+            spacing={{ base: 3, sm: 0 }}
+          >
             <FormControl display="flex" alignItems="center">
               <FormLabel mb="0" color={textColor}>Show year</FormLabel>
               <Switch
@@ -1007,7 +1017,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
                 onChange={(e) => setSettings({ ...settings, showPhotoCount: e.target.checked })}
               />
             </FormControl>
-          </HStack>
+          </Stack>
 
           {/* Audio Settings */}
           <Divider borderColor={borderColor} />
@@ -1185,18 +1195,25 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
         )}
 
         {/* Buttons */}
-        <HStack spacing={4} justify="center">
+        <Stack 
+          direction={{ base: "column", sm: "row" }} 
+          spacing={{ base: 3, sm: 4 }} 
+          justify="center"
+          align="center"
+        >
           {!isGenerating && !videoUrl && (
             <Button
               leftIcon={<FaVideo />}
               colorScheme="blue"
-              size="lg"
+              size={{ base: "md", md: "lg" }}
               onClick={generateVideo}
               isDisabled={
                 !images || 
                 images.length === 0 || 
                 (settings.musicEnabled && settings.musicSource === 'upload' && !audioFile)
               }
+              w={{ base: "100%", sm: "auto" }}
+              minW="200px"
             >
               Generate Video ({images?.length || 0} photos)
             </Button>
@@ -1205,7 +1222,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
           {/* Aviso se música está habilitada mas arquivo não foi carregado */}
           {settings.musicEnabled && settings.musicSource === 'upload' && !audioFile && (
             <Text fontSize="sm" color="orange.500" textAlign="center">
-              ⚠️ Selecione um arquivo de áudio ou mude para "Preset music" para gerar o vídeo
+              ⚠️ Select an audio file or switch to "Preset music" to generate the video
             </Text>
           )}
 
@@ -1213,8 +1230,10 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
             <Button
               leftIcon={<FaStop />}
               colorScheme="red"
-              size="lg"
+              size={{ base: "md", md: "lg" }}
               onClick={stopGeneration}
+              w={{ base: "100%", sm: "auto" }}
+              minW="200px"
             >
               Stop Generation
             </Button>
@@ -1224,8 +1243,10 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
             <Button
               leftIcon={<FaDownload />}
               colorScheme="green"
-              size="lg"
+              size={{ base: "md", md: "lg" }}
               onClick={downloadVideo}
+              w={{ base: "100%", sm: "auto" }}
+              minW="200px"
             >
               Download Video
             </Button>
@@ -1237,10 +1258,13 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
             borderColor={borderColor}
             color={textColor}
             _hover={{ bg: useColorModeValue('gray.100', 'gray.600') }}
+            size={{ base: "md", md: "lg" }}
+            w={{ base: "100%", sm: "auto" }}
+            minW="120px"
           >
             Close
           </Button>
-        </HStack>
+        </Stack>
 
         {/* Information */}
         <Alert status="info" bg={useColorModeValue('blue.50', 'blue.900')} borderColor={borderColor}>
