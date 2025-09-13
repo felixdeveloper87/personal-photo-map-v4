@@ -243,26 +243,28 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
   };
 
   // Função para configurar áudio para gravação
-  const setupAudioForRecording = async (videoDuration) => {
+  const setupAudioForRecording = async (videoDuration, overrideAudioFile = null) => {
     try {
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       audioContextRef.current = audioContext;
       
       let audioBuffer;
       
-      if (settings.musicSource === 'upload' && audioFile) {
-        console.log('Processando arquivo final:', audioFile.name);
+      const currentAudioFile = overrideAudioFile || audioFile;
+      
+      if (settings.musicSource === 'upload' && currentAudioFile) {
+        console.log('Processando arquivo final:', currentAudioFile.name);
         console.log('Processando arquivo de upload:', {
-          fileName: audioFile.name,
-          fileSize: audioFile.size,
-          fileType: audioFile.type,
-          lastModified: audioFile.lastModified
+          fileName: currentAudioFile.name,
+          fileSize: currentAudioFile.size,
+          fileType: currentAudioFile.type,
+          lastModified: currentAudioFile.lastModified
         });
         
         // Método alternativo: usar elemento audio + MediaElementAudioSourceNode
         try {
           console.log('Tentando método Web Audio API...');
-          const arrayBuffer = await audioFile.arrayBuffer();
+          const arrayBuffer = await currentAudioFile.arrayBuffer();
           console.log('ArrayBuffer criado, tamanho:', arrayBuffer.byteLength);
           
           const originalAudioBuffer = await audioContext.decodeAudioData(arrayBuffer);
@@ -278,7 +280,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
           
           // Método alternativo: usar o elemento audio que já funciona
           const audio = new Audio();
-          audio.src = URL.createObjectURL(audioFile);
+          audio.src = URL.createObjectURL(currentAudioFile);
           audio.crossOrigin = 'anonymous';
           audio.loop = true;
           
@@ -568,8 +570,22 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
           
           if (inputFile) {
             console.log('Usando arquivo do input como fallback');
-            // Usar o arquivo do input diretamente
-            audioFile = inputFile;
+            // Usar o arquivo do input diretamente - criar nova variável local
+            const recoveredAudioFile = inputFile;
+            // Continuar com o processamento usando recoveredAudioFile
+            audioSetup = await setupAudioForRecording(totalVideoDuration, recoveredAudioFile);
+            console.log('Resultado setupAudioForRecording (com arquivo recuperado):', audioSetup);
+            console.log('Áudio configurado:', !!audioSetup);
+            
+            if (audioSetup) {
+              console.log('AudioSetup details:', {
+                hasAudioSource: !!audioSetup.audioSource,
+                hasAudioStream: !!audioSetup.audioStream,
+                hasAudioContext: !!audioSetup.audioContext,
+                hasAudioElement: !!audioSetup.audioElement,
+                audioStreamTracks: audioSetup.audioStream?.getAudioTracks().length || 0
+              });
+            }
           } else {
             toast({
               title: 'Erro de configuração',
@@ -580,19 +596,20 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
             setIsGenerating(false);
             return;
           }
-        }
-        
-        audioSetup = await setupAudioForRecording(totalVideoDuration);
-        console.log('Resultado setupAudioForRecording:', audioSetup);
-        console.log('Áudio configurado:', !!audioSetup);
-        
-        if (audioSetup) {
-          console.log('AudioSetup details:', {
-            hasAudioSource: !!audioSetup.audioSource,
-            hasAudioStream: !!audioSetup.audioStream,
-            hasAudioContext: !!audioSetup.audioContext,
-            audioStreamTracks: audioSetup.audioStream?.getAudioTracks().length || 0
-          });
+        } else {
+          // Caso normal - usar o audioFile do estado
+          audioSetup = await setupAudioForRecording(totalVideoDuration);
+          console.log('Resultado setupAudioForRecording:', audioSetup);
+          console.log('Áudio configurado:', !!audioSetup);
+          
+          if (audioSetup) {
+            console.log('AudioSetup details:', {
+              hasAudioSource: !!audioSetup.audioSource,
+              hasAudioStream: !!audioSetup.audioStream,
+              hasAudioContext: !!audioSetup.audioContext,
+              audioStreamTracks: audioSetup.audioStream?.getAudioTracks().length || 0
+            });
+          }
         }
       }
       
