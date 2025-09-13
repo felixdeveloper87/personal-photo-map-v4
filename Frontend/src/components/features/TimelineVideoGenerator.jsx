@@ -153,15 +153,15 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
   };
 
   // Function to handle audio file upload
-  const handleAudioUpload = (event) => {
+  const handleAudioUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
     
     // Check if it's an audio file
     if (!file.type.startsWith('audio/')) {
       toast({
-        title: 'Error',
-        description: 'Please select a valid audio file (MP3, WAV, OGG)',
+        title: 'Erro',
+        description: 'Por favor, selecione um arquivo de áudio válido (MP3, WAV, OGG)',
         status: 'error',
         duration: 3000,
       });
@@ -172,12 +172,41 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
     const url = URL.createObjectURL(file);
     setAudioUrl(url);
     
-    toast({
-      title: 'Audio loaded',
-      description: `File "${file.name}" ready to use`,
-      status: 'success',
-      duration: 3000,
-    });
+    // Detectar duração do áudio
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const arrayBuffer = await file.arrayBuffer();
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+      const audioDuration = audioBuffer.duration;
+      const videoDuration = images.length * settings.duration;
+      
+      let message = `Arquivo "${file.name}" carregado com sucesso! `;
+      
+      if (audioDuration < videoDuration) {
+        message += `A música (${Math.round(audioDuration)}s) será repetida para cobrir todo o vídeo (${Math.round(videoDuration)}s).`;
+      } else if (audioDuration > videoDuration) {
+        message += `A música (${Math.round(audioDuration)}s) será cortada para corresponder ao vídeo (${Math.round(videoDuration)}s).`;
+      } else {
+        message += `Duração perfeita para o vídeo!`;
+      }
+      
+      toast({
+        title: 'Áudio carregado',
+        description: message,
+        status: 'success',
+        duration: 5000,
+      });
+      
+      audioContext.close();
+    } catch (error) {
+      console.error('Erro ao analisar áudio:', error);
+      toast({
+        title: 'Áudio carregado',
+        description: `Arquivo "${file.name}" pronto para usar`,
+        status: 'success',
+        duration: 3000,
+      });
+    }
   };
 
   // Função para configurar áudio para gravação
@@ -191,29 +220,65 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       if (settings.musicSource === 'upload' && audioFile) {
         // Usar arquivo enviado pelo usuário
         const arrayBuffer = await audioFile.arrayBuffer();
-        audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        const originalAudioBuffer = await audioContext.decodeAudioData(arrayBuffer);
         
-        // Se o áudio for mais curto que o vídeo, precisamos repetir
-        if (audioBuffer.duration < videoDuration) {
-          const repetitions = Math.ceil(videoDuration / audioBuffer.duration);
-          const extendedLength = audioContext.sampleRate * videoDuration;
-          const extendedBuffer = audioContext.createBuffer(
-            audioBuffer.numberOfChannels,
-            extendedLength,
-            audioContext.sampleRate
-          );
+        console.log('Áudio original:', {
+          duration: originalAudioBuffer.duration,
+          videoDuration: videoDuration,
+          sampleRate: originalAudioBuffer.sampleRate,
+          channels: originalAudioBuffer.numberOfChannels
+        });
+        
+        // Ajustar duração do áudio para corresponder exatamente à duração do vídeo
+        const targetLength = audioContext.sampleRate * videoDuration;
+        const adjustedBuffer = audioContext.createBuffer(
+          originalAudioBuffer.numberOfChannels,
+          targetLength,
+          audioContext.sampleRate
+        );
+        
+        for (let channel = 0; channel < originalAudioBuffer.numberOfChannels; channel++) {
+          const sourceData = originalAudioBuffer.getChannelData(channel);
+          const targetData = adjustedBuffer.getChannelData(channel);
           
-          for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
-            const sourceData = audioBuffer.getChannelData(channel);
-            const targetData = extendedBuffer.getChannelData(channel);
-            
-            for (let i = 0; i < extendedLength; i++) {
-              targetData[i] = sourceData[i % sourceData.length];
+          if (originalAudioBuffer.duration < videoDuration) {
+            // Áudio mais curto - repetir com fade entre repetições
+            console.log('Áudio mais curto que vídeo - repetindo...');
+            for (let i = 0; i < targetLength; i++) {
+              const sourceIndex = i % sourceData.length;
+              targetData[i] = sourceData[sourceIndex];
+              
+              // Fade suave entre repetições
+              const cyclePosition = (i % sourceData.length) / sourceData.length;
+              if (cyclePosition > 0.95) {
+                const fadeAmount = (1 - cyclePosition) / 0.05;
+                targetData[i] *= fadeAmount;
+              } else if (cyclePosition < 0.05) {
+                const fadeAmount = cyclePosition / 0.05;
+                targetData[i] *= fadeAmount;
+              }
             }
+          } else if (originalAudioBuffer.duration > videoDuration) {
+            // Áudio mais longo - cortar com fade out
+            console.log('Áudio mais longo que vídeo - cortando...');
+            for (let i = 0; i < targetLength; i++) {
+              targetData[i] = sourceData[i];
+              
+              // Fade out nos últimos 2 segundos
+              const fadeStartSample = targetLength - (audioContext.sampleRate * 2);
+              if (i > fadeStartSample) {
+                const fadeAmount = (targetLength - i) / (audioContext.sampleRate * 2);
+                targetData[i] *= fadeAmount;
+              }
+            }
+          } else {
+            // Duração igual - copiar diretamente
+            console.log('Duração do áudio igual à do vídeo');
+            targetData.set(sourceData.slice(0, targetLength));
           }
-          
-          audioBuffer = extendedBuffer;
         }
+        
+        audioBuffer = adjustedBuffer;
       } else if (settings.musicSource === 'preset') {
         // Usar música preset gerada
         audioBuffer = await generatePresetMusic(settings.selectedPresetMusic, videoDuration);
@@ -667,6 +732,16 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
 
           {settings.musicEnabled && (
             <VStack spacing={4} align="stretch" p={4} bg={cardBg} borderRadius="md" border={`1px solid ${borderColor}`}>
+              
+              {/* Informação sobre duração do vídeo */}
+              <Box p={3} bg={useColorModeValue('blue.50', 'blue.900')} borderRadius="md" border={`1px solid ${useColorModeValue('blue.200', 'blue.600')}`}>
+                <Text fontSize="sm" color={useColorModeValue('blue.700', 'blue.200')} fontWeight="semibold">
+                  🎬 Duração do vídeo: {Math.round((images?.length || 0) * settings.duration)}s
+                </Text>
+                <Text fontSize="xs" color={useColorModeValue('blue.600', 'blue.300')}>
+                  ({images?.length || 0} fotos × {settings.duration}s por foto)
+                </Text>
+              </Box>
               <FormControl>
                 <FormLabel color={textColor}>Music source</FormLabel>
                 <Select
@@ -715,20 +790,31 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
                     as="label"
                     htmlFor="audio-upload"
                     cursor="pointer"
-                    colorScheme="blue"
-                    variant="outline"
+                    colorScheme={audioFile ? "green" : "blue"}
+                    variant={audioFile ? "solid" : "outline"}
                     w="100%"
                     borderColor={borderColor}
                     color={textColor}
                     _hover={{ bg: useColorModeValue('gray.100', 'gray.600') }}
                   >
-                    {audioFile ? `File: ${audioFile.name}` : 'Select Audio File'}
+                    {audioFile ? `✓ ${audioFile.name}` : '📁 Selecionar Arquivo de Áudio'}
                   </Button>
-                  {audioFile && (
-                    <Text fontSize="sm" color="green.500" mt={2}>
-                      ✓ File loaded: {audioFile.name}
+                  {!audioFile && (
+                    <Text fontSize="sm" color="orange.500" mt={2}>
+                      ⚠️ Você precisa selecionar um arquivo de áudio primeiro
                     </Text>
                   )}
+                  {audioFile && (
+                    <Text fontSize="sm" color="green.500" mt={2}>
+                      ✓ Arquivo carregado: {audioFile.name}
+                    </Text>
+                  )}
+                  
+                  {/* Mostrar duração estimada do vídeo */}
+                  <Text fontSize="xs" color={mutedTextColor} mt={2}>
+                    💡 Duração estimada do vídeo: {Math.round(images?.length * settings.duration || 0)}s 
+                    ({images?.length || 0} fotos × {settings.duration}s cada)
+                  </Text>
                 </FormControl>
               )}
 
@@ -816,10 +902,21 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               colorScheme="blue"
               size="lg"
               onClick={generateVideo}
-              isDisabled={!images || images.length === 0}
+              isDisabled={
+                !images || 
+                images.length === 0 || 
+                (settings.musicEnabled && settings.musicSource === 'upload' && !audioFile)
+              }
             >
               Generate Video ({images?.length || 0} photos)
             </Button>
+          )}
+          
+          {/* Aviso se música está habilitada mas arquivo não foi carregado */}
+          {settings.musicEnabled && settings.musicSource === 'upload' && !audioFile && (
+            <Text fontSize="sm" color="orange.500" textAlign="center">
+              ⚠️ Selecione um arquivo de áudio ou mude para "Preset music" para gerar o vídeo
+            </Text>
           )}
 
           {isGenerating && (
