@@ -251,6 +251,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       let audioBuffer;
       
       if (settings.musicSource === 'upload' && audioFile) {
+        console.log('Processando arquivo final:', audioFile.name);
         console.log('Processando arquivo de upload:', {
           fileName: audioFile.name,
           fileSize: audioFile.size,
@@ -545,17 +546,40 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
           videoDuration: totalVideoDuration
         });
         
-        // Validação adicional
+        // Validação adicional com mais detalhes
         if (settings.musicSource === 'upload' && !audioFile) {
           console.error('Erro: musicSource é upload mas não há audioFile');
-          toast({
-            title: 'Erro de configuração',
-            description: 'Arquivo de áudio não encontrado. Selecione um arquivo primeiro.',
-            status: 'error',
-            duration: 5000,
+          console.log('Debug estado atual:', {
+            musicSource: settings.musicSource,
+            audioFile: audioFile,
+            audioFileType: typeof audioFile,
+            audioUrl: audioUrl,
+            hasAudioUrl: !!audioUrl
           });
-          setIsGenerating(false);
-          return;
+          
+          // Tentar recuperar do estado do input
+          const fileInput = document.getElementById('audio-upload');
+          const inputFile = fileInput?.files?.[0];
+          console.log('Tentando recuperar do input:', {
+            hasInput: !!fileInput,
+            hasFiles: !!fileInput?.files?.length,
+            inputFile: inputFile?.name
+          });
+          
+          if (inputFile) {
+            console.log('Usando arquivo do input como fallback');
+            // Usar o arquivo do input diretamente
+            audioFile = inputFile;
+          } else {
+            toast({
+              title: 'Erro de configuração',
+              description: 'Arquivo de áudio não encontrado. Selecione um arquivo primeiro.',
+              status: 'error',
+              duration: 5000,
+            });
+            setIsGenerating(false);
+            return;
+          }
         }
         
         audioSetup = await setupAudioForRecording(totalVideoDuration);
