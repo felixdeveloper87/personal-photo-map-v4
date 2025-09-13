@@ -175,7 +175,7 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                     <VStack p={4} bg="purple.50" borderRadius="md" border="1px solid" borderColor="purple.200">
                       <FaVideo size={24} color="#805AD5" />
                       <Text fontSize="2xl" fontWeight="bold" color="purple.600">
-                        {Math.round((totalPhotos * 3) / 60)}min
+                        {Math.round((totalPhotos * 1.5) / 60)}min
                       </Text>
                       <Text fontSize="sm" color="purple.600">
                         Duração Estimada

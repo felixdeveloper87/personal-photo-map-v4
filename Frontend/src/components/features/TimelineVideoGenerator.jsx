@@ -46,7 +46,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
 
   // Video settings
   const [settings, setSettings] = useState({
-    duration: 3, // segundos por foto
+    duration: 1.5, // segundos por foto
     transition: 'fade', // fade, slide, zoom
     resolution: '1080p',
     fps: 30,
@@ -516,8 +516,9 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
             <NumberInput
               value={settings.duration}
               onChange={(value) => setSettings({ ...settings, duration: Number(value) })}
-              min={1}
-              max={10}
+              min={0.5}
+              max={5}
+              step={0.5}
             >
               <NumberInputField />
               <NumberInputStepper>
