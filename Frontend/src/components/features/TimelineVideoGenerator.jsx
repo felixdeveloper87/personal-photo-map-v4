@@ -49,7 +49,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
   // Video settings
   const [settings, setSettings] = useState({
     duration: 1.5, // segundos por foto
-    transition: 'fade', // fade, slide, zoom
+    transition: 'fade', // fade, slide, zoom, kenBurns, wipe, spiral, bounce, flip3d
     resolution: '1080p',
     fps: 30,
     showYearText: true,
@@ -58,6 +58,8 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
     musicSource: 'none', // 'none', 'upload', 'preset'
     musicVolume: 0.5,
     selectedPresetMusic: 'ambient1',
+    transitionDuration: 0.8, // Duração da transição em segundos
+    enableParticles: false, // Efeitos de partículas
   });
 
   // Audio settings
@@ -429,78 +431,169 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
     }
   };
 
-  // Função para desenhar imagem com transição
-  const drawImageWithTransition = (ctx, img, canvas, transitionType, progress) => {
+  // Função para calcular posicionamento da imagem
+  const calculateImagePosition = (img, canvas) => {
     const { width, height } = canvas;
-    
-    // Detectar se é formato vertical (Stories/Reels)
     const isVerticalFormat = height > width;
-    
-    // Calcular proporções para manter aspect ratio
     const imgAspect = img.width / img.height;
     const canvasAspect = width / height;
     
     let drawWidth, drawHeight, offsetX, offsetY;
     
     if (isVerticalFormat) {
-      // Para formatos verticais, priorizar preenchimento da largura
       if (imgAspect > canvasAspect) {
-        // Imagem mais larga que canvas - ajustar por altura para preencher melhor
         drawHeight = height;
         drawWidth = height * imgAspect;
         offsetX = (width - drawWidth) / 2;
         offsetY = 0;
       } else {
-        // Imagem mais alta - ajustar por largura
         drawWidth = width;
         drawHeight = width / imgAspect;
         offsetX = 0;
         offsetY = (height - drawHeight) / 2;
       }
     } else {
-      // Para formatos horizontais, manter lógica original
       if (imgAspect > canvasAspect) {
-        // Imagem é mais larga
         drawHeight = height;
         drawWidth = height * imgAspect;
         offsetX = (width - drawWidth) / 2;
         offsetY = 0;
       } else {
-        // Imagem é mais alta
         drawWidth = width;
         drawHeight = width / imgAspect;
         offsetX = 0;
         offsetY = (height - drawHeight) / 2;
       }
     }
+    
+    return { drawWidth, drawHeight, offsetX, offsetY };
+  };
 
+  // Função para criar efeitos de partículas
+  const drawParticles = (ctx, canvas, progress) => {
+    if (!settings.enableParticles) return;
+    
+    const { width, height } = canvas;
+    const particleCount = 20;
+    
+    ctx.save();
+    for (let i = 0; i < particleCount; i++) {
+      const x = (width * i / particleCount + width * progress * 0.5) % width;
+      const y = Math.sin(progress * Math.PI * 2 + i) * 20 + height / 2;
+      const alpha = Math.sin(progress * Math.PI) * 0.5;
+      
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(x, y, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  };
+
+  // Função avançada para desenhar imagem com transições dinâmicas
+  const drawImageWithTransition = (ctx, img, canvas, transitionType, progress, previousImg = null) => {
+    const { width, height } = canvas;
+    const { drawWidth, drawHeight, offsetX, offsetY } = calculateImagePosition(img, canvas);
+    
+    // Limpar canvas
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, width, height);
+    
     ctx.save();
     
     switch (transitionType) {
       case 'fade':
         ctx.globalAlpha = progress;
+        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
         break;
+        
       case 'slide':
         ctx.translate(width * (1 - progress), 0);
+        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
         break;
+        
       case 'zoom':
-        const scale = 0.5 + (progress * 0.5);
+        const scale = 0.3 + (progress * 0.7);
         ctx.translate(width / 2, height / 2);
         ctx.scale(scale, scale);
         ctx.translate(-width / 2, -height / 2);
+        ctx.globalAlpha = progress;
+        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
         break;
+        
+      case 'kenBurns':
+        // Efeito Ken Burns - zoom gradual com movimento
+        const kenScale = 1 + (progress * 0.1);
+        const panX = Math.sin(progress * Math.PI) * 30;
+        const panY = Math.cos(progress * Math.PI) * 20;
+        
+        ctx.translate(width / 2 + panX, height / 2 + panY);
+        ctx.scale(kenScale, kenScale);
+        ctx.translate(-width / 2, -height / 2);
+        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+        break;
+        
+      case 'wipe':
+        // Efeito de limpeza circular
+        const radius = Math.sqrt(width * width + height * height) * progress;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(width / 2, height / 2, radius, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+        ctx.restore();
+        break;
+        
+      case 'spiral':
+        // Efeito espiral
+        const spiralProgress = progress * Math.PI * 4;
+        const spiralRadius = progress * Math.min(width, height) / 2;
+        
+        ctx.translate(width / 2, height / 2);
+        ctx.rotate(spiralProgress);
+        ctx.scale(progress, progress);
+        ctx.globalAlpha = progress;
+        ctx.translate(-width / 2, -height / 2);
+        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+        break;
+        
+      case 'bounce':
+        // Efeito de bounce
+        const bounceY = Math.sin(progress * Math.PI) * height * 0.1;
+        const bounceScale = 0.8 + Math.sin(progress * Math.PI) * 0.2;
+        
+        ctx.translate(width / 2, height / 2 - bounceY);
+        ctx.scale(bounceScale, bounceScale);
+        ctx.translate(-width / 2, -height / 2);
+        ctx.globalAlpha = progress;
+        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+        break;
+        
+      case 'flip3d':
+        // Efeito de flip 3D
+        const flipAngle = (1 - progress) * Math.PI;
+        const flip3dScale = Math.abs(Math.cos(flipAngle));
+        
+        ctx.translate(width / 2, height / 2);
+        ctx.scale(flip3dScale, 1);
+        ctx.translate(-width / 2, -height / 2);
+        
+        if (flip3dScale > 0.1) {
+          ctx.globalAlpha = progress;
+          ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+        }
+        break;
+        
+      default:
+        ctx.globalAlpha = progress;
+        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
     }
     
-    // Limpar canvas
-    if (transitionType === 'fade' && progress < 1) {
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(0, 0, width, height);
-      ctx.globalAlpha = progress;
-    }
-    
-    ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
     ctx.restore();
+    
+    // Adicionar efeitos de partículas se habilitado
+    drawParticles(ctx, canvas, progress);
   };
 
   // Função para adicionar texto ao canvas
@@ -813,7 +906,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
             
             // Animar a imagem
             for (let frame = 0; frame < framesPerImage; frame++) {
-              const transitionProgress = Math.min(frame / (settings.fps * 0.5), 1); // 0.5s de transição
+              const transitionProgress = Math.min(frame / (settings.fps * settings.transitionDuration), 1);
               
               // Limpar canvas
               ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -961,7 +1054,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
           </FormControl>
 
           <FormControl>
-            <FormLabel color={textColor}>Transition type</FormLabel>
+            <FormLabel color={textColor}>Transition Effect</FormLabel>
             <Select
               value={settings.transition}
               onChange={(e) => setSettings({ ...settings, transition: e.target.value })}
@@ -969,10 +1062,39 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               color={textColor}
               borderColor={borderColor}
             >
-              <option value="fade">Fade</option>
-              <option value="slide">Slide</option>
-              <option value="zoom">Zoom</option>
+              <optgroup label="🎬 Basic Transitions">
+                <option value="fade">Fade - Classic crossfade</option>
+                <option value="slide">Slide - Horizontal movement</option>
+                <option value="zoom">Zoom - Scale in effect</option>
+              </optgroup>
+              <optgroup label="✨ Dynamic Transitions">
+                <option value="kenBurns">Ken Burns - Cinematic pan & zoom</option>
+                <option value="wipe">Circular Wipe - Expanding circle reveal</option>
+                <option value="spiral">Spiral - Rotating entrance</option>
+                <option value="bounce">Bounce - Playful bounce effect</option>
+                <option value="flip3d">3D Flip - Three-dimensional rotation</option>
+              </optgroup>
             </Select>
+          </FormControl>
+
+          <FormControl>
+            <FormLabel color={textColor}>Transition Duration: {settings.transitionDuration}s</FormLabel>
+            <Slider
+              value={settings.transitionDuration}
+              onChange={(value) => setSettings({ ...settings, transitionDuration: value })}
+              min={0.3}
+              max={2.0}
+              step={0.1}
+              colorScheme="blue"
+            >
+              <SliderTrack bg={useColorModeValue('gray.200', 'gray.600')}>
+                <SliderFilledTrack />
+              </SliderTrack>
+              <SliderThumb />
+            </Slider>
+            <Text fontSize="xs" color={mutedTextColor} mt={1}>
+              How long each transition effect lasts
+            </Text>
           </FormControl>
 
           <FormControl>
@@ -1018,6 +1140,22 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               />
             </FormControl>
           </Stack>
+
+          <FormControl display="flex" alignItems="center">
+            <FormLabel mb="0" color={textColor} fontSize="sm">
+              ✨ Particle Effects
+            </FormLabel>
+            <Switch
+              isChecked={settings.enableParticles}
+              onChange={(e) => setSettings({ ...settings, enableParticles: e.target.checked })}
+              colorScheme="purple"
+            />
+          </FormControl>
+          {settings.enableParticles && (
+            <Text fontSize="xs" color={mutedTextColor} ml={4}>
+              Adds floating particles during transitions for a magical effect
+            </Text>
+          )}
 
           {/* Audio Settings */}
           <Divider borderColor={borderColor} />
@@ -1286,7 +1424,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               </Box>
             )}
             
-            {/* Informações sobre formato do vídeo */}
+            {/* Informações sobre formato e efeitos do vídeo */}
             <Box mt={2}>
               <Text fontWeight="semibold">
                 {['stories-hd', 'stories-4k', 'reel-standard'].includes(settings.resolution) 
@@ -1302,6 +1440,18 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
                   'Traditional landscape format for YouTube, web, and presentations'
                 }
               </Text>
+              
+              {/* Informações sobre efeitos selecionados */}
+              <Box mt={2}>
+                <Text fontWeight="semibold" fontSize="sm">
+                  🎬 Transition: {settings.transition.charAt(0).toUpperCase() + settings.transition.slice(1)}
+                  {settings.enableParticles && ' ✨ + Particles'}
+                </Text>
+                <Text fontSize="xs">
+                  Duration: {settings.transitionDuration}s per transition
+                  {['kenBurns', 'spiral', 'flip3d'].includes(settings.transition) && ' (Advanced Effect)'}
+                </Text>
+              </Box>
             </Box>
           </AlertDescription>
         </Alert>
