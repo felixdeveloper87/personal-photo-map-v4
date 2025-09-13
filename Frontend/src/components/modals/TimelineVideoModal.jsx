@@ -5,6 +5,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalBody,
+  ModalFooter,
   ModalCloseButton,
   VStack,
   HStack,
@@ -109,13 +110,22 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={{ base: "full", md: "6xl" }} scrollBehavior="inside">
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose} 
+      size={{ base: "full", md: "6xl" }} 
+      scrollBehavior="inside"
+      closeOnOverlayClick={false}
+    >
       <ModalOverlay />
       <ModalContent 
         maxH={{ base: "100vh", md: "90vh" }}
+        h={{ base: "100vh", md: "auto" }}
         mx={{ base: 0, md: 4 }}
         my={{ base: 0, md: 4 }}
         borderRadius={{ base: 0, md: "lg" }}
+        display="flex"
+        flexDirection="column"
       >
         <ModalHeader>
           <HStack>
@@ -128,6 +138,10 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
           pb={{ base: 4, md: 6 }}
           px={{ base: 4, md: 6 }}
           pt={{ base: 4, md: 6 }}
+          flex="1"
+          overflowY="auto"
+          display="flex"
+          flexDirection="column"
         >
           {isLoading ? (
             <VStack spacing={4} py={8}>
@@ -154,7 +168,7 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
               onClose={() => setShowGenerator(false)} 
             />
           ) : (
-            <VStack spacing={6} align="stretch">
+            <VStack spacing={6} align="stretch" flex="1">
               {/* Estatísticas */}
               <Box p={4} bg={bgColor} borderRadius="lg" border={`1px solid ${borderColor}`}>
                 <VStack spacing={4}>
@@ -289,24 +303,33 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                   <Text fontSize="sm" color={mutedTextColor}>• Direct download of final video</Text>
                 </VStack>
               </Box>
-
-              {/* Botão para iniciar */}
-              <HStack justify="center" pt={4}>
-                <Button
-                  leftIcon={<FaVideo />}
-                  colorScheme="blue"
-                  size={{ base: "md", md: "lg" }}
-                  onClick={() => setShowGenerator(true)}
-                  px={{ base: 6, md: 8 }}
-                  w={{ base: "100%", sm: "auto" }}
-                  maxW="300px"
-                >
-                  Start Generating Video
-                </Button>
-              </HStack>
             </VStack>
           )}
         </ModalBody>
+        
+        {/* Footer fixo com botão sempre visível */}
+        {!showGenerator && !isLoading && totalPhotos > 0 && (
+          <ModalFooter
+            borderTop={`1px solid ${borderColor}`}
+            bg={bgColor}
+            position={{ base: "sticky", md: "static" }}
+            bottom={0}
+            zIndex={10}
+            justifyContent="center"
+          >
+            <Button
+              leftIcon={<FaVideo />}
+              colorScheme="blue"
+              size={{ base: "md", md: "lg" }}
+              onClick={() => setShowGenerator(true)}
+              px={{ base: 6, md: 8 }}
+              w={{ base: "90%", sm: "auto" }}
+              minW="250px"
+            >
+              Start Generating Video
+            </Button>
+          </ModalFooter>
+        )}
       </ModalContent>
     </Modal>
   );
