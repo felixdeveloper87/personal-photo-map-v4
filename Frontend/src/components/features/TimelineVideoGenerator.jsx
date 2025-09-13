@@ -157,6 +157,13 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
     const file = event.target.files[0];
     if (!file) return;
     
+    console.log('Arquivo selecionado:', {
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      lastModified: file.lastModified
+    });
+    
     // Check if it's an audio file
     if (!file.type.startsWith('audio/')) {
       toast({
@@ -168,19 +175,39 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       return;
     }
     
+    // Validação adicional para MP3
+    const allowedTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/webm'];
+    if (!allowedTypes.includes(file.type) && !file.name.toLowerCase().endsWith('.mp3')) {
+      toast({
+        title: 'Formato não suportado',
+        description: `Tipo: ${file.type}. Use MP3, WAV ou OGG para melhor compatibilidade.`,
+        status: 'warning',
+        duration: 5000,
+      });
+    }
+    
     setAudioFile(file);
     const url = URL.createObjectURL(file);
     setAudioUrl(url);
     
-    // Detectar duração do áudio
+    // Detectar duração do áudio e testar decodificação
     try {
+      console.log('Iniciando teste de decodificação...');
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const arrayBuffer = await file.arrayBuffer();
+      console.log('ArrayBuffer criado para teste, tamanho:', arrayBuffer.byteLength);
+      
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+      console.log('Teste de decodificação bem-sucedido:', {
+        duration: audioBuffer.duration,
+        sampleRate: audioBuffer.sampleRate,
+        channels: audioBuffer.numberOfChannels
+      });
+      
       const audioDuration = audioBuffer.duration;
       const videoDuration = images.length * settings.duration;
       
-      let message = `Arquivo "${file.name}" carregado com sucesso! `;
+      let message = `Arquivo "${file.name}" carregado e validado! `;
       
       if (audioDuration < videoDuration) {
         message += `A música (${Math.round(audioDuration)}s) será repetida para cobrir todo o vídeo (${Math.round(videoDuration)}s).`;
@@ -191,7 +218,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       }
       
       toast({
-        title: 'Áudio carregado',
+        title: 'Áudio carregado e testado',
         description: message,
         status: 'success',
         duration: 5000,
@@ -199,13 +226,19 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       
       audioContext.close();
     } catch (error) {
-      console.error('Erro ao analisar áudio:', error);
+      console.error('Erro ao analisar/decodificar áudio durante upload:', error);
+      
+      // Ainda permite o upload mas avisa sobre possível problema
+      setAudioFile(null);
+      setAudioUrl(null);
+      
       toast({
-        title: 'Áudio carregado',
-        description: `Arquivo "${file.name}" pronto para usar`,
-        status: 'success',
-        duration: 3000,
+        title: 'Erro ao processar áudio',
+        description: `Não foi possível decodificar "${file.name}". Tente um arquivo MP3 diferente ou use WAV/OGG.`,
+        status: 'error',
+        duration: 7000,
       });
+      return;
     }
   };
 
@@ -218,9 +251,70 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       let audioBuffer;
       
       if (settings.musicSource === 'upload' && audioFile) {
-        // Usar arquivo enviado pelo usuário
-        const arrayBuffer = await audioFile.arrayBuffer();
-        const originalAudioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        console.log('Processando arquivo de upload:', {
+          fileName: audioFile.name,
+          fileSize: audioFile.size,
+          fileType: audioFile.type,
+          lastModified: audioFile.lastModified
+        });
+        
+        // Método alternativo: usar elemento audio + MediaElementAudioSourceNode
+        try {
+          console.log('Tentando método Web Audio API...');
+          const arrayBuffer = await audioFile.arrayBuffer();
+          console.log('ArrayBuffer criado, tamanho:', arrayBuffer.byteLength);
+          
+          const originalAudioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+          console.log('Web Audio API funcionou! Áudio decodificado:', {
+            duration: originalAudioBuffer.duration,
+            sampleRate: originalAudioBuffer.sampleRate,
+            channels: originalAudioBuffer.numberOfChannels,
+            length: originalAudioBuffer.length
+          });
+        } catch (decodeError) {
+          console.error('Web Audio API falhou:', decodeError);
+          console.log('Tentando método alternativo com MediaElementAudioSourceNode...');
+          
+          // Método alternativo: usar o elemento audio que já funciona
+          const audio = new Audio();
+          audio.src = URL.createObjectURL(audioFile);
+          audio.crossOrigin = 'anonymous';
+          audio.loop = true;
+          
+          // Aguardar o áudio carregar
+          await new Promise((resolve, reject) => {
+            audio.onloadedmetadata = resolve;
+            audio.onerror = reject;
+            audio.load();
+          });
+          
+          console.log('Áudio carregado via elemento audio:', {
+            duration: audio.duration,
+            readyState: audio.readyState
+          });
+          
+          // Criar fonte de áudio a partir do elemento
+          const mediaElementSource = audioContext.createMediaElementSource(audio);
+          
+          // Configurar volume
+          const gainNode = audioContext.createGain();
+          gainNode.gain.value = settings.musicVolume;
+          
+          // Conectar ao destino
+          const destination = audioContext.createMediaStreamDestination();
+          mediaElementSource.connect(gainNode);
+          gainNode.connect(destination);
+          
+          console.log('MediaElementAudioSourceNode configurado');
+          
+          return { 
+            audioElement: audio, 
+            audioStream: destination.stream, 
+            audioContext,
+            mediaElementSource,
+            gainNode
+          };
+        }
         
         console.log('Áudio original:', {
           duration: originalAudioBuffer.duration,
@@ -450,19 +544,60 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
           audioFileName: audioFile?.name,
           videoDuration: totalVideoDuration
         });
+        
+        // Validação adicional
+        if (settings.musicSource === 'upload' && !audioFile) {
+          console.error('Erro: musicSource é upload mas não há audioFile');
+          toast({
+            title: 'Erro de configuração',
+            description: 'Arquivo de áudio não encontrado. Selecione um arquivo primeiro.',
+            status: 'error',
+            duration: 5000,
+          });
+          setIsGenerating(false);
+          return;
+        }
+        
         audioSetup = await setupAudioForRecording(totalVideoDuration);
+        console.log('Resultado setupAudioForRecording:', audioSetup);
         console.log('Áudio configurado:', !!audioSetup);
+        
+        if (audioSetup) {
+          console.log('AudioSetup details:', {
+            hasAudioSource: !!audioSetup.audioSource,
+            hasAudioStream: !!audioSetup.audioStream,
+            hasAudioContext: !!audioSetup.audioContext,
+            audioStreamTracks: audioSetup.audioStream?.getAudioTracks().length || 0
+          });
+        }
       }
       
       // Configurar MediaRecorder com ou sem áudio
       let stream = canvas.captureStream(settings.fps);
+      console.log('Stream inicial (apenas vídeo):', {
+        videoTracks: stream.getVideoTracks().length,
+        audioTracks: stream.getAudioTracks().length
+      });
       
       if (audioSetup && audioSetup.audioStream) {
         // Combinar vídeo e áudio
         const audioTracks = audioSetup.audioStream.getAudioTracks();
         const videoTracks = stream.getVideoTracks();
         
+        console.log('Combinando streams:', {
+          videoTracksCount: videoTracks.length,
+          audioTracksCount: audioTracks.length,
+          audioTrackState: audioTracks[0]?.readyState,
+          audioTrackEnabled: audioTracks[0]?.enabled
+        });
+        
         stream = new MediaStream([...videoTracks, ...audioTracks]);
+        
+        console.log('Stream final (vídeo + áudio):', {
+          videoTracks: stream.getVideoTracks().length,
+          audioTracks: stream.getAudioTracks().length,
+          totalTracks: stream.getTracks().length
+        });
       }
       
       // Configurar MediaRecorder com suporte aprimorado para áudio
@@ -473,13 +608,25 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       // Tentar diferentes codecs para melhor compatibilidade de áudio
       if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
         mediaRecorderOptions.mimeType = 'video/webm;codecs=vp9,opus';
+        console.log('Usando codec: vp9,opus');
       } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
         mediaRecorderOptions.mimeType = 'video/webm;codecs=vp8,opus';
+        console.log('Usando codec: vp8,opus');
       } else if (MediaRecorder.isTypeSupported('video/webm')) {
         mediaRecorderOptions.mimeType = 'video/webm';
+        console.log('Usando codec: webm básico');
       }
       
+      console.log('MediaRecorder options:', mediaRecorderOptions);
+      console.log('Stream para MediaRecorder:', {
+        hasVideo: stream.getVideoTracks().length > 0,
+        hasAudio: stream.getAudioTracks().length > 0,
+        videoTrackState: stream.getVideoTracks()[0]?.readyState,
+        audioTrackState: stream.getAudioTracks()[0]?.readyState
+      });
+      
       const mediaRecorder = new MediaRecorder(stream, mediaRecorderOptions);
+      console.log('MediaRecorder criado, state:', mediaRecorder.state);
 
       mediaRecorderRef.current = mediaRecorder;
 
@@ -516,10 +663,29 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       mediaRecorder.start();
       
       // Iniciar áudio se configurado - com timing preciso
-      if (audioSetup && audioSetup.audioSource) {
-        // Usar currentTime do audioContext para sincronização precisa
-        const startTime = audioSetup.audioContext ? audioSetup.audioContext.currentTime + 0.1 : undefined;
-        audioSetup.audioSource.start(startTime);
+      if (audioSetup) {
+        try {
+          if (audioSetup.audioSource) {
+            // Método tradicional: BufferSource
+            const startTime = audioSetup.audioContext ? audioSetup.audioContext.currentTime + 0.1 : undefined;
+            console.log('Iniciando audioSource (BufferSource) com startTime:', startTime);
+            audioSetup.audioSource.start(startTime);
+            console.log('AudioSource (BufferSource) iniciado com sucesso');
+          } else if (audioSetup.audioElement) {
+            // Método alternativo: MediaElement
+            console.log('Iniciando audioElement (MediaElement)...');
+            audioSetup.audioElement.currentTime = 0;
+            const playPromise = audioSetup.audioElement.play();
+            if (playPromise) {
+              await playPromise;
+            }
+            console.log('AudioElement (MediaElement) iniciado com sucesso');
+          }
+        } catch (error) {
+          console.error('Erro ao iniciar áudio:', error);
+        }
+      } else {
+        console.log('Não há audioSetup para iniciar');
       }
 
       // Calcular total de frames
@@ -589,9 +755,16 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       await new Promise(resolve => setTimeout(resolve, 500));
       
       // Parar o áudio se estiver rodando
-      if (audioSetup && audioSetup.audioSource) {
+      if (audioSetup) {
         try {
-          audioSetup.audioSource.stop();
+          if (audioSetup.audioSource) {
+            console.log('Parando audioSource (BufferSource)...');
+            audioSetup.audioSource.stop();
+          } else if (audioSetup.audioElement) {
+            console.log('Parando audioElement (MediaElement)...');
+            audioSetup.audioElement.pause();
+            audioSetup.audioElement.currentTime = 0;
+          }
         } catch (error) {
           console.warn('Erro ao parar áudio:', error);
         }
