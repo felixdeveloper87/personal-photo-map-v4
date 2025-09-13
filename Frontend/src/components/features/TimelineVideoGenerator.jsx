@@ -274,6 +274,66 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
             channels: originalAudioBuffer.numberOfChannels,
             length: originalAudioBuffer.length
           });
+          
+          // Mover toda a lógica de processamento para dentro do try
+          console.log('Áudio original:', {
+            duration: originalAudioBuffer.duration,
+            videoDuration: videoDuration,
+            sampleRate: originalAudioBuffer.sampleRate,
+            channels: originalAudioBuffer.numberOfChannels
+          });
+          
+          // Ajustar duração do áudio para corresponder exatamente à duração do vídeo
+          const targetLength = audioContext.sampleRate * videoDuration;
+          const adjustedBuffer = audioContext.createBuffer(
+            originalAudioBuffer.numberOfChannels,
+            targetLength,
+            audioContext.sampleRate
+          );
+          
+          for (let channel = 0; channel < originalAudioBuffer.numberOfChannels; channel++) {
+            const sourceData = originalAudioBuffer.getChannelData(channel);
+            const targetData = adjustedBuffer.getChannelData(channel);
+            
+            if (originalAudioBuffer.duration < videoDuration) {
+              // Áudio mais curto - repetir com fade entre repetições
+              console.log('Áudio mais curto que vídeo - repetindo...');
+              for (let i = 0; i < targetLength; i++) {
+                const sourceIndex = i % sourceData.length;
+                targetData[i] = sourceData[sourceIndex];
+                
+                // Fade suave entre repetições
+                const cyclePosition = (i % sourceData.length) / sourceData.length;
+                if (cyclePosition > 0.95) {
+                  const fadeAmount = (1 - cyclePosition) / 0.05;
+                  targetData[i] *= fadeAmount;
+                } else if (cyclePosition < 0.05) {
+                  const fadeAmount = cyclePosition / 0.05;
+                  targetData[i] *= fadeAmount;
+                }
+              }
+            } else if (originalAudioBuffer.duration > videoDuration) {
+              // Áudio mais longo - cortar com fade out
+              console.log('Áudio mais longo que vídeo - cortando...');
+              for (let i = 0; i < targetLength; i++) {
+                targetData[i] = sourceData[i];
+                
+                // Fade out nos últimos 2 segundos
+                const fadeStartSample = targetLength - (audioContext.sampleRate * 2);
+                if (i > fadeStartSample) {
+                  const fadeAmount = (targetLength - i) / (audioContext.sampleRate * 2);
+                  targetData[i] *= fadeAmount;
+                }
+              }
+            } else {
+              // Duração igual - copiar diretamente
+              console.log('Duração do áudio igual à do vídeo');
+              targetData.set(sourceData.slice(0, targetLength));
+            }
+          }
+          
+          audioBuffer = adjustedBuffer;
+          
         } catch (decodeError) {
           console.error('Web Audio API falhou:', decodeError);
           console.log('Tentando método alternativo com MediaElementAudioSourceNode...');
@@ -318,64 +378,6 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
             gainNode
           };
         }
-        
-        console.log('Áudio original:', {
-          duration: originalAudioBuffer.duration,
-          videoDuration: videoDuration,
-          sampleRate: originalAudioBuffer.sampleRate,
-          channels: originalAudioBuffer.numberOfChannels
-        });
-        
-        // Ajustar duração do áudio para corresponder exatamente à duração do vídeo
-        const targetLength = audioContext.sampleRate * videoDuration;
-        const adjustedBuffer = audioContext.createBuffer(
-          originalAudioBuffer.numberOfChannels,
-          targetLength,
-          audioContext.sampleRate
-        );
-        
-        for (let channel = 0; channel < originalAudioBuffer.numberOfChannels; channel++) {
-          const sourceData = originalAudioBuffer.getChannelData(channel);
-          const targetData = adjustedBuffer.getChannelData(channel);
-          
-          if (originalAudioBuffer.duration < videoDuration) {
-            // Áudio mais curto - repetir com fade entre repetições
-            console.log('Áudio mais curto que vídeo - repetindo...');
-            for (let i = 0; i < targetLength; i++) {
-              const sourceIndex = i % sourceData.length;
-              targetData[i] = sourceData[sourceIndex];
-              
-              // Fade suave entre repetições
-              const cyclePosition = (i % sourceData.length) / sourceData.length;
-              if (cyclePosition > 0.95) {
-                const fadeAmount = (1 - cyclePosition) / 0.05;
-                targetData[i] *= fadeAmount;
-              } else if (cyclePosition < 0.05) {
-                const fadeAmount = cyclePosition / 0.05;
-                targetData[i] *= fadeAmount;
-              }
-            }
-          } else if (originalAudioBuffer.duration > videoDuration) {
-            // Áudio mais longo - cortar com fade out
-            console.log('Áudio mais longo que vídeo - cortando...');
-            for (let i = 0; i < targetLength; i++) {
-              targetData[i] = sourceData[i];
-              
-              // Fade out nos últimos 2 segundos
-              const fadeStartSample = targetLength - (audioContext.sampleRate * 2);
-              if (i > fadeStartSample) {
-                const fadeAmount = (targetLength - i) / (audioContext.sampleRate * 2);
-                targetData[i] *= fadeAmount;
-              }
-            }
-          } else {
-            // Duração igual - copiar diretamente
-            console.log('Duração do áudio igual à do vídeo');
-            targetData.set(sourceData.slice(0, targetLength));
-          }
-        }
-        
-        audioBuffer = adjustedBuffer;
       } else if (settings.musicSource === 'preset') {
         // Usar música preset gerada
         audioBuffer = await generatePresetMusic(settings.selectedPresetMusic, videoDuration);
