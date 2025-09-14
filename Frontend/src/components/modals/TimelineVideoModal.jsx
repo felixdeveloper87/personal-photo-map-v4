@@ -303,6 +303,17 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                   <Text fontSize="sm" color={mutedTextColor}>• 📱 Automatic MP4 conversion for iPhone compatibility</Text>
                   <Text fontSize="sm" color={mutedTextColor}>• Direct download of final video</Text>
                 </VStack>
+                
+                {/* iPhone Instructions */}
+                <Box mt={3} p={3} bg="blue.50" border="1px solid" borderColor="blue.200" borderRadius="md">
+                  <Text fontSize="sm" fontWeight="medium" color="blue.800" mb={1}>
+                    📱 iPhone Users:
+                  </Text>
+                  <Text fontSize="xs" color="blue.700">
+                    After download, videos go to <strong>Files</strong> folder. 
+                    To save to <strong>Photos</strong>: Open video → Share button → "Save to Photos"
+                  </Text>
+                </Box>
               </Box>
             </VStack>
           )}

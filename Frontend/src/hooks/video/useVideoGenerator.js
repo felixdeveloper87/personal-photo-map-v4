@@ -155,8 +155,7 @@ export const useVideoGenerator = () => {
       let stream = canvas.captureStream(settings.fps);
       
       // Forçar o timing correto do canvas
-      const frameInterval = 1000 / settings.fps;
-      let lastFrameTime = 0;
+      // Timing será controlado por requestAnimationFrame
       
       if (audioSetup && audioSetup.audioStream) {
         const audioTracks = audioSetup.audioStream.getAudioTracks();
@@ -299,47 +298,63 @@ export const useVideoGenerator = () => {
               settings.dynamicMode
             );
             
-            // Animar a imagem com timing preciso
-            for (let frame = 0; frame < framesPerImage; frame++) {
-              const currentTime = performance.now();
-              const transitionProgress = Math.min(frame / (settings.fps * settings.transitionDuration), 1);
+            // Animar a imagem com timing preciso usando requestAnimationFrame
+            await new Promise((resolve) => {
+              let frame = 0;
+              const startTime = performance.now();
               
-              // Limpar canvas
-              ctx.clearRect(0, 0, canvas.width, canvas.height);
-              ctx.fillStyle = '#000000';
-              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              const animateFrame = () => {
+                if (frame >= framesPerImage) {
+                  const totalElapsed = performance.now() - startTime;
+                  console.log(`🕐 Imagem ${globalImageIndex + 1}: ${totalElapsed.toFixed(2)}ms (esperado: ${(framesPerImage / settings.fps * 1000).toFixed(2)}ms)`);
+                  resolve();
+                  return;
+                }
+                
+                const currentTime = performance.now();
+                const elapsedTime = currentTime - startTime;
+                const expectedTime = (frame / settings.fps) * 1000; // Tempo esperado em ms
+                
+                // Só renderizar se estivermos no tempo certo ou atrasados
+                if (elapsedTime >= expectedTime) {
+                  const transitionProgress = Math.min(frame / (settings.fps * settings.transitionDuration), 1);
+                  
+                  // Limpar canvas
+                  ctx.clearRect(0, 0, canvas.width, canvas.height);
+                  ctx.fillStyle = '#000000';
+                  ctx.fillRect(0, 0, canvas.width, canvas.height);
+                  
+                  // Desenhar imagem com transição
+                  drawImageWithTransition(
+                    ctx, 
+                    img, 
+                    canvas, 
+                    selectedTransition, 
+                    transitionProgress, 
+                    settings.enableParticles
+                  );
+                  
+                  // Adicionar texto overlay
+                  addTextOverlay(ctx, canvas, year, globalImageIndex, images.length, {
+                    showYearText: settings.showYearText,
+                    showPhotoCount: settings.showPhotoCount
+                  });
+                  
+                  // Atualizar progresso
+                  currentFrame++;
+                  const progressPercent = Math.min(Math.round((currentFrame / totalFrames) * 100), 100);
+                  setProgress(progressPercent);
+                  
+                  frame++;
+                }
+                
+                // Continuar animação
+                requestAnimationFrame(animateFrame);
+              };
               
-              // Desenhar imagem com transição
-              drawImageWithTransition(
-                ctx, 
-                img, 
-                canvas, 
-                selectedTransition, 
-                transitionProgress, 
-                settings.enableParticles
-              );
-              
-              // Adicionar texto overlay
-              addTextOverlay(ctx, canvas, year, globalImageIndex, images.length, {
-                showYearText: settings.showYearText,
-                showPhotoCount: settings.showPhotoCount
-              });
-              
-              // Aguardar o tempo correto para o próximo frame
-              const targetTime = lastFrameTime + frameInterval;
-              const waitTime = Math.max(0, targetTime - performance.now());
-              
-              if (waitTime > 0) {
-                await new Promise(resolve => setTimeout(resolve, waitTime));
-              }
-              
-              lastFrameTime = performance.now();
-              
-              // Atualizar progresso
-              currentFrame++;
-              const progressPercent = Math.min(Math.round((currentFrame / totalFrames) * 100), 100);
-              setProgress(progressPercent);
-            }
+              // Iniciar animação
+              requestAnimationFrame(animateFrame);
+            });
             
             // Atualizar índices
             globalImageIndex++;
