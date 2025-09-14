@@ -300,6 +300,7 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                   <Text fontSize="sm" color={mutedTextColor}>• Multiple resolutions including Stories/Reels format</Text>
                   <Text fontSize="sm" color={mutedTextColor}>• Text overlay with year and counter</Text>
                   <Text fontSize="sm" color={mutedTextColor}>• Background music support (upload or presets)</Text>
+                  <Text fontSize="sm" color={mutedTextColor}>• 📱 Automatic MP4 conversion for iPhone compatibility</Text>
                   <Text fontSize="sm" color={mutedTextColor}>• Direct download of final video</Text>
                 </VStack>
               </Box>

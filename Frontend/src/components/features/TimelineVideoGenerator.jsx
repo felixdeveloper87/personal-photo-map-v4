@@ -31,6 +31,8 @@ import {
 import { FaVideo, FaDownload, FaPlay, FaStop } from 'react-icons/fa';
 import { AuthContext } from '../../context/AuthContext';
 import { buildApiUrl } from '../../utils/apiConfig';
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { fetchFile, toBlobURL } from '@ffmpeg/util';
 
 const TimelineVideoGenerator = ({ images, onClose }) => {
   const toast = useToast();
@@ -45,6 +47,9 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
   const [progress, setProgress] = useState(0);
   const [videoUrl, setVideoUrl] = useState(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [isConverting, setIsConverting] = useState(false);
+  const [conversionProgress, setConversionProgress] = useState(0);
+  const [mp4VideoUrl, setMp4VideoUrl] = useState(null);
 
   // Video settings
   const [settings, setSettings] = useState({
@@ -70,6 +75,10 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
   const audioContextRef = useRef(null);
   const mediaStreamDestinationRef = useRef(null);
 
+  // FFmpeg for video conversion
+  const ffmpegRef = useRef(null);
+  const [ffmpegLoaded, setFFmpegLoaded] = useState(false);
+
   // Cores do tema
   const bgColor = useColorModeValue('white', 'gray.800');
   const textColor = useColorModeValue('gray.800', 'white');
@@ -86,6 +95,36 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
     cinematic1: { name: 'Cinematic', description: 'Epic for great moments' },
   };
 
+  // Initialize FFmpeg
+  const loadFFmpeg = async () => {
+    if (ffmpegRef.current || ffmpegLoaded) return;
+    
+    try {
+      const ffmpeg = new FFmpeg();
+      ffmpegRef.current = ffmpeg;
+      
+      const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
+      
+      // Load FFmpeg
+      await ffmpeg.load({
+        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+        workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
+      });
+      
+      setFFmpegLoaded(true);
+      console.log('FFmpeg loaded successfully');
+    } catch (error) {
+      console.error('Failed to load FFmpeg:', error);
+      toast({
+        title: 'Erro ao carregar conversor',
+        description: 'Não foi possível carregar o conversor de vídeo. O download será feito em formato WebM.',
+        status: 'warning',
+        duration: 5000,
+      });
+    }
+  };
+
   // Function to load image
   const loadImage = (src) => {
     return new Promise((resolve, reject) => {
@@ -95,6 +134,71 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       img.onerror = reject;
       img.src = src;
     });
+  };
+
+  // Convert WebM to MP4 using FFmpeg
+  const convertWebMToMP4 = async (webmBlob) => {
+    if (!ffmpegRef.current || !ffmpegLoaded) {
+      console.log('FFmpeg not loaded, returning original WebM');
+      return webmBlob;
+    }
+
+    try {
+      setIsConverting(true);
+      setConversionProgress(0);
+
+      const ffmpeg = ffmpegRef.current;
+      
+      // Write input file
+      await ffmpeg.writeFile('input.webm', await fetchFile(webmBlob));
+      
+      // Set up progress tracking
+      ffmpeg.on('progress', ({ progress }) => {
+        const percent = Math.round(progress * 100);
+        setConversionProgress(percent);
+      });
+
+      // Convert to MP4 with optimized settings for mobile compatibility
+      await ffmpeg.exec([
+        '-i', 'input.webm',
+        '-c:v', 'libx264',          // H.264 codec for maximum compatibility
+        '-preset', 'medium',         // Balance between speed and compression
+        '-crf', '23',               // Good quality setting
+        '-c:a', 'aac',              // AAC audio codec
+        '-b:a', '128k',             // Audio bitrate
+        '-movflags', '+faststart',   // Optimize for web streaming
+        '-pix_fmt', 'yuv420p',      // Pixel format compatible with older devices
+        'output.mp4'
+      ]);
+
+      // Read the converted file
+      const mp4Data = await ffmpeg.readFile('output.mp4');
+      const mp4Blob = new Blob([mp4Data], { type: 'video/mp4' });
+
+      // Clean up
+      await ffmpeg.deleteFile('input.webm');
+      await ffmpeg.deleteFile('output.mp4');
+
+      setIsConverting(false);
+      setConversionProgress(0);
+
+      console.log('Video converted to MP4 successfully');
+      return mp4Blob;
+
+    } catch (error) {
+      console.error('Error converting video:', error);
+      setIsConverting(false);
+      setConversionProgress(0);
+      
+      toast({
+        title: 'Erro na conversão',
+        description: 'Não foi possível converter para MP4. O download será feito em WebM.',
+        status: 'warning',
+        duration: 5000,
+      });
+      
+      return webmBlob; // Return original if conversion fails
+    }
   };
 
   // Function to generate preset music using Web Audio API
@@ -712,9 +816,18 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       return;
     }
 
+    // Load FFmpeg for MP4 conversion (non-blocking)
+    if (!ffmpegLoaded) {
+      loadFFmpeg();
+    }
+
     setIsGenerating(true);
     setProgress(0);
     recordedChunksRef.current = [];
+    // Reset conversion states
+    setIsConverting(false);
+    setConversionProgress(0);
+    setMp4VideoUrl(null);
 
     try {
       const canvas = canvasRef.current;
@@ -878,18 +991,34 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
         }
       };
 
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
-        const url = URL.createObjectURL(blob);
-        setVideoUrl(url);
-        setIsGenerating(false);
+      mediaRecorder.onstop = async () => {
+        const webmBlob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+        const webmUrl = URL.createObjectURL(webmBlob);
+        setVideoUrl(webmUrl);
         
-        toast({
-          title: 'Vídeo gerado com sucesso!',
-          description: 'Seu vídeo timeline está pronto para download',
-          status: 'success',
-          duration: 5000,
-        });
+        // Convert to MP4 for better mobile compatibility
+        try {
+          const mp4Blob = await convertWebMToMP4(webmBlob);
+          const mp4Url = URL.createObjectURL(mp4Blob);
+          setMp4VideoUrl(mp4Url);
+          
+          toast({
+            title: 'Vídeo gerado e convertido com sucesso!',
+            description: 'Seu vídeo timeline está pronto para download em formato MP4',
+            status: 'success',
+            duration: 5000,
+          });
+        } catch (error) {
+          console.error('Error in video conversion:', error);
+          toast({
+            title: 'Vídeo gerado com sucesso!',
+            description: 'Vídeo pronto em formato WebM (conversão MP4 falhou)',
+            status: 'success',
+            duration: 5000,
+          });
+        }
+        
+        setIsGenerating(false);
       };
 
       // Agrupar imagens por ano
@@ -1065,14 +1194,25 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
 
   // Função para fazer download do vídeo
   const downloadVideo = () => {
-    if (!videoUrl) return;
+    // Priorizar MP4 se disponível, senão usar WebM
+    const urlToDownload = mp4VideoUrl || videoUrl;
+    const fileExtension = mp4VideoUrl ? 'mp4' : 'webm';
+    
+    if (!urlToDownload) return;
     
     const link = document.createElement('a');
-    link.href = videoUrl;
-    link.download = `timeline-video-${new Date().getTime()}.webm`;
+    link.href = urlToDownload;
+    link.download = `timeline-video-${new Date().getTime()}.${fileExtension}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    toast({
+      title: 'Download iniciado!',
+      description: `Fazendo download do vídeo em formato ${fileExtension.toUpperCase()}`,
+      status: 'info',
+      duration: 3000,
+    });
   };
 
   // Função para parar geração
@@ -1396,23 +1536,46 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
         />
 
         {/* Progress */}
-        {isGenerating && (
-          <VStack spacing={3}>
-            <Text fontWeight="semibold" color={textColor}>
-              {progress === 100 ? 'Finalizing video...' : `Generating video... ${progress}%`}
-            </Text>
-            <Progress 
-              value={progress} 
-              colorScheme={progress === 100 ? "green" : "blue"} 
-              size="lg" 
-              borderRadius="md"
-              isAnimated={progress < 100}
-              hasStripe={progress < 100}
-            />
-            {progress < 100 && (
-              <Text fontSize="sm" color={mutedTextColor}>
-                Processing timeline video frames...
-              </Text>
+        {(isGenerating || isConverting) && (
+          <VStack spacing={4}>
+            {isGenerating && (
+              <VStack spacing={3}>
+                <Text fontWeight="semibold" color={textColor}>
+                  {progress === 100 ? 'Finalizing video...' : `Generating video... ${progress}%`}
+                </Text>
+                <Progress 
+                  value={progress} 
+                  colorScheme={progress === 100 ? "green" : "blue"} 
+                  size="lg" 
+                  borderRadius="md"
+                  isAnimated={progress < 100}
+                  hasStripe={progress < 100}
+                />
+                {progress < 100 && (
+                  <Text fontSize="sm" color={mutedTextColor}>
+                    Processing timeline video frames...
+                  </Text>
+                )}
+              </VStack>
+            )}
+
+            {isConverting && (
+              <VStack spacing={3}>
+                <Text fontWeight="semibold" color={textColor}>
+                  {conversionProgress === 100 ? 'Finalizing MP4 conversion...' : `Converting to MP4... ${conversionProgress}%`}
+                </Text>
+                <Progress 
+                  value={conversionProgress} 
+                  colorScheme="purple" 
+                  size="lg" 
+                  borderRadius="md"
+                  isAnimated={conversionProgress < 100}
+                  hasStripe={conversionProgress < 100}
+                />
+                <Text fontSize="sm" color={mutedTextColor}>
+                  📱 Converting for iPhone compatibility...
+                </Text>
+              </VStack>
             )}
           </VStack>
         )}
@@ -1420,13 +1583,23 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
         {/* Generated video */}
         {videoUrl && (
           <VStack spacing={3}>
-            <Text color="green.500" fontWeight="bold">Video generated successfully!</Text>
+            <HStack spacing={2}>
+              <Text color="green.500" fontWeight="bold">Video generated successfully!</Text>
+              {mp4VideoUrl && (
+                <Text fontSize="sm" color="purple.500" fontWeight="semibold">
+                  📱 MP4 Ready
+                </Text>
+              )}
+            </HStack>
             <video
               ref={videoRef}
-              src={videoUrl}
+              src={mp4VideoUrl || videoUrl}
               controls
               style={{ width: '100%', maxWidth: '400px', borderRadius: '8px' }}
             />
+            <Text fontSize="sm" color={mutedTextColor}>
+              Format: {mp4VideoUrl ? 'MP4 (iPhone compatible)' : 'WebM (Browser compatible)'}
+            </Text>
           </VStack>
         )}
 
@@ -1437,7 +1610,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
           justify="center"
           align="center"
         >
-          {!isGenerating && !videoUrl && (
+          {!isGenerating && !isConverting && !videoUrl && (
             <Button
               leftIcon={<FaVideo />}
               colorScheme="blue"
@@ -1462,7 +1635,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
             </Text>
           )}
 
-          {isGenerating && (
+          {(isGenerating || isConverting) && (
             <Button
               leftIcon={<FaStop />}
               colorScheme="red"
@@ -1470,12 +1643,13 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               onClick={stopGeneration}
               w={{ base: "100%", sm: "auto" }}
               minW="200px"
+              isDisabled={isConverting} // Disable during conversion as it can't be safely stopped
             >
-              Stop Generation
+              {isConverting ? 'Converting...' : 'Stop Generation'}
             </Button>
           )}
 
-          {videoUrl && (
+          {videoUrl && !isConverting && (
             <Button
               leftIcon={<FaDownload />}
               colorScheme="green"
@@ -1484,7 +1658,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               w={{ base: "100%", sm: "auto" }}
               minW="200px"
             >
-              Download Video
+              Download {mp4VideoUrl ? 'MP4' : 'WebM'}
             </Button>
           )}
 
