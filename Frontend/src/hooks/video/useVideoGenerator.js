@@ -333,7 +333,9 @@ export const useVideoGenerator = () => {
                 // Adicionar texto overlay
                 addTextOverlay(ctx, canvas, year, globalImageIndex, images.length, {
                   showYearText: settings.showYearText,
-                  showPhotoCount: settings.showPhotoCount
+                  showPhotoCount: settings.showPhotoCount,
+                  showCountryName: settings.showCountryName || true,
+                  countryId: img.countryId
                 });
                 
                 // Atualizar progresso

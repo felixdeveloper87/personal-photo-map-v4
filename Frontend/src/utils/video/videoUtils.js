@@ -152,16 +152,19 @@ export const addTextOverlay = (ctx, canvas, year, imageIndex, totalImages, setti
   const {
     showYearText = true,
     showPhotoCount = true,
+    showCountryName = true,
     textColor = 'white',
     fontSize = 'auto',
-    position = 'bottom-left'
+    position = 'bottom-left',
+    countryId = null
   } = settings;
   
   ctx.save();
   
   // Determinar tamanho da fonte baseado no canvas
   const baseFontSize = fontSize === 'auto' ? Math.max(24, canvas.width / 50) : fontSize;
-  const yearFontSize = baseFontSize * 1.2;
+  const yearFontSize = baseFontSize * 2.0; // Destacar muito mais o ano
+  const countryFontSize = baseFontSize * 1.2; // País em destaque
   const countFontSize = baseFontSize * 0.8;
   
   // Configurar sombra para melhor legibilidade
@@ -196,16 +199,221 @@ export const addTextOverlay = (ctx, canvas, year, imageIndex, totalImages, setti
       break;
   }
   
-  // Desenhar ano
+  // Função para obter nome do país
+  const getCountryName = (countryId) => {
+    if (!countryId) return null;
+    
+    // Mapeamento de códigos de país comuns
+    const countryMap = {
+      'us': 'United States',
+      'br': 'Brazil',
+      'gb': 'United Kingdom',
+      'fr': 'France',
+      'de': 'Germany',
+      'it': 'Italy',
+      'es': 'Spain',
+      'pt': 'Portugal',
+      'ca': 'Canada',
+      'au': 'Australia',
+      'jp': 'Japan',
+      'cn': 'China',
+      'in': 'India',
+      'mx': 'Mexico',
+      'ar': 'Argentina',
+      'cl': 'Chile',
+      'co': 'Colombia',
+      'pe': 'Peru',
+      've': 'Venezuela',
+      'ec': 'Ecuador',
+      'uy': 'Uruguay',
+      'py': 'Paraguay',
+      'bo': 'Bolivia',
+      'gy': 'Guyana',
+      'sr': 'Suriname',
+      'gf': 'French Guiana',
+      'nl': 'Netherlands',
+      'be': 'Belgium',
+      'ch': 'Switzerland',
+      'at': 'Austria',
+      'se': 'Sweden',
+      'no': 'Norway',
+      'dk': 'Denmark',
+      'fi': 'Finland',
+      'pl': 'Poland',
+      'cz': 'Czech Republic',
+      'hu': 'Hungary',
+      'ro': 'Romania',
+      'bg': 'Bulgaria',
+      'hr': 'Croatia',
+      'si': 'Slovenia',
+      'sk': 'Slovakia',
+      'lt': 'Lithuania',
+      'lv': 'Latvia',
+      'ee': 'Estonia',
+      'ie': 'Ireland',
+      'is': 'Iceland',
+      'lu': 'Luxembourg',
+      'mt': 'Malta',
+      'cy': 'Cyprus',
+      'gr': 'Greece',
+      'tr': 'Turkey',
+      'ru': 'Russia',
+      'ua': 'Ukraine',
+      'by': 'Belarus',
+      'md': 'Moldova',
+      'ge': 'Georgia',
+      'am': 'Armenia',
+      'az': 'Azerbaijan',
+      'kz': 'Kazakhstan',
+      'uz': 'Uzbekistan',
+      'tm': 'Turkmenistan',
+      'tj': 'Tajikistan',
+      'kg': 'Kyrgyzstan',
+      'af': 'Afghanistan',
+      'pk': 'Pakistan',
+      'bd': 'Bangladesh',
+      'lk': 'Sri Lanka',
+      'mv': 'Maldives',
+      'np': 'Nepal',
+      'bt': 'Bhutan',
+      'mm': 'Myanmar',
+      'th': 'Thailand',
+      'la': 'Laos',
+      'kh': 'Cambodia',
+      'vn': 'Vietnam',
+      'my': 'Malaysia',
+      'sg': 'Singapore',
+      'id': 'Indonesia',
+      'ph': 'Philippines',
+      'tw': 'Taiwan',
+      'hk': 'Hong Kong',
+      'mo': 'Macau',
+      'mn': 'Mongolia',
+      'kp': 'North Korea',
+      'kr': 'South Korea',
+      'nz': 'New Zealand',
+      'fj': 'Fiji',
+      'pg': 'Papua New Guinea',
+      'sb': 'Solomon Islands',
+      'vu': 'Vanuatu',
+      'nc': 'New Caledonia',
+      'pf': 'French Polynesia',
+      'ws': 'Samoa',
+      'to': 'Tonga',
+      'ki': 'Kiribati',
+      'tv': 'Tuvalu',
+      'nr': 'Nauru',
+      'pw': 'Palau',
+      'fm': 'Micronesia',
+      'mh': 'Marshall Islands',
+      'za': 'South Africa',
+      'eg': 'Egypt',
+      'ly': 'Libya',
+      'tn': 'Tunisia',
+      'dz': 'Algeria',
+      'ma': 'Morocco',
+      'sd': 'Sudan',
+      'ss': 'South Sudan',
+      'et': 'Ethiopia',
+      'er': 'Eritrea',
+      'dj': 'Djibouti',
+      'so': 'Somalia',
+      'ke': 'Kenya',
+      'ug': 'Uganda',
+      'tz': 'Tanzania',
+      'rw': 'Rwanda',
+      'bi': 'Burundi',
+      'mw': 'Malawi',
+      'zm': 'Zambia',
+      'zw': 'Zimbabwe',
+      'bw': 'Botswana',
+      'na': 'Namibia',
+      'sz': 'Eswatini',
+      'ls': 'Lesotho',
+      'mg': 'Madagascar',
+      'mu': 'Mauritius',
+      'sc': 'Seychelles',
+      'km': 'Comoros',
+      'yt': 'Mayotte',
+      're': 'Réunion',
+      'mz': 'Mozambique',
+      'ao': 'Angola',
+      'cd': 'Democratic Republic of the Congo',
+      'cg': 'Republic of the Congo',
+      'cm': 'Cameroon',
+      'cf': 'Central African Republic',
+      'td': 'Chad',
+      'ne': 'Niger',
+      'ng': 'Nigeria',
+      'bj': 'Benin',
+      'tg': 'Togo',
+      'gh': 'Ghana',
+      'bf': 'Burkina Faso',
+      'ml': 'Mali',
+      'sn': 'Senegal',
+      'gm': 'Gambia',
+      'gn': 'Guinea',
+      'gw': 'Guinea-Bissau',
+      'sl': 'Sierra Leone',
+      'lr': 'Liberia',
+      'ci': 'Ivory Coast',
+      'gh': 'Ghana',
+      'tg': 'Togo',
+      'bj': 'Benin',
+      'bf': 'Burkina Faso',
+      'ml': 'Mali',
+      'sn': 'Senegal',
+      'gm': 'Gambia',
+      'gn': 'Guinea',
+      'gw': 'Guinea-Bissau',
+      'sl': 'Sierra Leone',
+      'lr': 'Liberia',
+      'ci': 'Ivory Coast'
+    };
+    
+    return countryMap[countryId.toLowerCase()] || countryId.toUpperCase();
+  };
+
+  // Desenhar ano com destaque maior
   if (showYearText) {
+    // Fundo destacado para o ano
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.fillRect(x - 10, y - yearFontSize - 5, yearFontSize * 0.6 + 20, yearFontSize + 10);
+    
+    // Ano em destaque
     ctx.font = `bold ${yearFontSize}px Arial`;
-    ctx.fillStyle = textColor;
+    ctx.fillStyle = '#FFD700'; // Dourado para destaque
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+    ctx.shadowBlur = 6;
     ctx.fillText(year, x, y);
     
     if (position.includes('bottom')) {
-      y -= yearFontSize + 10;
+      y -= yearFontSize + 15;
     } else {
-      y += yearFontSize + 10;
+      y += yearFontSize + 15;
+    }
+  }
+  
+  // Desenhar nome do país
+  if (showCountryName && countryId) {
+    const countryName = getCountryName(countryId);
+    if (countryName) {
+      // Fundo para o país
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(x - 8, y - countryFontSize - 3, countryName.length * countryFontSize * 0.6 + 16, countryFontSize + 6);
+      
+      // Nome do país
+      ctx.font = `bold ${countryFontSize}px Arial`;
+      ctx.fillStyle = '#87CEEB'; // Azul claro para o país
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+      ctx.shadowBlur = 4;
+      ctx.fillText(countryName, x, y);
+      
+      if (position.includes('bottom')) {
+        y -= countryFontSize + 10;
+      } else {
+        y += countryFontSize + 10;
+      }
     }
   }
   

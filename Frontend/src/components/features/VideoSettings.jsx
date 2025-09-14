@@ -195,6 +195,18 @@ const VideoSettings = ({
         </FormControl>
 
         <FormControl display="flex" alignItems="center">
+          <FormLabel htmlFor="show-country" mb="0" color={textColor}>
+            Show country name
+          </FormLabel>
+          <Switch
+            id="show-country"
+            isChecked={settings.showCountryName !== false}
+            onChange={(e) => handleSettingChange('showCountryName', e.target.checked)}
+            colorScheme="blue"
+          />
+        </FormControl>
+
+        <FormControl display="flex" alignItems="center">
           <FormLabel htmlFor="show-count" mb="0" color={textColor}>
             Show photo count
           </FormLabel>
