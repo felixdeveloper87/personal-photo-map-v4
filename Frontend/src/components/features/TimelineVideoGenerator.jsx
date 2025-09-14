@@ -941,8 +941,8 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
         }
       }
       
-      // Configurar MediaRecorder com ou sem áudio - usar captureStream sem FPS fixo
-      let stream = canvas.captureStream(0); // 0 = manual frame capture
+      // Configurar MediaRecorder com ou sem áudio
+      let stream = canvas.captureStream(settings.fps);
       console.log('Stream inicial (apenas vídeo):', {
         videoTracks: stream.getVideoTracks().length,
         audioTracks: stream.getAudioTracks().length
@@ -1154,8 +1154,11 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
             // Tempo de início para esta imagem
             const imageStartTime = Date.now();
             
-            // Animar a imagem - renderizar todos os frames rapidamente
+            // Animar a imagem com timing preciso
+            const frameInterval = 1000 / settings.fps; // Intervalo entre frames em ms
+            
             for (let frame = 0; frame < framesPerImage; frame++) {
+              const frameStartTime = Date.now();
               const transitionProgress = Math.min(frame / (settings.fps * settings.transitionDuration), 1);
               
               // Limpar canvas
@@ -1169,15 +1172,13 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               // Adicionar texto overlay
               addTextOverlay(ctx, canvas, year, globalImageIndex, images.length);
               
-              // Solicitar captura manual do frame
-              const videoTrack = stream.getVideoTracks()[0];
-              if (videoTrack && videoTrack.requestFrame) {
-                videoTrack.requestFrame();
-              }
+              // Calcular quanto tempo ainda precisa esperar para manter o FPS
+              const frameProcessTime = Date.now() - frameStartTime;
+              const waitTime = Math.max(0, frameInterval - frameProcessTime);
               
-              // Aguardar o tempo correto para o próximo frame baseado no FPS
-              const frameDelay = 1000 / settings.fps;
-              await new Promise(resolve => setTimeout(resolve, frameDelay));
+              if (waitTime > 0) {
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+              }
               
               // Atualizar progresso
               currentFrame++;
