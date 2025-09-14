@@ -111,8 +111,9 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
         length: originalAudioBuffer.length
       });
       
-      // Ajustar duração do áudio para corresponder exatamente à duração do vídeo
-      const targetDuration = videoDuration; // Duração exata do vídeo
+      // Ajustar duração do áudio com margem de segurança para tempo de processamento
+      const safetyMargin = Math.max(5, videoDuration * 0.2); // Pelo menos 5s ou 20% da duração do vídeo
+      const targetDuration = videoDuration + safetyMargin;
       const targetLength = audioContext.sampleRate * targetDuration;
       const adjustedBuffer = audioContext.createBuffer(
         originalAudioBuffer.numberOfChannels,
@@ -121,10 +122,11 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
       );
       
       console.log('🎵 Sincronização de áudio:', {
-        duracaoVideo: `${videoDuration}s`,
+        duracaoVideoTeorica: `${videoDuration}s`,
+        margemSeguranca: `${safetyMargin.toFixed(1)}s`,
         duracaoAudioOriginal: `${originalAudioBuffer.duration.toFixed(2)}s`,
         duracaoAudioAjustada: `${targetDuration}s`,
-        diferenca: `${(originalAudioBuffer.duration - videoDuration).toFixed(2)}s`,
+        diferenca: `${(originalAudioBuffer.duration - targetDuration).toFixed(2)}s`,
         acao: originalAudioBuffer.duration >= targetDuration ? 'CORTAR' : 'REPETIR'
       });
       
@@ -133,10 +135,21 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
         const adjustedData = adjustedBuffer.getChannelData(channel);
         
         if (originalAudioBuffer.duration >= targetDuration) {
-          // Áudio mais longo que necessário - cortar exatamente na duração do vídeo
-          console.log('Áudio mais longo que necessário - cortando para duração exata do vídeo...');
+          // Áudio mais longo que necessário - cortar com fade out suave
+          console.log('Áudio mais longo que necessário - cortando com fade out suave...');
+          const fadeOutDuration = 2; // 2 segundos de fade out
+          const fadeOutStart = targetLength - (fadeOutDuration * audioContext.sampleRate);
+          
           for (let i = 0; i < targetLength; i++) {
-            adjustedData[i] = originalData[i] || 0;
+            let sample = originalData[i] || 0;
+            
+            // Aplicar fade out nos últimos 2 segundos
+            if (i >= fadeOutStart) {
+              const fadeProgress = (i - fadeOutStart) / (fadeOutDuration * audioContext.sampleRate);
+              sample *= (1 - fadeProgress);
+            }
+            
+            adjustedData[i] = sample;
           }
         } else {
           // Áudio mais curto que necessário - repetir com fade suave
@@ -165,7 +178,8 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
     } else if (settings.musicSource === 'preset') {
       // Gerar música preset
       console.log('Gerando música preset:', settings.selectedPresetMusic);
-      const targetDuration = videoDuration; // Duração exata do vídeo
+      const safetyMargin = Math.max(5, videoDuration * 0.2); // Pelo menos 5s ou 20% da duração do vídeo
+      const targetDuration = videoDuration + safetyMargin;
       audioBuffer = await generatePresetMusic(settings.selectedPresetMusic, targetDuration);
     } else {
       console.log('Nenhuma fonte de áudio configurada');
