@@ -1172,13 +1172,8 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               // Adicionar texto overlay
               addTextOverlay(ctx, canvas, year, globalImageIndex, images.length);
               
-              // Calcular quanto tempo ainda precisa esperar para manter o FPS
-              const frameProcessTime = Date.now() - frameStartTime;
-              const waitTime = Math.max(0, frameInterval - frameProcessTime);
-              
-              if (waitTime > 0) {
-                await new Promise(resolve => setTimeout(resolve, waitTime));
-              }
+              // Aguardar apenas o necessário para manter sincronia
+              await new Promise(resolve => requestAnimationFrame(resolve));
               
               // Atualizar progresso
               currentFrame++;
