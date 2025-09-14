@@ -111,9 +111,8 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
         length: originalAudioBuffer.length
       });
       
-      // Ajustar duração do áudio com margem de segurança para cobrir variações de timing
-      const safetyMargin = 2; // 2 segundos de margem para cobrir variações
-      const targetDuration = videoDuration + safetyMargin;
+      // Ajustar duração do áudio para corresponder exatamente à duração do vídeo
+      const targetDuration = videoDuration; // Duração exata do vídeo
       const targetLength = audioContext.sampleRate * targetDuration;
       const adjustedBuffer = audioContext.createBuffer(
         originalAudioBuffer.numberOfChannels,
@@ -121,11 +120,12 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
         audioContext.sampleRate
       );
       
-      console.log('Durações calculadas:', {
-        videoDurationOriginal: videoDuration,
-        audioTargetDuration: targetDuration,
-        audioEndOffset: targetLength,
-        originalAudioDuration: originalAudioBuffer.duration
+      console.log('🎵 Sincronização de áudio:', {
+        duracaoVideo: `${videoDuration}s`,
+        duracaoAudioOriginal: `${originalAudioBuffer.duration.toFixed(2)}s`,
+        duracaoAudioAjustada: `${targetDuration}s`,
+        diferenca: `${(originalAudioBuffer.duration - videoDuration).toFixed(2)}s`,
+        acao: originalAudioBuffer.duration >= targetDuration ? 'CORTAR' : 'REPETIR'
       });
       
       for (let channel = 0; channel < originalAudioBuffer.numberOfChannels; channel++) {
@@ -133,17 +133,29 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
         const adjustedData = adjustedBuffer.getChannelData(channel);
         
         if (originalAudioBuffer.duration >= targetDuration) {
-          // Áudio mais longo que necessário - cortar com margem de segurança
-          console.log('Áudio mais longo que necessário - cortando com margem de segurança...');
+          // Áudio mais longo que necessário - cortar exatamente na duração do vídeo
+          console.log('Áudio mais longo que necessário - cortando para duração exata do vídeo...');
           for (let i = 0; i < targetLength; i++) {
             adjustedData[i] = originalData[i] || 0;
           }
         } else {
-          // Áudio mais curto que necessário - repetir com margem de segurança
-          console.log('Áudio mais curto que necessário - repetindo com margem de segurança...');
+          // Áudio mais curto que necessário - repetir com fade suave
+          console.log('Áudio mais curto que necessário - repetindo com fade suave...');
           for (let i = 0; i < targetLength; i++) {
             const sourceIndex = i % originalData.length;
-            adjustedData[i] = originalData[sourceIndex];
+            const cyclePosition = (i % originalData.length) / originalData.length;
+            
+            // Aplicar fade suave no início e fim de cada repetição
+            let fadeMultiplier = 1;
+            if (cyclePosition < 0.1) {
+              // Fade in no início de cada repetição
+              fadeMultiplier = cyclePosition / 0.1;
+            } else if (cyclePosition > 0.9) {
+              // Fade out no fim de cada repetição
+              fadeMultiplier = (1 - cyclePosition) / 0.1;
+            }
+            
+            adjustedData[i] = originalData[sourceIndex] * fadeMultiplier;
           }
         }
       }
@@ -153,8 +165,7 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
     } else if (settings.musicSource === 'preset') {
       // Gerar música preset
       console.log('Gerando música preset:', settings.selectedPresetMusic);
-      const safetyMargin = 2; // 2 segundos de margem para cobrir variações
-      const targetDuration = videoDuration + safetyMargin;
+      const targetDuration = videoDuration; // Duração exata do vídeo
       audioBuffer = await generatePresetMusic(settings.selectedPresetMusic, targetDuration);
     } else {
       console.log('Nenhuma fonte de áudio configurada');
