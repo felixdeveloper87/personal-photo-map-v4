@@ -297,13 +297,14 @@ export const useVideoGenerator = () => {
               settings.dynamicMode
             );
             
-            // Animar a imagem com timing preciso - forçar duração exata
+            // Animar a imagem com timing preciso usando setTimeout
             await new Promise((resolve) => {
               let frame = 0;
               const startTime = performance.now();
+              const frameInterval = 1000 / settings.fps; // Intervalo entre frames em ms
               const targetDuration = (framesPerImage / settings.fps) * 1000; // Duração total em ms
               
-              const animateFrame = () => {
+              const renderFrame = async () => {
                 if (frame >= framesPerImage) {
                   const totalElapsed = performance.now() - startTime;
                   console.log(`🕐 Imagem ${globalImageIndex + 1}: ${totalElapsed.toFixed(2)}ms (esperado: ${targetDuration.toFixed(2)}ms)`);
@@ -311,58 +312,49 @@ export const useVideoGenerator = () => {
                   return;
                 }
                 
-                const currentTime = performance.now();
-                const elapsedTime = currentTime - startTime;
-                const expectedTime = (frame / settings.fps) * 1000; // Tempo esperado em ms
+                const transitionProgress = Math.min(frame / (settings.fps * settings.transitionDuration), 1);
                 
-                // Só renderizar se estivermos no tempo certo ou atrasados
-                if (elapsedTime >= expectedTime) {
-                  const transitionProgress = Math.min(frame / (settings.fps * settings.transitionDuration), 1);
-                  
-                  // Limpar canvas
-                  ctx.clearRect(0, 0, canvas.width, canvas.height);
-                  ctx.fillStyle = '#000000';
-                  ctx.fillRect(0, 0, canvas.width, canvas.height);
-                  
-                  // Desenhar imagem com transição
-                  drawImageWithTransition(
-                    ctx, 
-                    img, 
-                    canvas, 
-                    selectedTransition, 
-                    transitionProgress, 
-                    settings.enableParticles,
-                    settings.smartCrop || 'center'
-                  );
-                  
-                  // Adicionar texto overlay
-                  addTextOverlay(ctx, canvas, year, globalImageIndex, images.length, {
-                    showYearText: settings.showYearText,
-                    showPhotoCount: settings.showPhotoCount
-                  });
-                  
-                  // Atualizar progresso
-                  currentFrame++;
-                  const progressPercent = Math.min(Math.round((currentFrame / totalFrames) * 100), 100);
-                  setProgress(progressPercent);
-                  
-                  frame++;
+                // Limpar canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Desenhar imagem com transição
+                drawImageWithTransition(
+                  ctx, 
+                  img, 
+                  canvas, 
+                  selectedTransition, 
+                  transitionProgress, 
+                  settings.enableParticles,
+                  settings.smartCrop || 'center'
+                );
+                
+                // Adicionar texto overlay
+                addTextOverlay(ctx, canvas, year, globalImageIndex, images.length, {
+                  showYearText: settings.showYearText,
+                  showPhotoCount: settings.showPhotoCount
+                });
+                
+                // Atualizar progresso
+                currentFrame++;
+                const progressPercent = Math.min(Math.round((currentFrame / totalFrames) * 100), 100);
+                setProgress(progressPercent);
+                
+                frame++;
+                
+                // Aguardar o tempo exato para o próximo frame
+                if (frame < framesPerImage) {
+                  setTimeout(renderFrame, frameInterval);
+                } else {
+                  const totalElapsed = performance.now() - startTime;
+                  console.log(`🕐 Imagem ${globalImageIndex + 1}: ${totalElapsed.toFixed(2)}ms (esperado: ${targetDuration.toFixed(2)}ms)`);
+                  resolve();
                 }
-                
-                // Continuar animação
-                requestAnimationFrame(animateFrame);
               };
               
-              // Iniciar animação
-              requestAnimationFrame(animateFrame);
-              
-              // Forçar duração mínima - aguardar o tempo total se necessário
-              setTimeout(() => {
-                if (frame < framesPerImage) {
-                  console.log(`⏰ Forçando finalização da imagem ${globalImageIndex + 1} após ${targetDuration}ms`);
-                  frame = framesPerImage; // Forçar finalização
-                }
-              }, targetDuration);
+              // Iniciar renderização
+              renderFrame();
             });
             
             // Atualizar índices
