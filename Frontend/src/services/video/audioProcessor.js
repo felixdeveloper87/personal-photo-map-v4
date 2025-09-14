@@ -124,7 +124,7 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
       console.log('Durações calculadas:', {
         videoDurationOriginal: videoDuration,
         audioTargetDuration: targetDuration,
-        audioEndOffset: audioEndOffset,
+        audioEndOffset: targetLength,
         originalAudioDuration: originalAudioBuffer.duration
       });
       
