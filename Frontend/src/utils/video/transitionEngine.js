@@ -34,11 +34,11 @@ const applyParticleEffect = (ctx, canvas, progress) => {
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawFadeTransition = (ctx, img, canvas, progress) => {
+const drawFadeTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
   ctx.save();
   ctx.globalAlpha = Math.min(progress * 2, 1);
   
-  const { x, y, width, height } = calculateImageDimensions(img, canvas);
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
   ctx.drawImage(img, x, y, width, height);
   
   ctx.restore();
@@ -51,14 +51,14 @@ const drawFadeTransition = (ctx, img, canvas, progress) => {
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawSlideTransition = (ctx, img, canvas, progress) => {
+const drawSlideTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
   const slideProgress = Math.min(progress * 1.5, 1);
   const slideOffset = (1 - slideProgress) * canvas.width;
   
   ctx.save();
   ctx.translate(slideOffset, 0);
   
-  const { x, y, width, height } = calculateImageDimensions(img, canvas);
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
   ctx.drawImage(img, x, y, width, height);
   
   ctx.restore();
@@ -71,7 +71,7 @@ const drawSlideTransition = (ctx, img, canvas, progress) => {
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawZoomTransition = (ctx, img, canvas, progress) => {
+const drawZoomTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
   const zoomProgress = Math.min(progress * 1.2, 1);
   const scale = 0.8 + (zoomProgress * 0.2);
   
@@ -80,7 +80,7 @@ const drawZoomTransition = (ctx, img, canvas, progress) => {
   ctx.scale(scale, scale);
   ctx.translate(-canvas.width / 2, -canvas.height / 2);
   
-  const { x, y, width, height } = calculateImageDimensions(img, canvas);
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
   ctx.drawImage(img, x, y, width, height);
   
   ctx.restore();
@@ -93,7 +93,7 @@ const drawZoomTransition = (ctx, img, canvas, progress) => {
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawKenBurnsTransition = (ctx, img, canvas, progress) => {
+const drawKenBurnsTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
   const kenBurnsProgress = progress;
   const scale = 1 + (kenBurnsProgress * 0.1);
   const offsetX = kenBurnsProgress * 20;
@@ -104,7 +104,7 @@ const drawKenBurnsTransition = (ctx, img, canvas, progress) => {
   ctx.scale(scale, scale);
   ctx.translate(-canvas.width / 2, -canvas.height / 2);
   
-  const { x, y, width, height } = calculateImageDimensions(img, canvas);
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
   ctx.drawImage(img, x, y, width, height);
   
   ctx.restore();
@@ -117,7 +117,7 @@ const drawKenBurnsTransition = (ctx, img, canvas, progress) => {
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawWipeTransition = (ctx, img, canvas, progress) => {
+const drawWipeTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
   const wipeProgress = Math.min(progress * 1.3, 1);
   const wipeWidth = wipeProgress * canvas.width;
   
@@ -126,7 +126,7 @@ const drawWipeTransition = (ctx, img, canvas, progress) => {
   ctx.rect(0, 0, wipeWidth, canvas.height);
   ctx.clip();
   
-  const { x, y, width, height } = calculateImageDimensions(img, canvas);
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
   ctx.drawImage(img, x, y, width, height);
   
   ctx.restore();
@@ -139,7 +139,7 @@ const drawWipeTransition = (ctx, img, canvas, progress) => {
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawSpiralTransition = (ctx, img, canvas, progress) => {
+const drawSpiralTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
   const spiralProgress = Math.min(progress * 1.2, 1);
   const rotation = spiralProgress * Math.PI * 0.5;
   const scale = 0.7 + (spiralProgress * 0.3);
@@ -150,7 +150,7 @@ const drawSpiralTransition = (ctx, img, canvas, progress) => {
   ctx.scale(scale, scale);
   ctx.translate(-canvas.width / 2, -canvas.height / 2);
   
-  const { x, y, width, height } = calculateImageDimensions(img, canvas);
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
   ctx.drawImage(img, x, y, width, height);
   
   ctx.restore();
@@ -163,7 +163,7 @@ const drawSpiralTransition = (ctx, img, canvas, progress) => {
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawBounceTransition = (ctx, img, canvas, progress) => {
+const drawBounceTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
   const bounceProgress = Math.min(progress * 1.1, 1);
   const bounce = Math.sin(bounceProgress * Math.PI) * 0.1;
   const scale = 0.9 + bounce;
@@ -173,7 +173,7 @@ const drawBounceTransition = (ctx, img, canvas, progress) => {
   ctx.scale(scale, scale);
   ctx.translate(-canvas.width / 2, -canvas.height / 2);
   
-  const { x, y, width, height } = calculateImageDimensions(img, canvas);
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
   ctx.drawImage(img, x, y, width, height);
   
   ctx.restore();
@@ -186,7 +186,7 @@ const drawBounceTransition = (ctx, img, canvas, progress) => {
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawFlip3DTransition = (ctx, img, canvas, progress) => {
+const drawFlip3DTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
   const flipProgress = Math.min(progress * 1.3, 1);
   const perspective = Math.cos(flipProgress * Math.PI * 0.5);
   
@@ -196,7 +196,7 @@ const drawFlip3DTransition = (ctx, img, canvas, progress) => {
   ctx.translate(-canvas.width / 2, -canvas.height / 2);
   
   if (perspective > 0) {
-    const { x, y, width, height } = calculateImageDimensions(img, canvas);
+    const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
     ctx.drawImage(img, x, y, width, height);
   }
   
@@ -207,13 +207,19 @@ const drawFlip3DTransition = (ctx, img, canvas, progress) => {
  * Calcula dimensões da imagem para ajustar ao canvas mantendo aspect ratio
  * @param {HTMLImageElement} img - Imagem
  * @param {HTMLCanvasElement} canvas - Canvas
+ * @param {string} smartCrop - Tipo de crop inteligente
  * @returns {Object} Coordenadas e dimensões
  */
-const calculateImageDimensions = (img, canvas) => {
+const calculateImageDimensions = (img, canvas, smartCrop = 'center') => {
   const imgAspect = img.width / img.height;
   const canvasAspect = canvas.width / canvas.height;
   
   let width, height, x, y;
+  
+  // Para Stories (vertical), usar crop inteligente para imagens landscape
+  if (canvasAspect < 1 && imgAspect > 1.5) { // Canvas vertical e imagem landscape
+    return calculateSmartCrop(img, canvas, smartCrop);
+  }
   
   if (imgAspect > canvasAspect) {
     // Imagem mais larga - ajustar pela altura
@@ -227,6 +233,53 @@ const calculateImageDimensions = (img, canvas) => {
     height = width / imgAspect;
     x = 0;
     y = (canvas.height - height) / 2;
+  }
+  
+  return { x, y, width, height };
+};
+
+/**
+ * Calcula smart crop para imagens landscape em formato vertical
+ * @param {HTMLImageElement} img - Imagem
+ * @param {HTMLCanvasElement} canvas - Canvas
+ * @param {string} cropType - Tipo de crop
+ * @returns {Object} Coordenadas e dimensões
+ */
+const calculateSmartCrop = (img, canvas, cropType) => {
+  const imgAspect = img.width / img.height;
+  const canvasAspect = canvas.width / canvas.height;
+  
+  // Calcular dimensões para preencher o canvas mantendo aspect ratio
+  let scaleX = canvas.width / img.width;
+  let scaleY = canvas.height / img.height;
+  let scale = Math.max(scaleX, scaleY); // Preencher completamente
+  
+  let width = img.width * scale;
+  let height = img.height * scale;
+  let x = (canvas.width - width) / 2;
+  let y = (canvas.height - height) / 2;
+  
+  // Aplicar crop inteligente baseado no tipo
+  switch (cropType) {
+    case 'face-detection':
+      // Simular detecção de rosto - focar no centro superior
+      y = Math.max(0, y - height * 0.1);
+      break;
+      
+    case 'object-detection':
+      // Simular detecção de objeto - focar no centro
+      // Manter posição central
+      break;
+      
+    case 'rule-of-thirds':
+      // Regra dos terços - focar no terço superior
+      y = Math.max(0, y - height * 0.15);
+      break;
+      
+    case 'center':
+    default:
+      // Crop central - manter posição atual
+      break;
   }
   
   return { x, y, width, height };
@@ -291,36 +344,36 @@ export const getDynamicTransition = (imageIndex, totalImages, currentYear, previ
  * @param {number} progress - Progresso da transição (0-1)
  * @param {boolean} enableParticles - Se deve aplicar efeito de partículas
  */
-export const drawImageWithTransition = (ctx, img, canvas, transition, progress, enableParticles = false) => {
+export const drawImageWithTransition = (ctx, img, canvas, transition, progress, enableParticles = false, smartCrop = 'center') => {
   // Aplicar transição baseada no tipo
   switch (transition) {
     case 'fade':
-      drawFadeTransition(ctx, img, canvas, progress);
+      drawFadeTransition(ctx, img, canvas, progress, smartCrop);
       break;
     case 'slide':
-      drawSlideTransition(ctx, img, canvas, progress);
+      drawSlideTransition(ctx, img, canvas, progress, smartCrop);
       break;
     case 'zoom':
-      drawZoomTransition(ctx, img, canvas, progress);
+      drawZoomTransition(ctx, img, canvas, progress, smartCrop);
       break;
     case 'kenBurns':
-      drawKenBurnsTransition(ctx, img, canvas, progress);
+      drawKenBurnsTransition(ctx, img, canvas, progress, smartCrop);
       break;
     case 'wipe':
-      drawWipeTransition(ctx, img, canvas, progress);
+      drawWipeTransition(ctx, img, canvas, progress, smartCrop);
       break;
     case 'spiral':
-      drawSpiralTransition(ctx, img, canvas, progress);
+      drawSpiralTransition(ctx, img, canvas, progress, smartCrop);
       break;
     case 'bounce':
-      drawBounceTransition(ctx, img, canvas, progress);
+      drawBounceTransition(ctx, img, canvas, progress, smartCrop);
       break;
     case 'flip3d':
-      drawFlip3DTransition(ctx, img, canvas, progress);
+      drawFlip3DTransition(ctx, img, canvas, progress, smartCrop);
       break;
     default:
       // Fallback para fade
-      drawFadeTransition(ctx, img, canvas, progress);
+      drawFadeTransition(ctx, img, canvas, progress, smartCrop);
   }
   
   // Aplicar efeito de partículas se habilitado

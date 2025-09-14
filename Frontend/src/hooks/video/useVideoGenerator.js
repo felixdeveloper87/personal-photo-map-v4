@@ -331,7 +331,8 @@ export const useVideoGenerator = () => {
                     canvas, 
                     selectedTransition, 
                     transitionProgress, 
-                    settings.enableParticles
+                    settings.enableParticles,
+                    settings.smartCrop || 'center'
                   );
                   
                   // Adicionar texto overlay

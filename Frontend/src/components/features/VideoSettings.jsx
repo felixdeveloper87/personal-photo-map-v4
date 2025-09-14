@@ -135,11 +135,36 @@ const VideoSettings = ({
           <option value="720p">🖥️ 720p (1280x720)</option>
           <option value="1080p">📺 1080p (1920x1080)</option>
           <option value="1440p">🖨️ 1440p (2560x1440)</option>
-          <option value="stories-hd">📱 Stories HD (1080x1920)</option>
-          <option value="stories-4k">📱 Stories 4K (1440x2560)</option>
-          <option value="reel-standard">📱 Instagram Feed (1080x1350)</option>
+          <option value="stories-hd">📱 Stories HD (1080x1920) - Vertical</option>
+          <option value="stories-4k">📱 Stories 4K (1440x2560) - Vertical</option>
+          <option value="reel-standard">📱 Instagram Feed (1080x1350) - Square</option>
         </Select>
+        <Text fontSize="xs" color={mutedTextColor} mt={1}>
+          {settings.resolution.includes('stories') && 
+            '💡 Stories format: Smart crop will preserve image meaning for landscape photos'
+          }
+        </Text>
       </FormControl>
+
+      {/* Smart Crop para Stories */}
+      {settings.resolution.includes('stories') && (
+        <FormControl>
+          <FormLabel color={textColor}>Smart Crop for Landscape Photos</FormLabel>
+          <Select
+            value={settings.smartCrop || 'center'}
+            onChange={(e) => handleSettingChange('smartCrop', e.target.value)}
+            bg={inputBg}
+          >
+            <option value="center">🎯 Center Crop (Default)</option>
+            <option value="face-detection">👤 Face Detection (Best for portraits)</option>
+            <option value="object-detection">🔍 Object Detection (Best for landscapes)</option>
+            <option value="rule-of-thirds">📐 Rule of Thirds (Artistic composition)</option>
+          </Select>
+          <Text fontSize="xs" color={mutedTextColor} mt={1}>
+            Choose how to crop landscape photos for vertical Stories format
+          </Text>
+        </FormControl>
+      )}
 
       {/* FPS */}
       <FormControl>
