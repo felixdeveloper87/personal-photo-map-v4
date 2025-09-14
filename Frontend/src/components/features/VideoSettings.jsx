@@ -77,14 +77,19 @@ const VideoSettings = ({
           bg={inputBg}
         >
           <option value="dynamic">🎭 Dynamic (Smart)</option>
-          <option value="fade">🌅 Fade</option>
-          <option value="slide">➡️ Slide</option>
-          <option value="zoom">🔍 Zoom</option>
-          <option value="kenBurns">🎬 Ken Burns</option>
-          <option value="wipe">🧹 Wipe</option>
-          <option value="spiral">🌀 Spiral</option>
-          <option value="bounce">⚡ Bounce</option>
-          <option value="flip3d">🔄 Flip 3D</option>
+          <option value="fade">🌅 Fade (Professional)</option>
+          <option value="slide">➡️ Slide (Cinematic)</option>
+          <option value="zoom">🔍 Zoom (Smooth)</option>
+          <option value="kenBurns">🎬 Ken Burns (Classic)</option>
+          <option value="dissolve">✨ Dissolve (Elegant)</option>
+          <option value="push">📱 Push (Modern)</option>
+          <option value="reveal">🎭 Reveal (Dramatic)</option>
+          <option value="scale">📏 Scale (Dynamic)</option>
+          <option value="rotate">🔄 Rotate (Artistic)</option>
+          <option value="wipe">🧹 Wipe (Clean)</option>
+          <option value="spiral">🌀 Spiral (Creative)</option>
+          <option value="bounce">⚡ Bounce (Playful)</option>
+          <option value="flip3d">🎪 Flip 3D (3D Effect)</option>
         </Select>
       </FormControl>
 

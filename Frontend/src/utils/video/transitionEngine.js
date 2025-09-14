@@ -28,7 +28,14 @@ const applyParticleEffect = (ctx, canvas, progress) => {
 };
 
 /**
- * Desenha imagem com transição fade
+ * Função de easing suave para transições profissionais
+ */
+const easeInOutCubic = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const easeOutQuart = (t) => 1 - Math.pow(1 - t, 4);
+const easeInQuart = (t) => t * t * t * t;
+
+/**
+ * Desenha imagem com transição fade profissional
  * @param {CanvasRenderingContext2D} ctx - Contexto do canvas
  * @param {HTMLImageElement} img - Imagem a ser desenhada
  * @param {HTMLCanvasElement} canvas - Canvas de destino
@@ -36,7 +43,10 @@ const applyParticleEffect = (ctx, canvas, progress) => {
  */
 const drawFadeTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
   ctx.save();
-  ctx.globalAlpha = Math.min(progress * 2, 1);
+  
+  // Easing suave para fade mais natural
+  const easedProgress = easeInOutCubic(progress);
+  ctx.globalAlpha = easedProgress;
   
   const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
   ctx.drawImage(img, x, y, width, height);
@@ -45,18 +55,27 @@ const drawFadeTransition = (ctx, img, canvas, progress, smartCrop = 'center') =>
 };
 
 /**
- * Desenha imagem com transição slide
+ * Desenha imagem com transição slide cinematográfica
  * @param {CanvasRenderingContext2D} ctx - Contexto do canvas
  * @param {HTMLImageElement} img - Imagem a ser desenhada
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
 const drawSlideTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
-  const slideProgress = Math.min(progress * 1.5, 1);
-  const slideOffset = (1 - slideProgress) * canvas.width;
+  // Easing suave para movimento mais natural
+  const easedProgress = easeOutQuart(progress);
+  const slideOffset = (1 - easedProgress) * canvas.width;
   
   ctx.save();
-  ctx.translate(slideOffset, 0);
+  
+  // Adicionar paralaxe sutil para profundidade
+  const parallaxOffset = Math.sin(easedProgress * Math.PI) * 10;
+  ctx.translate(slideOffset, parallaxOffset);
+  
+  // Aplicar blur sutil durante o movimento
+  if (easedProgress < 0.3) {
+    ctx.filter = `blur(${(0.3 - easedProgress) * 2}px)`;
+  }
   
   const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
   ctx.drawImage(img, x, y, width, height);
@@ -72,12 +91,20 @@ const drawSlideTransition = (ctx, img, canvas, progress, smartCrop = 'center') =
  * @param {number} progress - Progresso da transição (0-1)
  */
 const drawZoomTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
-  const zoomProgress = Math.min(progress * 1.2, 1);
-  const scale = 0.8 + (zoomProgress * 0.2);
+  // Easing suave para zoom mais natural
+  const easedProgress = easeInOutCubic(progress);
+  
+  // Zoom mais sutil e profissional
+  const scale = 0.9 + (easedProgress * 0.15);
   
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.scale(scale, scale);
+  
+  // Adicionar rotação sutil para dinamismo
+  const rotation = Math.sin(easedProgress * Math.PI) * 0.02;
+  ctx.rotate(rotation);
+  
   ctx.translate(-canvas.width / 2, -canvas.height / 2);
   
   const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
@@ -94,14 +121,22 @@ const drawZoomTransition = (ctx, img, canvas, progress, smartCrop = 'center') =>
  * @param {number} progress - Progresso da transição (0-1)
  */
 const drawKenBurnsTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
-  const kenBurnsProgress = progress;
-  const scale = 1 + (kenBurnsProgress * 0.1);
-  const offsetX = kenBurnsProgress * 20;
-  const offsetY = kenBurnsProgress * 15;
+  // Easing suave para movimento mais natural
+  const easedProgress = easeInOutCubic(progress);
+  
+  // Movimento mais sutil e cinematográfico
+  const scale = 1 + (easedProgress * 0.08);
+  const offsetX = Math.sin(easedProgress * Math.PI) * 15;
+  const offsetY = Math.cos(easedProgress * Math.PI * 0.7) * 10;
   
   ctx.save();
   ctx.translate(canvas.width / 2 + offsetX, canvas.height / 2 + offsetY);
   ctx.scale(scale, scale);
+  
+  // Adicionar rotação sutil
+  const rotation = Math.sin(easedProgress * Math.PI * 0.5) * 0.01;
+  ctx.rotate(rotation);
+  
   ctx.translate(-canvas.width / 2, -canvas.height / 2);
   
   const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
@@ -295,7 +330,10 @@ const calculateSmartCrop = (img, canvas, cropType) => {
  * @returns {string} Nome da transição
  */
 export const getDynamicTransition = (imageIndex, totalImages, currentYear, previousYear, mode = 'smart') => {
-  const transitions = ['fade', 'slide', 'zoom', 'kenBurns', 'wipe', 'spiral', 'bounce', 'flip3d'];
+  const transitions = [
+    'fade', 'slide', 'zoom', 'kenBurns', 'wipe', 'spiral', 'bounce', 'flip3d',
+    'dissolve', 'push', 'reveal', 'scale', 'rotate'
+  ];
   
   if (mode === 'random') {
     return transitions[Math.floor(Math.random() * transitions.length)];
@@ -371,6 +409,22 @@ export const drawImageWithTransition = (ctx, img, canvas, transition, progress, 
     case 'flip3d':
       drawFlip3DTransition(ctx, img, canvas, progress, smartCrop);
       break;
+    // Novas transições cinematográficas
+    case 'dissolve':
+      drawDissolveTransition(ctx, img, canvas, progress, smartCrop);
+      break;
+    case 'push':
+      drawPushTransition(ctx, img, canvas, progress, smartCrop);
+      break;
+    case 'reveal':
+      drawRevealTransition(ctx, img, canvas, progress, smartCrop);
+      break;
+    case 'scale':
+      drawScaleTransition(ctx, img, canvas, progress, smartCrop);
+      break;
+    case 'rotate':
+      drawRotateTransition(ctx, img, canvas, progress, smartCrop);
+      break;
     default:
       // Fallback para fade
       drawFadeTransition(ctx, img, canvas, progress, smartCrop);
@@ -380,4 +434,135 @@ export const drawImageWithTransition = (ctx, img, canvas, transition, progress, 
   if (enableParticles && progress > 0.5) {
     applyParticleEffect(ctx, canvas, progress - 0.5);
   }
+};
+
+/**
+ * Desenha imagem com transição dissolve cinematográfica
+ * @param {CanvasRenderingContext2D} ctx - Contexto do canvas
+ * @param {HTMLImageElement} img - Imagem a ser desenhada
+ * @param {HTMLCanvasElement} canvas - Canvas de destino
+ * @param {number} progress - Progresso da transição (0-1)
+ */
+const drawDissolveTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
+  ctx.save();
+  
+  // Easing suave para dissolve mais natural
+  const easedProgress = easeInOutCubic(progress);
+  ctx.globalAlpha = easedProgress;
+  
+  // Adicionar blur sutil durante a transição
+  if (easedProgress < 0.5) {
+    ctx.filter = `blur(${(0.5 - easedProgress) * 1}px)`;
+  }
+  
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
+  ctx.drawImage(img, x, y, width, height);
+  
+  ctx.restore();
+};
+
+/**
+ * Desenha imagem com transição push cinematográfica
+ * @param {CanvasRenderingContext2D} ctx - Contexto do canvas
+ * @param {HTMLImageElement} img - Imagem a ser desenhada
+ * @param {HTMLCanvasElement} canvas - Canvas de destino
+ * @param {number} progress - Progresso da transição (0-1)
+ */
+const drawPushTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
+  // Easing suave para movimento mais natural
+  const easedProgress = easeOutQuart(progress);
+  const pushOffset = (1 - easedProgress) * canvas.width;
+  
+  ctx.save();
+  
+  // Adicionar escala sutil durante o push
+  const scale = 0.95 + (easedProgress * 0.05);
+  ctx.scale(scale, scale);
+  ctx.translate(pushOffset, 0);
+  
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
+  ctx.drawImage(img, x, y, width, height);
+  
+  ctx.restore();
+};
+
+/**
+ * Desenha imagem com transição reveal cinematográfica
+ * @param {CanvasRenderingContext2D} ctx - Contexto do canvas
+ * @param {HTMLImageElement} img - Imagem a ser desenhada
+ * @param {HTMLCanvasElement} canvas - Canvas de destino
+ * @param {number} progress - Progresso da transição (0-1)
+ */
+const drawRevealTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
+  ctx.save();
+  
+  // Easing suave para reveal mais natural
+  const easedProgress = easeInQuart(progress);
+  
+  // Criar máscara de reveal
+  ctx.beginPath();
+  ctx.rect(0, 0, canvas.width * easedProgress, canvas.height);
+  ctx.clip();
+  
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
+  ctx.drawImage(img, x, y, width, height);
+  
+  ctx.restore();
+};
+
+/**
+ * Desenha imagem com transição scale cinematográfica
+ * @param {CanvasRenderingContext2D} ctx - Contexto do canvas
+ * @param {HTMLImageElement} img - Imagem a ser desenhada
+ * @param {HTMLCanvasElement} canvas - Canvas de destino
+ * @param {number} progress - Progresso da transição (0-1)
+ */
+const drawScaleTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
+  // Easing suave para scale mais natural
+  const easedProgress = easeInOutCubic(progress);
+  
+  // Scale mais sutil e profissional
+  const scale = 0.8 + (easedProgress * 0.25);
+  
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.scale(scale, scale);
+  
+  // Adicionar rotação sutil
+  const rotation = Math.sin(easedProgress * Math.PI) * 0.03;
+  ctx.rotate(rotation);
+  
+  ctx.translate(-canvas.width / 2, -canvas.height / 2);
+  
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
+  ctx.drawImage(img, x, y, width, height);
+  
+  ctx.restore();
+};
+
+/**
+ * Desenha imagem com transição rotate cinematográfica
+ * @param {CanvasRenderingContext2D} ctx - Contexto do canvas
+ * @param {HTMLImageElement} img - Imagem a ser desenhada
+ * @param {HTMLCanvasElement} canvas - Canvas de destino
+ * @param {number} progress - Progresso da transição (0-1)
+ */
+const drawRotateTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
+  // Easing suave para rotação mais natural
+  const easedProgress = easeInOutCubic(progress);
+  
+  // Rotação sutil e profissional
+  const rotation = easedProgress * Math.PI * 0.1;
+  const scale = 0.9 + (easedProgress * 0.1);
+  
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate(rotation);
+  ctx.scale(scale, scale);
+  ctx.translate(-canvas.width / 2, -canvas.height / 2);
+  
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
+  ctx.drawImage(img, x, y, width, height);
+  
+  ctx.restore();
 };
