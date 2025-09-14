@@ -25,7 +25,7 @@ import { FaVideo, FaImages, FaCalendar } from 'react-icons/fa';
 import { useQuery } from '@tanstack/react-query';
 import { AuthContext } from '../../context/AuthContext';
 import { buildApiUrl } from '../../utils/apiConfig';
-import TimelineVideoGenerator from '../features/TimelineVideoGenerator';
+import TimelineVideoGenerator from '../features/TimelineVideoGeneratorRefactored';
 
 // Fetch photos for video generation
 const fetchAllPictures = async () => {
