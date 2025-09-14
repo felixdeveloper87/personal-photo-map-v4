@@ -322,8 +322,9 @@ export const useVideoGenerator = () => {
                 showPhotoCount: settings.showPhotoCount
               });
               
-              // Aguardar apenas o necessário para manter sincronia
-              await new Promise(resolve => requestAnimationFrame(resolve));
+              // Aguardar o tempo correto para cada frame baseado no FPS
+              const frameTime = 1000 / settings.fps; // ~33.33ms para 30fps
+              await new Promise(resolve => setTimeout(resolve, frameTime));
               
               // Atualizar progresso
               currentFrame++;
