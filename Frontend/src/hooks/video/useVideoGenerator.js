@@ -297,15 +297,16 @@ export const useVideoGenerator = () => {
               settings.dynamicMode
             );
             
-            // Animar a imagem com timing preciso usando requestAnimationFrame
+            // Animar a imagem com timing preciso - forçar duração exata
             await new Promise((resolve) => {
               let frame = 0;
               const startTime = performance.now();
+              const targetDuration = (framesPerImage / settings.fps) * 1000; // Duração total em ms
               
               const animateFrame = () => {
                 if (frame >= framesPerImage) {
                   const totalElapsed = performance.now() - startTime;
-                  console.log(`🕐 Imagem ${globalImageIndex + 1}: ${totalElapsed.toFixed(2)}ms (esperado: ${(framesPerImage / settings.fps * 1000).toFixed(2)}ms)`);
+                  console.log(`🕐 Imagem ${globalImageIndex + 1}: ${totalElapsed.toFixed(2)}ms (esperado: ${targetDuration.toFixed(2)}ms)`);
                   resolve();
                   return;
                 }
@@ -353,6 +354,14 @@ export const useVideoGenerator = () => {
               
               // Iniciar animação
               requestAnimationFrame(animateFrame);
+              
+              // Forçar duração mínima - aguardar o tempo total se necessário
+              setTimeout(() => {
+                if (frame < framesPerImage) {
+                  console.log(`⏰ Forçando finalização da imagem ${globalImageIndex + 1} após ${targetDuration}ms`);
+                  frame = framesPerImage; // Forçar finalização
+                }
+              }, targetDuration);
             });
             
             // Atualizar índices
