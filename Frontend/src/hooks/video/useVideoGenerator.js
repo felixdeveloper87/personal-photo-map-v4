@@ -297,18 +297,37 @@ export const useVideoGenerator = () => {
               settings.dynamicMode
             );
             
-            // Animar a imagem com timing preciso usando setTimeout
+            // Animar a imagem com timing preciso usando requestAnimationFrame
             await new Promise((resolve) => {
-              let frame = 0;
               const startTime = performance.now();
-              const frameInterval = 1000 / settings.fps; // Intervalo entre frames em ms
               const targetDuration = (framesPerImage / settings.fps) * 1000; // Duração total em ms
+              const frameInterval = 1000 / settings.fps; // Intervalo entre frames em ms
+              const maxDuration = targetDuration * 2; // Timeout de segurança
               
-              const renderFrame = async () => {
+              let animationId;
+              let isResolved = false;
+              
+              const renderFrame = (currentTime) => {
+                const elapsed = currentTime - startTime;
+                const frame = Math.floor((elapsed / frameInterval));
+                
+                // Timeout de segurança
+                if (elapsed > maxDuration) {
+                  console.warn(`⚠️ Timeout na imagem ${globalImageIndex + 1} após ${elapsed.toFixed(2)}ms`);
+                  if (!isResolved) {
+                    isResolved = true;
+                    resolve();
+                  }
+                  return;
+                }
+                
                 if (frame >= framesPerImage) {
                   const totalElapsed = performance.now() - startTime;
                   console.log(`🕐 Imagem ${globalImageIndex + 1}: ${totalElapsed.toFixed(2)}ms (esperado: ${targetDuration.toFixed(2)}ms)`);
-                  resolve();
+                  if (!isResolved) {
+                    isResolved = true;
+                    resolve();
+                  }
                   return;
                 }
                 
@@ -338,25 +357,28 @@ export const useVideoGenerator = () => {
                   countryId: img.countryId
                 });
                 
-                // Atualizar progresso
-                currentFrame++;
-                const progressPercent = Math.min(Math.round((currentFrame / totalFrames) * 100), 100);
-                setProgress(progressPercent);
+                // Atualizar progresso apenas quando necessário
+                if (frame !== Math.floor(((currentTime - startTime) / frameInterval) - 1)) {
+                  currentFrame++;
+                  const progressPercent = Math.min(Math.round((currentFrame / totalFrames) * 100), 100);
+                  setProgress(progressPercent);
+                }
                 
-                frame++;
-                
-                // Aguardar o tempo exato para o próximo frame
-                if (frame < framesPerImage) {
-                  setTimeout(renderFrame, frameInterval);
-                } else {
-                  const totalElapsed = performance.now() - startTime;
-                  console.log(`🕐 Imagem ${globalImageIndex + 1}: ${totalElapsed.toFixed(2)}ms (esperado: ${targetDuration.toFixed(2)}ms)`);
-                  resolve();
+                // Continuar renderização
+                if (!isResolved) {
+                  animationId = requestAnimationFrame(renderFrame);
                 }
               };
               
               // Iniciar renderização
-              renderFrame();
+              animationId = requestAnimationFrame(renderFrame);
+              
+              // Cleanup em caso de cancelamento
+              return () => {
+                if (animationId) {
+                  cancelAnimationFrame(animationId);
+                }
+              };
             });
             
             // Atualizar índices
