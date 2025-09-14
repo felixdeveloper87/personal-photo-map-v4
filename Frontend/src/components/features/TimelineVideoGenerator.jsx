@@ -941,8 +941,8 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
         }
       }
       
-      // Configurar MediaRecorder com ou sem áudio
-      let stream = canvas.captureStream(settings.fps);
+      // Configurar MediaRecorder com ou sem áudio - usar captureStream sem FPS fixo
+      let stream = canvas.captureStream(0); // 0 = manual frame capture
       console.log('Stream inicial (apenas vídeo):', {
         videoTracks: stream.getVideoTracks().length,
         audioTracks: stream.getAudioTracks().length
@@ -1090,10 +1090,8 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       
       // Iniciar gravação e áudio simultaneamente para melhor sincronização
       console.log('🎬 Iniciando gravação do MediaRecorder...');
-      // Usar timeslice para melhor controle da gravação
-      const timeslice = Math.max(100, Math.floor(1000 / settings.fps)); // Pelo menos 100ms ou baseado no FPS
-      console.log('⏰ Usando timeslice de:', timeslice, 'ms');
-      mediaRecorder.start(timeslice);
+      // Iniciar sem timeslice para melhor controle manual
+      mediaRecorder.start();
       console.log('📹 MediaRecorder state after start:', mediaRecorder.state);
       
       // Iniciar áudio se configurado - com timing preciso
@@ -1156,7 +1154,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
             // Tempo de início para esta imagem
             const imageStartTime = Date.now();
             
-            // Animar a imagem
+            // Animar a imagem - renderizar todos os frames rapidamente
             for (let frame = 0; frame < framesPerImage; frame++) {
               const transitionProgress = Math.min(frame / (settings.fps * settings.transitionDuration), 1);
               
@@ -1171,13 +1169,15 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               // Adicionar texto overlay
               addTextOverlay(ctx, canvas, year, globalImageIndex, images.length);
               
-              // Usar requestAnimationFrame para melhor sincronização com MediaRecorder
-              await new Promise(resolve => {
-                requestAnimationFrame(() => {
-                  // Pequeno delay para garantir que o frame seja capturado
-                  setTimeout(resolve, 1000 / settings.fps);
-                });
-              });
+              // Solicitar captura manual do frame
+              const videoTrack = stream.getVideoTracks()[0];
+              if (videoTrack && videoTrack.requestFrame) {
+                videoTrack.requestFrame();
+              }
+              
+              // Aguardar o tempo correto para o próximo frame baseado no FPS
+              const frameDelay = 1000 / settings.fps;
+              await new Promise(resolve => setTimeout(resolve, frameDelay));
               
               // Atualizar progresso
               currentFrame++;
@@ -1221,7 +1221,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       
       // Aguardar um pouco antes de parar para garantir que todos os frames foram processados
       console.log('⏳ Aguardando finalização de frames...');
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Aumentei para 1 segundo
+      await new Promise(resolve => setTimeout(resolve, 100)); // Reduzido para 100ms
       
       // Parar o áudio se estiver rodando
       if (audioSetup) {
