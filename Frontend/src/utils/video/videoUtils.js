@@ -374,55 +374,60 @@ export const addTextOverlay = (ctx, canvas, year, imageIndex, totalImages, setti
     return countryMap[countryId.toLowerCase()] || countryId.toUpperCase();
   };
 
-  // Desenhar ano com destaque maior
+  // Desenhar ano centralizado com destaque maior
   if (showYearText) {
-    // Fundo destacado para o ano
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-    ctx.fillRect(x - 10, y - yearFontSize - 5, yearFontSize * 0.6 + 20, yearFontSize + 10);
+    // Centralizar o ano
+    ctx.textAlign = 'center';
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
     
-    // Ano em destaque
+    // Fundo destacado para o ano (centralizado)
+    const yearWidth = yearFontSize * 0.6;
+    const yearHeight = yearFontSize;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(centerX - yearWidth/2 - 15, centerY - yearHeight/2 - 8, yearWidth + 30, yearHeight + 16);
+    
+    // Ano em destaque centralizado
     ctx.font = `bold ${yearFontSize}px Arial`;
     ctx.fillStyle = '#FFD700'; // Dourado para destaque
     ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-    ctx.shadowBlur = 6;
-    ctx.fillText(year, x, y);
+    ctx.shadowBlur = 8;
+    ctx.fillText(year, centerX, centerY);
     
-    if (position.includes('bottom')) {
-      y -= yearFontSize + 15;
-    } else {
-      y += yearFontSize + 15;
-    }
+    // Restaurar alinhamento para outros textos
+    ctx.textAlign = position.includes('right') ? 'right' : 'left';
   }
   
-  // Desenhar nome do país
+  // Desenhar nome do país (canto inferior)
   if (showCountryName && countryId) {
     const countryName = getCountryName(countryId);
     if (countryName) {
+      // Posicionar no canto inferior
+      const countryX = position.includes('right') ? canvas.width - margin : margin;
+      const countryY = canvas.height - margin - (showPhotoCount ? countFontSize + 10 : 0);
+      
       // Fundo para o país
       ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-      ctx.fillRect(x - 8, y - countryFontSize - 3, countryName.length * countryFontSize * 0.6 + 16, countryFontSize + 6);
+      ctx.fillRect(countryX - 8, countryY - countryFontSize - 3, countryName.length * countryFontSize * 0.6 + 16, countryFontSize + 6);
       
       // Nome do país
       ctx.font = `bold ${countryFontSize}px Arial`;
       ctx.fillStyle = '#87CEEB'; // Azul claro para o país
       ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
       ctx.shadowBlur = 4;
-      ctx.fillText(countryName, x, y);
-      
-      if (position.includes('bottom')) {
-        y -= countryFontSize + 10;
-      } else {
-        y += countryFontSize + 10;
-      }
+      ctx.fillText(countryName, countryX, countryY);
     }
   }
   
-  // Desenhar contador de fotos
+  // Desenhar contador de fotos (canto inferior)
   if (showPhotoCount) {
+    const countX = position.includes('right') ? canvas.width - margin : margin;
+    const countY = canvas.height - margin;
+    
     ctx.font = `${countFontSize}px Arial`;
     ctx.fillStyle = textColor;
     const countText = `${imageIndex + 1} / ${totalImages}`;
-    ctx.fillText(countText, x, y);
+    ctx.fillText(countText, countX, countY);
   }
   
   // Detectar formato vertical para adicionar indicador
