@@ -245,7 +245,6 @@ export const useVideoGenerator = () => {
       
       // Marcar tempo de início da geração
       const generationStartTime = Date.now();
-      lastFrameTime = performance.now();
       console.log('Iniciando geração em:', generationStartTime);
       
       // Iniciar gravação
