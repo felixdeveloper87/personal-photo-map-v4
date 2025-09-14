@@ -150,14 +150,18 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       const ffmpeg = ffmpegRef.current;
       
       // Write input file
+      console.log('📁 Escrevendo arquivo WebM para FFmpeg...');
       await ffmpeg.writeFile('input.webm', await fetchFile(webmBlob));
+      console.log('✅ Arquivo WebM escrito com sucesso');
       
       // Set up progress tracking
       ffmpeg.on('progress', ({ progress }) => {
         const percent = Math.round(progress * 100);
         setConversionProgress(percent);
+        console.log('🔄 Progresso FFmpeg:', percent + '%');
       });
 
+      console.log('🎬 Iniciando conversão FFmpeg para MP4...');
       // Convert to MP4 with optimized settings for mobile compatibility
       await ffmpeg.exec([
         '-i', 'input.webm',
@@ -168,12 +172,21 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
         '-b:a', '128k',             // Audio bitrate
         '-movflags', '+faststart',   // Optimize for web streaming
         '-pix_fmt', 'yuv420p',      // Pixel format compatible with older devices
+        '-avoid_negative_ts', 'make_zero', // Evitar problemas de timestamp
         'output.mp4'
       ]);
+      console.log('✅ Conversão FFmpeg concluída');
 
       // Read the converted file
       const mp4Data = await ffmpeg.readFile('output.mp4');
       const mp4Blob = new Blob([mp4Data], { type: 'video/mp4' });
+      
+      console.log('📊 Comparação de arquivos:', {
+        webmSize: webmBlob.size,
+        mp4Size: mp4Blob.size,
+        webmSizeMB: (webmBlob.size / 1024 / 1024).toFixed(2) + ' MB',
+        mp4SizeMB: (mp4Blob.size / 1024 / 1024).toFixed(2) + ' MB'
+      });
 
       // Clean up
       await ffmpeg.deleteFile('input.webm');
@@ -182,7 +195,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       setIsConverting(false);
       setConversionProgress(0);
 
-      console.log('Video converted to MP4 successfully');
+      console.log('✅ Video converted to MP4 successfully');
       return mp4Blob;
 
     } catch (error) {
@@ -816,11 +829,6 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       return;
     }
 
-    // Load FFmpeg for MP4 conversion (non-blocking)
-    if (!ffmpegLoaded) {
-      loadFFmpeg();
-    }
-
     setIsGenerating(true);
     setProgress(0);
     recordedChunksRef.current = [];
@@ -850,6 +858,12 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
 
       // Calcular duração total do vídeo
       const totalVideoDuration = images.length * settings.duration;
+      console.log('📊 Cálculo de duração:', {
+        numberOfImages: images.length,
+        durationPerImage: settings.duration,
+        totalExpectedDuration: totalVideoDuration,
+        fps: settings.fps
+      });
       
       // Configurar áudio se habilitado
       let audioSetup = null;
@@ -960,16 +974,25 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
         videoBitsPerSecond: 8000000, // 8 Mbps
       };
       
-      // Tentar diferentes codecs para melhor compatibilidade de áudio
-      if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
+      // Tentar codecs MP4 primeiro para compatibilidade móvel
+      if (MediaRecorder.isTypeSupported('video/mp4;codecs=h264,aac')) {
+        mediaRecorderOptions.mimeType = 'video/mp4;codecs=h264,aac';
+        console.log('✅ Usando codec MP4: h264,aac');
+      } else if (MediaRecorder.isTypeSupported('video/mp4;codecs=avc1.42E01E,mp4a.40.2')) {
+        mediaRecorderOptions.mimeType = 'video/mp4;codecs=avc1.42E01E,mp4a.40.2';
+        console.log('✅ Usando codec MP4: avc1.42E01E,mp4a.40.2');
+      } else if (MediaRecorder.isTypeSupported('video/mp4')) {
+        mediaRecorderOptions.mimeType = 'video/mp4';
+        console.log('✅ Usando codec MP4 básico');
+      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
         mediaRecorderOptions.mimeType = 'video/webm;codecs=vp9,opus';
-        console.log('Usando codec: vp9,opus');
+        console.log('⚠️ Fallback para WebM: vp9,opus');
       } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
         mediaRecorderOptions.mimeType = 'video/webm;codecs=vp8,opus';
-        console.log('Usando codec: vp8,opus');
+        console.log('⚠️ Fallback para WebM: vp8,opus');
       } else if (MediaRecorder.isTypeSupported('video/webm')) {
         mediaRecorderOptions.mimeType = 'video/webm';
-        console.log('Usando codec: webm básico');
+        console.log('⚠️ Fallback para WebM básico');
       }
       
       console.log('MediaRecorder options:', mediaRecorderOptions);
@@ -992,30 +1015,61 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       };
 
       mediaRecorder.onstop = async () => {
-        const webmBlob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
-        const webmUrl = URL.createObjectURL(webmBlob);
-        setVideoUrl(webmUrl);
+        console.log('🎞️ MediaRecorder onstop chamado');
+        console.log('📦 Chunks gravados:', recordedChunksRef.current.length);
+        console.log('📏 Tamanho dos chunks:', recordedChunksRef.current.map(chunk => chunk.size));
         
-        // Convert to MP4 for better mobile compatibility
-        try {
-          const mp4Blob = await convertWebMToMP4(webmBlob);
-          const mp4Url = URL.createObjectURL(mp4Blob);
-          setMp4VideoUrl(mp4Url);
-          
+        // Detectar o tipo de vídeo baseado no mimeType usado
+        const isMP4 = mediaRecorderOptions.mimeType && mediaRecorderOptions.mimeType.includes('mp4');
+        const videoType = isMP4 ? 'video/mp4' : 'video/webm';
+        
+        const videoBlob = new Blob(recordedChunksRef.current, { type: videoType });
+        console.log(`🎥 ${isMP4 ? 'MP4' : 'WebM'} blob criado:`, {
+          size: videoBlob.size,
+          type: videoBlob.type,
+          sizeInMB: (videoBlob.size / 1024 / 1024).toFixed(2) + ' MB'
+        });
+        
+        const videoUrl = URL.createObjectURL(videoBlob);
+        setVideoUrl(videoUrl);
+        
+        if (isMP4) {
+          // Se já é MP4, usar diretamente
+          setMp4VideoUrl(videoUrl);
           toast({
-            title: 'Vídeo gerado e convertido com sucesso!',
+            title: 'Vídeo MP4 gerado com sucesso!',
             description: 'Seu vídeo timeline está pronto para download em formato MP4',
             status: 'success',
             duration: 5000,
           });
-        } catch (error) {
-          console.error('Error in video conversion:', error);
-          toast({
-            title: 'Vídeo gerado com sucesso!',
-            description: 'Vídeo pronto em formato WebM (conversão MP4 falhou)',
-            status: 'success',
-            duration: 5000,
-          });
+        } else {
+          // Se é WebM, tentar converter para MP4
+          try {
+            // Carregar FFmpeg apenas se necessário
+            if (!ffmpegLoaded) {
+              console.log('🔄 Carregando FFmpeg para conversão...');
+              await loadFFmpeg();
+            }
+            
+            const mp4Blob = await convertWebMToMP4(videoBlob);
+            const mp4Url = URL.createObjectURL(mp4Blob);
+            setMp4VideoUrl(mp4Url);
+            
+            toast({
+              title: 'Vídeo gerado e convertido com sucesso!',
+              description: 'Seu vídeo timeline está pronto para download em formato MP4',
+              status: 'success',
+              duration: 5000,
+            });
+          } catch (error) {
+            console.error('Error in video conversion:', error);
+            toast({
+              title: 'Vídeo gerado com sucesso!',
+              description: 'Vídeo pronto em formato WebM (conversão MP4 falhou)',
+              status: 'success',
+              duration: 5000,
+            });
+          }
         }
         
         setIsGenerating(false);
@@ -1035,7 +1089,12 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       console.log('Iniciando geração em:', generationStartTime);
       
       // Iniciar gravação e áudio simultaneamente para melhor sincronização
-      mediaRecorder.start();
+      console.log('🎬 Iniciando gravação do MediaRecorder...');
+      // Usar timeslice para melhor controle da gravação
+      const timeslice = Math.max(100, Math.floor(1000 / settings.fps)); // Pelo menos 100ms ou baseado no FPS
+      console.log('⏰ Usando timeslice de:', timeslice, 'ms');
+      mediaRecorder.start(timeslice);
+      console.log('📹 MediaRecorder state after start:', mediaRecorder.state);
       
       // Iniciar áudio se configurado - com timing preciso
       let audioStartTime = null;
@@ -1094,8 +1153,6 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               previousYear
             );
             
-            console.log(`Foto ${globalImageIndex + 1}: Using transition "${selectedTransition}" for year ${year}`);
-            
             // Tempo de início para esta imagem
             const imageStartTime = Date.now();
             
@@ -1114,14 +1171,13 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               // Adicionar texto overlay
               addTextOverlay(ctx, canvas, year, globalImageIndex, images.length);
               
-              // Sincronização mais precisa - aguardar o tempo correto para o próximo frame
-              const targetTime = imageStartTime + (frame + 1) * (1000 / settings.fps);
-              const currentTime = Date.now();
-              const waitTime = Math.max(0, targetTime - currentTime);
-              
-              if (waitTime > 0) {
-                await new Promise(resolve => setTimeout(resolve, waitTime));
-              }
+              // Usar requestAnimationFrame para melhor sincronização com MediaRecorder
+              await new Promise(resolve => {
+                requestAnimationFrame(() => {
+                  // Pequeno delay para garantir que o frame seja capturado
+                  setTimeout(resolve, 1000 / settings.fps);
+                });
+              });
               
               // Atualizar progresso
               currentFrame++;
@@ -1150,14 +1206,22 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       
       const generationEndTime = Date.now();
       const totalGenerationTime = (generationEndTime - generationStartTime) / 1000; // em segundos
-      console.log('Tempo total de geração:', totalGenerationTime, 'segundos');
+      
+      console.log('✅ Processamento completo:', {
+        totalGenerationTime: totalGenerationTime,
+        expectedDuration: totalVideoDuration,
+        processedImages: globalImageIndex,
+        totalFrames: totalFrames,
+        processedFrames: currentFrame
+      });
       
       // Calcular quanto tempo o áudio deveria tocar baseado no tempo real de geração
       const expectedAudioDuration = Math.max(totalVideoDuration, totalGenerationTime);
-      console.log('Duração esperada do áudio:', expectedAudioDuration, 'segundos');
+      console.log('🎵 Duração esperada do áudio:', expectedAudioDuration, 'segundos');
       
       // Aguardar um pouco antes de parar para garantir que todos os frames foram processados
-      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log('⏳ Aguardando finalização de frames...');
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Aumentei para 1 segundo
       
       // Parar o áudio se estiver rodando
       if (audioSetup) {
@@ -1176,9 +1240,12 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
       }
       
       // Parar a gravação
+      console.log('🛑 Parando MediaRecorder...');
+      console.log('📹 MediaRecorder state before stop:', mediaRecorder.state);
       mediaRecorder.stop();
+      console.log('📹 MediaRecorder state after stop:', mediaRecorder.state);
       
-      console.log('Gravação finalizada com áudio:', !!audioSetup);
+      console.log('🎬 Gravação finalizada com áudio:', !!audioSetup);
 
     } catch (error) {
       console.error('Erro ao gerar vídeo:', error);
