@@ -374,37 +374,35 @@ export const addTextOverlay = (ctx, canvas, year, imageIndex, totalImages, setti
     return countryMap[countryId.toLowerCase()] || countryId.toUpperCase();
   };
 
-  // Desenhar ano centralizado com destaque maior
+  // Desenhar ano no canto superior direito
   if (showYearText) {
-    // Centralizar o ano
-    ctx.textAlign = 'center';
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
+    // Posicionar no canto superior direito
+    ctx.textAlign = 'right';
+    const yearX = canvas.width - margin;
+    const yearY = margin + yearFontSize;
     
-    // Fundo destacado para o ano (centralizado)
+    // Fundo destacado para o ano
     const yearWidth = yearFontSize * 0.6;
     const yearHeight = yearFontSize;
     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillRect(centerX - yearWidth/2 - 15, centerY - yearHeight/2 - 8, yearWidth + 30, yearHeight + 16);
+    ctx.fillRect(yearX - yearWidth - 15, yearY - yearHeight - 5, yearWidth + 20, yearHeight + 10);
     
-    // Ano em destaque centralizado
+    // Ano em destaque
     ctx.font = `bold ${yearFontSize}px Arial`;
     ctx.fillStyle = '#FFD700'; // Dourado para destaque
     ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
     ctx.shadowBlur = 8;
-    ctx.fillText(year, centerX, centerY);
-    
-    // Restaurar alinhamento para outros textos
-    ctx.textAlign = position.includes('right') ? 'right' : 'left';
+    ctx.fillText(year, yearX, yearY);
   }
   
-  // Desenhar nome do país (canto inferior)
+  // Desenhar nome do país (canto inferior esquerdo)
   if (showCountryName && countryId) {
     const countryName = getCountryName(countryId);
     if (countryName) {
-      // Posicionar no canto inferior
-      const countryX = position.includes('right') ? canvas.width - margin : margin;
-      const countryY = canvas.height - margin - (showPhotoCount ? countFontSize + 10 : 0);
+      // Posicionar no canto inferior esquerdo
+      ctx.textAlign = 'left';
+      const countryX = margin;
+      const countryY = canvas.height - margin;
       
       // Fundo para o país
       ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
@@ -419,14 +417,22 @@ export const addTextOverlay = (ctx, canvas, year, imageIndex, totalImages, setti
     }
   }
   
-  // Desenhar contador de fotos (canto inferior)
+  // Desenhar contador de fotos (canto superior esquerdo)
   if (showPhotoCount) {
-    const countX = position.includes('right') ? canvas.width - margin : margin;
-    const countY = canvas.height - margin;
+    ctx.textAlign = 'left';
+    const countX = margin;
+    const countY = margin + countFontSize;
     
-    ctx.font = `${countFontSize}px Arial`;
-    ctx.fillStyle = textColor;
+    // Fundo para o contador
     const countText = `${imageIndex + 1} / ${totalImages}`;
+    const countWidth = countText.length * countFontSize * 0.6;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(countX - 5, countY - countFontSize - 3, countWidth + 10, countFontSize + 6);
+    
+    ctx.font = `bold ${countFontSize}px Arial`;
+    ctx.fillStyle = textColor;
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+    ctx.shadowBlur = 4;
     ctx.fillText(countText, countX, countY);
   }
   

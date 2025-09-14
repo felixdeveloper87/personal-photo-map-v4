@@ -76,6 +76,7 @@ const VideoSettings = ({
           onChange={(e) => handleSettingChange('transition', e.target.value)}
           bg={inputBg}
         >
+          <option value="stories">📱 Stories Style (Clean & Simple)</option>
           <option value="dynamic">🎭 Dynamic (Smart)</option>
           <option value="fade">🌅 Fade (Professional)</option>
           <option value="slide">➡️ Slide (Cinematic)</option>
@@ -107,6 +108,19 @@ const VideoSettings = ({
             <option value="sequential">📋 Sequential</option>
           </Select>
         </FormControl>
+      )}
+
+      {/* Descrição do estilo Stories */}
+      {settings.transition === 'stories' && (
+        <Box p={3} bg="blue.50" border="1px solid" borderColor="blue.200" borderRadius="md">
+          <Text fontSize="sm" color="blue.800" fontWeight="medium" mb={1}>
+            📱 Stories Style
+          </Text>
+          <Text fontSize="xs" color="blue.700">
+            Clean, simple transitions perfect for Instagram Stories. 
+            Images display without complex effects for maximum impact.
+          </Text>
+        </Box>
       )}
 
       {/* Duração da transição */}

@@ -35,7 +35,27 @@ const easeOutQuart = (t) => 1 - Math.pow(1 - t, 4);
 const easeInQuart = (t) => t * t * t * t;
 
 /**
- * Desenha imagem com transição fade profissional
+ * Desenha imagem no estilo Stories (limpo e simples)
+ * @param {CanvasRenderingContext2D} ctx - Contexto do canvas
+ * @param {HTMLImageElement} img - Imagem a ser desenhada
+ * @param {HTMLCanvasElement} canvas - Canvas de destino
+ * @param {number} progress - Progresso da transição (0-1)
+ */
+const drawStoriesStyle = (ctx, img, canvas, progress, smartCrop = 'center') => {
+  ctx.save();
+  
+  // Estilo Stories: imagem limpa e simples
+  ctx.globalAlpha = 1;
+  
+  // Aplicar smart crop para Stories
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
+  ctx.drawImage(img, x, y, width, height);
+  
+  ctx.restore();
+};
+
+/**
+ * Desenha imagem no estilo Stories (sem transições complexas)
  * @param {CanvasRenderingContext2D} ctx - Contexto do canvas
  * @param {HTMLImageElement} img - Imagem a ser desenhada
  * @param {HTMLCanvasElement} canvas - Canvas de destino
@@ -44,9 +64,8 @@ const easeInQuart = (t) => t * t * t * t;
 const drawFadeTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
   ctx.save();
   
-  // Easing suave para fade mais natural
-  const easedProgress = easeInOutCubic(progress);
-  ctx.globalAlpha = easedProgress;
+  // Para Stories, mostrar a imagem completa sem transições
+  ctx.globalAlpha = 1;
   
   const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
   ctx.drawImage(img, x, y, width, height);
@@ -55,27 +74,17 @@ const drawFadeTransition = (ctx, img, canvas, progress, smartCrop = 'center') =>
 };
 
 /**
- * Desenha imagem com transição slide cinematográfica
+ * Desenha imagem no estilo Stories (simples)
  * @param {CanvasRenderingContext2D} ctx - Contexto do canvas
  * @param {HTMLImageElement} img - Imagem a ser desenhada
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
 const drawSlideTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
-  // Easing suave para movimento mais natural
-  const easedProgress = easeOutQuart(progress);
-  const slideOffset = (1 - easedProgress) * canvas.width;
-  
   ctx.save();
   
-  // Adicionar paralaxe sutil para profundidade
-  const parallaxOffset = Math.sin(easedProgress * Math.PI) * 10;
-  ctx.translate(slideOffset, parallaxOffset);
-  
-  // Aplicar blur sutil durante o movimento
-  if (easedProgress < 0.3) {
-    ctx.filter = `blur(${(0.3 - easedProgress) * 2}px)`;
-  }
+  // Para Stories, mostrar a imagem completa
+  ctx.globalAlpha = 1;
   
   const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
   ctx.drawImage(img, x, y, width, height);
@@ -331,7 +340,7 @@ const calculateSmartCrop = (img, canvas, cropType) => {
  */
 export const getDynamicTransition = (imageIndex, totalImages, currentYear, previousYear, mode = 'smart') => {
   const transitions = [
-    'fade', 'slide', 'zoom', 'kenBurns', 'wipe', 'spiral', 'bounce', 'flip3d',
+    'stories', 'fade', 'slide', 'zoom', 'kenBurns', 'wipe', 'spiral', 'bounce', 'flip3d',
     'dissolve', 'push', 'reveal', 'scale', 'rotate'
   ];
   
@@ -385,6 +394,10 @@ export const getDynamicTransition = (imageIndex, totalImages, currentYear, previ
 export const drawImageWithTransition = (ctx, img, canvas, transition, progress, enableParticles = false, smartCrop = 'center') => {
   // Aplicar transição baseada no tipo
   switch (transition) {
+    case 'stories':
+      // Estilo Stories: imagem simples sem transições
+      drawStoriesStyle(ctx, img, canvas, progress, smartCrop);
+      break;
     case 'fade':
       drawFadeTransition(ctx, img, canvas, progress, smartCrop);
       break;
@@ -426,8 +439,8 @@ export const drawImageWithTransition = (ctx, img, canvas, transition, progress, 
       drawRotateTransition(ctx, img, canvas, progress, smartCrop);
       break;
     default:
-      // Fallback para fade
-      drawFadeTransition(ctx, img, canvas, progress, smartCrop);
+      // Fallback para Stories
+      drawStoriesStyle(ctx, img, canvas, progress, smartCrop);
   }
   
   // Aplicar efeito de partículas se habilitado
