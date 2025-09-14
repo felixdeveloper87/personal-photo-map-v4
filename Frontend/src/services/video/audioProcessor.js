@@ -111,9 +111,9 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
         length: originalAudioBuffer.length
       });
       
-      // Ajustar duração do áudio para corresponder à duração do vídeo + margem de segurança
-      const safetyMargin = 2; // 2 segundos extra para garantir que não falte áudio
-      const targetDuration = videoDuration + safetyMargin;
+      // Ajustar duração do áudio para terminar 0.1s antes do vídeo
+      const audioEndOffset = 0.1; // Áudio termina 0.1s antes do vídeo
+      const targetDuration = videoDuration - audioEndOffset;
       const targetLength = audioContext.sampleRate * targetDuration;
       const adjustedBuffer = audioContext.createBuffer(
         originalAudioBuffer.numberOfChannels,
@@ -123,7 +123,8 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
       
       console.log('Durações calculadas:', {
         videoDurationOriginal: videoDuration,
-        audioDurationWithMargin: targetDuration,
+        audioTargetDuration: targetDuration,
+        audioEndOffset: audioEndOffset,
         originalAudioDuration: originalAudioBuffer.duration
       });
       
@@ -132,14 +133,14 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
         const adjustedData = adjustedBuffer.getChannelData(channel);
         
         if (originalAudioBuffer.duration >= targetDuration) {
-          // Áudio mais longo que vídeo - cortar
-          console.log('Áudio mais longo que vídeo - cortando...');
+          // Áudio mais longo que necessário - cortar para terminar 0.1s antes do vídeo
+          console.log('Áudio mais longo que necessário - cortando para terminar 0.1s antes do vídeo...');
           for (let i = 0; i < targetLength; i++) {
             adjustedData[i] = originalData[i] || 0;
           }
         } else {
-          // Áudio mais curto que vídeo - repetir
-          console.log('Áudio mais curto que vídeo - repetindo...');
+          // Áudio mais curto que necessário - repetir até terminar 0.1s antes do vídeo
+          console.log('Áudio mais curto que necessário - repetindo até terminar 0.1s antes do vídeo...');
           for (let i = 0; i < targetLength; i++) {
             const sourceIndex = i % originalData.length;
             adjustedData[i] = originalData[sourceIndex];
@@ -152,7 +153,9 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
     } else if (settings.musicSource === 'preset') {
       // Gerar música preset
       console.log('Gerando música preset:', settings.selectedPresetMusic);
-      audioBuffer = await generatePresetMusic(settings.selectedPresetMusic, videoDuration + 2);
+      const audioEndOffset = 0.1; // Áudio termina 0.1s antes do vídeo
+      const targetDuration = videoDuration - audioEndOffset;
+      audioBuffer = await generatePresetMusic(settings.selectedPresetMusic, targetDuration);
     } else {
       console.log('Nenhuma fonte de áudio configurada');
       return null;
@@ -175,6 +178,8 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
     
     console.log('Áudio conectado:', {
       bufferDuration: audioBuffer.duration,
+      videoDuration: videoDuration,
+      audioEndOffset: 0.1,
       sampleRate: audioBuffer.sampleRate,
       channels: audioBuffer.numberOfChannels,
       streamTracks: mediaStreamDestination.stream.getAudioTracks().length

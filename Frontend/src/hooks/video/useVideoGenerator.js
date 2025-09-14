@@ -151,8 +151,12 @@ export const useVideoGenerator = () => {
         console.log('Áudio configurado:', !!audioSetup);
       }
       
-      // Configurar MediaRecorder
+      // Configurar MediaRecorder com FPS fixo
       let stream = canvas.captureStream(settings.fps);
+      
+      // Forçar o timing correto do canvas
+      const frameInterval = 1000 / settings.fps;
+      let lastFrameTime = 0;
       
       if (audioSetup && audioSetup.audioStream) {
         const audioTracks = audioSetup.audioStream.getAudioTracks();
@@ -242,6 +246,7 @@ export const useVideoGenerator = () => {
       
       // Marcar tempo de início da geração
       const generationStartTime = Date.now();
+      lastFrameTime = performance.now();
       console.log('Iniciando geração em:', generationStartTime);
       
       // Iniciar gravação
@@ -295,10 +300,8 @@ export const useVideoGenerator = () => {
             );
             
             // Animar a imagem com timing preciso
-            const frameInterval = 1000 / settings.fps;
-            
             for (let frame = 0; frame < framesPerImage; frame++) {
-              const frameStartTime = Date.now();
+              const currentTime = performance.now();
               const transitionProgress = Math.min(frame / (settings.fps * settings.transitionDuration), 1);
               
               // Limpar canvas
@@ -322,9 +325,15 @@ export const useVideoGenerator = () => {
                 showPhotoCount: settings.showPhotoCount
               });
               
-              // Aguardar o tempo correto para cada frame baseado no FPS
-              const frameTime = 1000 / settings.fps; // ~33.33ms para 30fps
-              await new Promise(resolve => setTimeout(resolve, frameTime));
+              // Aguardar o tempo correto para o próximo frame
+              const targetTime = lastFrameTime + frameInterval;
+              const waitTime = Math.max(0, targetTime - performance.now());
+              
+              if (waitTime > 0) {
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+              }
+              
+              lastFrameTime = performance.now();
               
               // Atualizar progresso
               currentFrame++;
