@@ -238,23 +238,33 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                     spacing={1} 
                     align="center"
                     flex="1"
-                    p={3}
-                    bg={useColorModeValue("rgba(0,0,0,0.02)", "rgba(255,255,255,0.02)")}
-                    borderRadius="lg"
-                    border={`1px solid ${borderColor}`}
-                    transition="all 0.2s"
+                    p={4}
+                    bg={useColorModeValue(
+                      "linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(99, 102, 241, 0.05))",
+                      "linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(99, 102, 241, 0.1))"
+                    )}
+                    borderRadius="xl"
+                    border={`1px solid ${useColorModeValue("rgba(59, 130, 246, 0.2)", "rgba(59, 130, 246, 0.3)")}`}
+                    transition="all 0.3s ease"
                     _hover={{
-                      bg: useColorModeValue("rgba(0,0,0,0.04)", "rgba(255,255,255,0.04)"),
-                      transform: "translateY(-1px)"
+                      bg: useColorModeValue(
+                        "linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(99, 102, 241, 0.08))",
+                        "linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(99, 102, 241, 0.15))"
+                      ),
+                      transform: "translateY(-2px)",
+                      boxShadow: useColorModeValue(
+                        "0 8px 25px rgba(59, 130, 246, 0.15)",
+                        "0 8px 25px rgba(59, 130, 246, 0.25)"
+                      )
                     }}
                   >
-                    <Box mb={1}>
-                      <FaImages size={16} color={useColorModeValue("#6B7280", "#9CA3AF")} />
+                    <Box mb={2} p={2} borderRadius="lg" bg={useColorModeValue("rgba(59, 130, 246, 0.1)", "rgba(59, 130, 246, 0.2)")}>
+                      <FaImages size={18} color={useColorModeValue("#3B82F6", "#60A5FA")} />
                     </Box>
-                    <Text fontSize="xl" fontWeight="semibold" color={textColor} lineHeight="1">
+                    <Text fontSize="2xl" fontWeight="bold" color={useColorModeValue("#3B82F6", "#60A5FA")} lineHeight="1">
                       {totalPhotos}
                     </Text>
-                    <Text fontSize="xs" color={mutedTextColor} textAlign="center" lineHeight="1.2">
+                    <Text fontSize="xs" color={mutedTextColor} textAlign="center" lineHeight="1.2" fontWeight="medium">
                       Photos
                     </Text>
                   </VStack>
@@ -263,23 +273,33 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                     spacing={1} 
                     align="center"
                     flex="1"
-                    p={3}
-                    bg={useColorModeValue("rgba(0,0,0,0.02)", "rgba(255,255,255,0.02)")}
-                    borderRadius="lg"
-                    border={`1px solid ${borderColor}`}
-                    transition="all 0.2s"
+                    p={4}
+                    bg={useColorModeValue(
+                      "linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(5, 150, 105, 0.05))",
+                      "linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.1))"
+                    )}
+                    borderRadius="xl"
+                    border={`1px solid ${useColorModeValue("rgba(16, 185, 129, 0.2)", "rgba(16, 185, 129, 0.3)")}`}
+                    transition="all 0.3s ease"
                     _hover={{
-                      bg: useColorModeValue("rgba(0,0,0,0.04)", "rgba(255,255,255,0.04)"),
-                      transform: "translateY(-1px)"
+                      bg: useColorModeValue(
+                        "linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(5, 150, 105, 0.08))",
+                        "linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.15))"
+                      ),
+                      transform: "translateY(-2px)",
+                      boxShadow: useColorModeValue(
+                        "0 8px 25px rgba(16, 185, 129, 0.15)",
+                        "0 8px 25px rgba(16, 185, 129, 0.25)"
+                      )
                     }}
                   >
-                    <Box mb={1}>
-                      <FaCalendar size={16} color={useColorModeValue("#6B7280", "#9CA3AF")} />
+                    <Box mb={2} p={2} borderRadius="lg" bg={useColorModeValue("rgba(16, 185, 129, 0.1)", "rgba(16, 185, 129, 0.2)")}>
+                      <FaCalendar size={18} color={useColorModeValue("#10B981", "#34D399")} />
                     </Box>
-                    <Text fontSize="xl" fontWeight="semibold" color={textColor} lineHeight="1">
+                    <Text fontSize="2xl" fontWeight="bold" color={useColorModeValue("#10B981", "#34D399")} lineHeight="1">
                       {years.length}
                     </Text>
-                    <Text fontSize="xs" color={mutedTextColor} textAlign="center" lineHeight="1.2">
+                    <Text fontSize="xs" color={mutedTextColor} textAlign="center" lineHeight="1.2" fontWeight="medium">
                       Years
                     </Text>
                   </VStack>
@@ -288,23 +308,33 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                     spacing={1} 
                     align="center"
                     flex="1"
-                    p={3}
-                    bg={useColorModeValue("rgba(0,0,0,0.02)", "rgba(255,255,255,0.02)")}
-                    borderRadius="lg"
-                    border={`1px solid ${borderColor}`}
-                    transition="all 0.2s"
+                    p={4}
+                    bg={useColorModeValue(
+                      "linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(124, 58, 237, 0.05))",
+                      "linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(124, 58, 237, 0.1))"
+                    )}
+                    borderRadius="xl"
+                    border={`1px solid ${useColorModeValue("rgba(139, 92, 246, 0.2)", "rgba(139, 92, 246, 0.3)")}`}
+                    transition="all 0.3s ease"
                     _hover={{
-                      bg: useColorModeValue("rgba(0,0,0,0.04)", "rgba(255,255,255,0.04)"),
-                      transform: "translateY(-1px)"
+                      bg: useColorModeValue(
+                        "linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(124, 58, 237, 0.08))",
+                        "linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(124, 58, 237, 0.15))"
+                      ),
+                      transform: "translateY(-2px)",
+                      boxShadow: useColorModeValue(
+                        "0 8px 25px rgba(139, 92, 246, 0.15)",
+                        "0 8px 25px rgba(139, 92, 246, 0.25)"
+                      )
                     }}
                   >
-                    <Box mb={1}>
-                      <FaVideo size={16} color={useColorModeValue("#6B7280", "#9CA3AF")} />
+                    <Box mb={2} p={2} borderRadius="lg" bg={useColorModeValue("rgba(139, 92, 246, 0.1)", "rgba(139, 92, 246, 0.2)")}>
+                      <FaVideo size={18} color={useColorModeValue("#8B5CF6", "#A78BFA")} />
                     </Box>
-                    <Text fontSize="xl" fontWeight="semibold" color={textColor} lineHeight="1">
+                    <Text fontSize="2xl" fontWeight="bold" color={useColorModeValue("#8B5CF6", "#A78BFA")} lineHeight="1">
                       {Math.round((totalPhotos * 1.5) / 60)}min
                     </Text>
-                    <Text fontSize="xs" color={mutedTextColor} textAlign="center" lineHeight="1.2">
+                    <Text fontSize="xs" color={mutedTextColor} textAlign="center" lineHeight="1.2" fontWeight="medium">
                       Duration
                     </Text>
                   </VStack>
@@ -317,26 +347,42 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                   Available Years
                 </Text>
                 <HStack wrap="wrap" spacing={2}>
-                  {years.map(year => (
-                    <Box
-                      key={year}
-                      px={3}
-                      py={1.5}
-                      bg={useColorModeValue("rgba(0,0,0,0.04)", "rgba(255,255,255,0.06)")}
-                      borderRadius="md"
-                      border={`1px solid ${borderColor}`}
-                      fontSize="sm"
-                      color={textColor}
-                      fontWeight="medium"
-                      transition="all 0.2s"
-                      _hover={{
-                        bg: useColorModeValue("rgba(0,0,0,0.08)", "rgba(255,255,255,0.12)"),
-                        transform: "translateY(-1px)"
-                      }}
-                    >
-                      {year} ({imagesByYear[year].length})
-                    </Box>
-                  ))}
+                  {years.map((year, index) => {
+                    const colors = [
+                      { bg: useColorModeValue("rgba(59, 130, 246, 0.1)", "rgba(59, 130, 246, 0.2)"), border: useColorModeValue("rgba(59, 130, 246, 0.3)", "rgba(59, 130, 246, 0.4)"), text: useColorModeValue("#3B82F6", "#60A5FA") },
+                      { bg: useColorModeValue("rgba(16, 185, 129, 0.1)", "rgba(16, 185, 129, 0.2)"), border: useColorModeValue("rgba(16, 185, 129, 0.3)", "rgba(16, 185, 129, 0.4)"), text: useColorModeValue("#10B981", "#34D399") },
+                      { bg: useColorModeValue("rgba(139, 92, 246, 0.1)", "rgba(139, 92, 246, 0.2)"), border: useColorModeValue("rgba(139, 92, 246, 0.3)", "rgba(139, 92, 246, 0.4)"), text: useColorModeValue("#8B5CF6", "#A78BFA") },
+                      { bg: useColorModeValue("rgba(245, 101, 101, 0.1)", "rgba(245, 101, 101, 0.2)"), border: useColorModeValue("rgba(245, 101, 101, 0.3)", "rgba(245, 101, 101, 0.4)"), text: useColorModeValue("#F56565", "#FEB2B2") },
+                      { bg: useColorModeValue("rgba(251, 146, 60, 0.1)", "rgba(251, 146, 60, 0.2)"), border: useColorModeValue("rgba(251, 146, 60, 0.3)", "rgba(251, 146, 60, 0.4)"), text: useColorModeValue("#FB923C", "#FDD3A8") }
+                    ];
+                    const colorScheme = colors[index % colors.length];
+                    
+                    return (
+                      <Box
+                        key={year}
+                        px={3}
+                        py={2}
+                        bg={colorScheme.bg}
+                        borderRadius="lg"
+                        border={`1px solid ${colorScheme.border}`}
+                        fontSize="sm"
+                        color={colorScheme.text}
+                        fontWeight="semibold"
+                        transition="all 0.3s ease"
+                        _hover={{
+                          transform: "translateY(-2px)",
+                          boxShadow: `0 4px 12px ${colorScheme.border}`,
+                          bg: useColorModeValue(
+                            colorScheme.bg.replace('0.1', '0.15'),
+                            colorScheme.bg.replace('0.2', '0.3')
+                          )
+                        }}
+                        cursor="default"
+                      >
+                        {year} ({imagesByYear[year].length})
+                      </Box>
+                    );
+                  })}
                 </HStack>
               </Box>
 
@@ -415,18 +461,6 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                           )}
                         </Box>
 
-                        {/* Badge do ano */}
-                        <Badge
-                          position="absolute"
-                          bottom="-1"
-                          right="-1"
-                          size="xs"
-                          colorScheme={isExcluded ? "gray" : "blue"}
-                          borderRadius="full"
-                          opacity={isExcluded ? 0.6 : 1}
-                        >
-                          {img.year}
-                        </Badge>
                       </Box>
                     );
                   })}
