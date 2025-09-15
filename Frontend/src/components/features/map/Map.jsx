@@ -1,12 +1,12 @@
 import React, { useContext, useCallback, useState, useEffect, useMemo } from 'react';
 import { MapContainer, GeoJSON, Rectangle } from 'react-leaflet';
-import { Box, useColorMode, useColorModeValue } from '@chakra-ui/react';
+import { Box, useColorMode, useColorModeValue, useToast } from '@chakra-ui/react';
+import { useNavigate } from 'react-router-dom';
 import 'leaflet/dist/leaflet.css';
 
 import countriesData from '../../../data/map/countries.json';
 import { AuthContext } from '../../../context/AuthContext';
 import { CountriesContext } from '../../../context/CountriesContext';
-import { useMapInteractions } from './MapInteractions';
 import { createCountryStyleBase, getOceanStyles } from '../../../styles/mapStyles';
 import { useCountryHighlight } from './hooks/useCountryHighlight';
 import '../../../styles/leafletStyles.css';
@@ -80,11 +80,46 @@ const Map = () => {
     [colors, countriesWithPhotos, highlightedCountries, isLoggedIn, isEffectActive, highlightIntensity, colorMode]
   );
 
-  const { onEachCountry, conversionModal, setConversionModal } = useMapInteractions(
-    countryStyle,
-    countriesWithPhotos,
-    colors
-  );
+  // Estado para modal de conversão
+  const [conversionModal, setConversionModal] = useState({ isOpen: false, countryId: null });
+  const navigate = useNavigate();
+  const toast = useToast();
+
+  // Função para interações com países
+  const onEachCountry = useCallback((feature, layer) => {
+    const countryId = feature.properties.iso2?.toLowerCase();
+    const countryName = feature.properties.name_en;
+    const isCountryWithPhotos = countriesWithPhotos?.includes(countryId);
+
+    layer.on({
+      click: () => {
+        if (!isLoggedIn) {
+          setConversionModal({ isOpen: true, countryId });
+          return;
+        }
+
+        if (isCountryWithPhotos) {
+          navigate(`/countries/${countryId}`);
+        } else {
+          toast({
+            title: `${countryName}`,
+            description: 'No photos uploaded yet for this country.',
+            status: 'info',
+            duration: 3000,
+            isClosable: true,
+          });
+        }
+      },
+      mouseover: () => {
+        if (isCountryWithPhotos || !isLoggedIn) {
+          layer.getElement().style.cursor = 'pointer';
+        }
+      },
+      mouseout: () => {
+        layer.getElement().style.cursor = '';
+      }
+    });
+  }, [countriesWithPhotos, isLoggedIn, navigate, toast]);
 
   // Update GeoJSON when countries change OR when highlighted countries change
   useEffect(() => {

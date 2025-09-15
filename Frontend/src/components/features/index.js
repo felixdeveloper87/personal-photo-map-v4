@@ -1,7 +1,7 @@
 // Feature Components - Componentes específicos de funcionalidades
 export { PhotoManager, PhotoGallery } from './photos';
 export { default as Timeline } from './Timeline';
-export { Map, useMapInteractions } from './map/index';
+export { Map } from './map/index';
 export { default as MiniMap } from './landing/MiniMap';
 export { default as SearchForm } from './SearchForm';
 

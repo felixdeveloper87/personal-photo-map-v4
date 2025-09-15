@@ -40,7 +40,6 @@ src/components/
 │   ├── map/                 # Feature do mapa
 │   │   ├── index.js
 │   │   ├── Map.jsx
-│   │   ├── MapInteractions.jsx
 │   │   └── hooks/
 │   ├── SearchForm.jsx
 │   └── CountryDetails.jsx
