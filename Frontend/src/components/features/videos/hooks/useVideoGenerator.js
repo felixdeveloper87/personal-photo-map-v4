@@ -355,6 +355,14 @@ export const useVideoGenerator = () => {
                   settings.smartCrop || 'center'
                 );
                 
+                // Debug: verificar dados da imagem
+                console.log('📷 Image data:', {
+                  fileName: img.fileName,
+                  year: img.year,
+                  countryId: img.countryId,
+                  showCountryName: settings.showCountryName || true
+                });
+                
                 // Adicionar texto overlay
                 addTextOverlay(ctx, canvas, year, globalImageIndex, images.length, {
                   showYearText: settings.showYearText,

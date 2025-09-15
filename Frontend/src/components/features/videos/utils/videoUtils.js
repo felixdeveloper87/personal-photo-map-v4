@@ -395,26 +395,38 @@ export const addTextOverlay = (ctx, canvas, year, imageIndex, totalImages, setti
     ctx.fillText(year, yearX, yearY);
   }
   
-  // Desenhar nome do país (canto inferior esquerdo)
+  // Desenhar sigla do país (canto inferior esquerdo)
   if (showCountryName && countryId) {
-    const countryName = getCountryName(countryId);
-    if (countryName) {
+    // Debug log
+    console.log('🌍 Country ID:', countryId, 'Show Country:', showCountryName);
+    
+    // Usar apenas a sigla do país (mais simples)
+    const countryCode = countryId ? countryId.toUpperCase() : null;
+    
+    if (countryCode) {
       // Posicionar no canto inferior esquerdo
       ctx.textAlign = 'left';
       const countryX = margin;
       const countryY = canvas.height - margin;
       
-      // Fundo para o país
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-      ctx.fillRect(countryX - 8, countryY - countryFontSize - 3, countryName.length * countryFontSize * 0.6 + 16, countryFontSize + 6);
+      // Fundo para a sigla
+      const codeWidth = countryCode.length * countryFontSize * 0.7;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.fillRect(countryX - 8, countryY - countryFontSize - 3, codeWidth + 16, countryFontSize + 6);
       
-      // Nome do país
+      // Sigla do país
       ctx.font = `bold ${countryFontSize}px Arial`;
       ctx.fillStyle = '#87CEEB'; // Azul claro para o país
       ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
       ctx.shadowBlur = 4;
-      ctx.fillText(countryName, countryX, countryY);
+      ctx.fillText(countryCode, countryX, countryY);
+      
+      console.log('🌍 Rendered country code:', countryCode);
+    } else {
+      console.log('🌍 No country code to render');
     }
+  } else {
+    console.log('🌍 Country display disabled or no countryId:', { showCountryName, countryId });
   }
   
   // Desenhar contador de fotos (canto superior esquerdo)
