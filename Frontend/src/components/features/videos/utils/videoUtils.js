@@ -396,11 +396,42 @@ export const addTextOverlay = (ctx, canvas, year, imageIndex, totalImages, setti
   }
   
   // Desenhar sigla do país (canto inferior esquerdo)
-  if (showCountryName && countryId) {
-    // Usar apenas a sigla do país (mais simples)
-    const countryCode = countryId ? countryId.toUpperCase() : null;
+  if (showCountryName) {
+    // Debug apenas quando necessário (a cada 30 frames para evitar spam)
+    const shouldDebug = imageIndex % 30 === 0 || imageIndex < 5;
     
-    if (countryCode && countryCode !== 'UNKNOWN') {
+    if (shouldDebug) {
+      console.log('🏳️ Country display debug (image', imageIndex + 1, '):', {
+        showCountryName,
+        countryId,
+        hasCountryId: !!countryId,
+        countryIdType: typeof countryId,
+        countryIdValue: countryId
+      });
+    }
+
+    // Processar countryId com mais robustez
+    let countryCode = null;
+    
+    if (countryId) {
+      countryCode = String(countryId).toUpperCase().trim();
+      
+      // Filtrar valores inválidos
+      const invalidValues = ['UNKNOWN', '', 'NULL', 'UNDEFINED', 'NONE'];
+      if (invalidValues.includes(countryCode)) {
+        countryCode = null;
+      }
+    }
+    
+    if (shouldDebug) {
+      console.log('🏳️ Processing country code:', {
+        originalCountryId: countryId,
+        processedCountryCode: countryCode,
+        willRender: !!countryCode
+      });
+    }
+    
+    if (countryCode) {
       // Posicionar no canto inferior esquerdo
       ctx.textAlign = 'left';
       const countryX = margin;
@@ -417,6 +448,12 @@ export const addTextOverlay = (ctx, canvas, year, imageIndex, totalImages, setti
       ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
       ctx.shadowBlur = 4;
       ctx.fillText(countryCode, countryX, countryY);
+      
+      if (shouldDebug) {
+        console.log('✅ Country code rendered:', countryCode);
+      }
+    } else if (shouldDebug) {
+      console.log('❌ Country code not rendered - no valid countryId');
     }
   }
   

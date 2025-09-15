@@ -100,6 +100,20 @@ export const useVideoGenerator = () => {
    * Função principal para gerar o vídeo
    */
   const generateVideo = useCallback(async (images, settings, audioFile) => {
+    // Debug completo dos dados das imagens antes de gerar o vídeo
+    console.log('🔍 DADOS COMPLETOS DAS IMAGENS PARA O VÍDEO:');
+    console.log('🔍 Total de imagens:', images.length);
+    console.log('🔍 Primeiras 5 imagens detalhadas:', images.slice(0, 5).map((img, idx) => ({
+      index: idx,
+      url: img.url,
+      year: img.year,
+      countryId: img.countryId,
+      hasCountryId: !!img.countryId,
+      countryIdType: typeof img.countryId,
+      countryIdValue: img.countryId,
+      allProps: Object.keys(img)
+    })));
+    console.log('🔍 Configurações do vídeo:', settings);
     if (!images || images.length === 0) {
       toast({
         title: 'Erro',
@@ -355,13 +369,16 @@ export const useVideoGenerator = () => {
                   settings.smartCrop || 'center'
                 );
                 
-                // Debug: verificar dados da imagem (apenas primeira vez)
-                if (globalImageIndex === 0 && frame === 0) {
-                  console.log('📷 Image data (first image only):', {
+                // Debug: verificar dados da imagem (primeiras 5 imagens para debug detalhado)
+                if (globalImageIndex < 5 && frame === 0) {
+                  console.log(`📷 Image data (${globalImageIndex + 1}/5):`, {
                     fileName: img.fileName,
                     year: img.year,
                     countryId: img.countryId,
-                    showCountryName: settings.showCountryName || true
+                    hasCountryId: !!img.countryId,
+                    countryIdType: typeof img.countryId,
+                    showCountryName: settings.showCountryName || true,
+                    fullImageObj: img
                   });
                 }
                 
