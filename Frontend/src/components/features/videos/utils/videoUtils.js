@@ -488,87 +488,79 @@ export const addTextOverlay = async (ctx, canvas, year, imageIndex, totalImages,
     return countryMap[countryId.toLowerCase()] || countryId.toUpperCase();
   };
 
-  // Desenhar ano no canto superior direito com MUITO mais destaque
+  // Desenhar ano com sigla do país integrada (canto superior direito)
   if (showYearText && year) {
-    ctx.textAlign = 'right';
-    const yearX = canvas.width - margin;
-    const yearY = margin + yearFontSize;
-    
-    // Fundo com gradiente para o ano
-    const yearWidth = year.toString().length * yearFontSize * 0.7;
-    const yearHeight = yearFontSize + 20;
-    
-    // Gradiente de fundo
-    const gradient = ctx.createLinearGradient(yearX - yearWidth - 15, yearY - yearFontSize - 10, yearX + 15, yearY + 10);
-    gradient.addColorStop(0, 'rgba(255, 215, 0, 0.9)'); // Dourado
-    gradient.addColorStop(1, 'rgba(255, 140, 0, 0.9)'); // Laranja
-    
-    ctx.fillStyle = gradient;
-    ctx.fillRect(yearX - yearWidth - 15, yearY - yearFontSize - 10, yearWidth + 30, yearHeight);
-    
-    // Borda destacada
-    ctx.strokeStyle = '#FFD700';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(yearX - yearWidth - 15, yearY - yearFontSize - 10, yearWidth + 30, yearHeight);
-    
-    // Ano com sombra forte
-    ctx.font = `bold ${yearFontSize}px Arial`;
-    ctx.fillStyle = '#000000'; // Texto preto para contrastar com fundo dourado
-    ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
-    ctx.shadowBlur = 12;
-    ctx.shadowOffsetX = 3;
-    ctx.shadowOffsetY = 3;
-    ctx.fillText(year, yearX, yearY);
-  }
-  
-  // Desenhar sigla do país (canto inferior esquerdo)
-  if (showCountryName) {
-    // Processar countryId com mais robustez
+    // Processar sigla do país primeiro para calcular dimensões
     let countryCode = null;
-    
-    if (countryId) {
+    if (showCountryName && countryId) {
       countryCode = String(countryId).toUpperCase().trim();
-      
-      // Filtrar valores inválidos
       const invalidValues = ['UNKNOWN', '', 'NULL', 'UNDEFINED', 'NONE'];
       if (invalidValues.includes(countryCode)) {
         countryCode = null;
       }
     }
     
+    const yearText = year.toString();
+    const spacing = 15; // Espaço entre sigla e ano
+    
+    // Calcular dimensões
+    ctx.font = `bold ${countryFontSize}px Arial`;
+    const countryWidth = countryCode ? ctx.measureText(countryCode).width : 0;
+    
+    ctx.font = `bold ${yearFontSize}px Arial`;
+    const yearWidth = ctx.measureText(yearText).width;
+    
+    const totalWidth = (countryCode ? countryWidth + spacing : 0) + yearWidth;
+    const boxHeight = Math.max(yearFontSize, countryFontSize) + 20;
+    
+    // Posicionamento (canto superior direito)
+    const boxX = canvas.width - margin - totalWidth - 30;
+    const boxY = margin;
+    const boxWidth = totalWidth + 30;
+    
+    // Gradiente de fundo
+    const gradient = ctx.createLinearGradient(boxX, boxY, boxX + boxWidth, boxY + boxHeight);
+    gradient.addColorStop(0, 'rgba(255, 215, 0, 0.9)'); // Dourado
+    gradient.addColorStop(1, 'rgba(255, 140, 0, 0.9)'); // Laranja
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+    
+    // Borda destacada
+    ctx.strokeStyle = '#FFD700';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+    
+    // Desenhar sigla do país (lado esquerdo)
     if (countryCode) {
-      // Posicionar no canto inferior esquerdo
-      ctx.textAlign = 'left';
-      const countryX = margin;
-      const countryY = canvas.height - margin;
-      
-      // Fundo com gradiente para a sigla do país
-      const codeWidth = countryCode.length * countryFontSize * 0.8;
-      const codeHeight = countryFontSize + 16;
-      
-      // Gradiente de fundo para o país
-      const countryGradient = ctx.createLinearGradient(countryX - 12, countryY - countryFontSize - 8, countryX + codeWidth + 12, countryY + 8);
-      countryGradient.addColorStop(0, 'rgba(30, 144, 255, 0.9)'); // Azul vibrante
-      countryGradient.addColorStop(1, 'rgba(0, 191, 255, 0.9)'); // Azul céu
-      
-      ctx.fillStyle = countryGradient;
-      ctx.fillRect(countryX - 12, countryY - countryFontSize - 8, codeWidth + 24, codeHeight);
-      
-      // Borda destacada para o país
-      ctx.strokeStyle = '#00BFFF';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(countryX - 12, countryY - countryFontSize - 8, codeWidth + 24, codeHeight);
-      
-      // Sigla do país com sombra forte
       ctx.font = `bold ${countryFontSize}px Arial`;
-      ctx.fillStyle = '#FFFFFF'; // Texto branco para contrastar
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-      ctx.shadowBlur = 10;
+      ctx.fillStyle = '#1E90FF'; // Azul para a sigla
+      ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+      ctx.shadowBlur = 8;
       ctx.shadowOffsetX = 2;
       ctx.shadowOffsetY = 2;
+      ctx.textAlign = 'left';
+      
+      const countryX = boxX + 15;
+      const countryY = boxY + (boxHeight / 2) + (countryFontSize / 3);
       ctx.fillText(countryCode, countryX, countryY);
     }
+    
+    // Desenhar ano (lado direito)
+    ctx.font = `bold ${yearFontSize}px Arial`;
+    ctx.fillStyle = '#000000'; // Texto preto para contrastar
+    ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetX = 3;
+    ctx.shadowOffsetY = 3;
+    ctx.textAlign = 'right';
+    
+    const yearX = boxX + boxWidth - 15;
+    const yearY = boxY + (boxHeight / 2) + (yearFontSize / 3);
+    ctx.fillText(yearText, yearX, yearY);
   }
+  
+  // A sigla do país agora está integrada com o ano no canto superior direito
   
   // Desenhar contador de fotos (canto superior esquerdo)
   if (showPhotoCount) {
