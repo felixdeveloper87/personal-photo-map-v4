@@ -73,6 +73,7 @@ const PhotoGallery = memo(function PhotoGallery({
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const isMobile = useBreakpointValue({ base: true, sm: false });
+  const isLargeScreen = useBreakpointValue({ base: false, lg: false, xl: true, '2xl': true });
   const bgColor = useColorModeValue('gray.50', 'gray.900');
   const textColor = useColorModeValue('gray.800', 'white');
   const selectionColor = useColorModeValue('blue.500', 'blue.300');
@@ -171,7 +172,7 @@ const PhotoGallery = memo(function PhotoGallery({
     <Box bg={bgColor} py={2}>
       {/* Selection Controls */}
       <Box mb={4}>
-        <Flex justify="space-between" align="center" maxW="1200px" mx="auto" px={6}>
+        <Flex justify="space-between" align="center" maxW="1800px" mx="auto" px={6}>
           <HStack spacing={3} wrap="wrap">
             <Button
               size="sm"
@@ -277,13 +278,13 @@ const PhotoGallery = memo(function PhotoGallery({
       </Box>
 
       {/* Grid */}
-      <Box maxW="1400px" mx="auto" px={{ base: 2, sm: 4, md: 6 }}>
+      <Box maxW="1900px" mx="auto" px={{ base: 2, sm: 4, md: 6, lg: 8 }}>
         <SimpleGrid
-          columns={{ base: 2, sm: 3, md: 3, lg: 4, xl: 5 }}
-          spacing={{ base: 2, sm: 3, md: 3, lg: 4 }}
+          columns={{ base: 2, sm: 3, md: 4, lg: 5, xl: 6, '2xl': 8 }}
+          spacing={{ base: 2, sm: 3, md: 3, lg: 4, xl: 5 }}
           sx={{
-            columnGap: { base: '6px', sm: '8px', md: '12px' },
-            rowGap: { base: '6px', sm: '8px', md: '12px' },
+            columnGap: { base: '6px', sm: '8px', md: '12px', lg: '16px', xl: '20px' },
+            rowGap: { base: '6px', sm: '8px', md: '12px', lg: '16px', xl: '20px' },
           }}
         >
           {images.map((image, index) => {

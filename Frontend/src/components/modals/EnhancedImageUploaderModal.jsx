@@ -320,7 +320,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
     return (
       <VStack align="stretch" spacing={3}>
         <Text fontWeight="semibold">Quick picks</Text>
-        <SimpleGrid columns={{ base: 3, md: 6 }} spacing={2}>
+        <SimpleGrid columns={{ base: 3, md: 6, lg: 8, xl: 10 }} spacing={2}>
           {merged.map((y) => (
             <YearChip
               key={y}
@@ -344,7 +344,7 @@ const EnhancedImageUploaderModal = ({ isOpen, onClose, onUploadSuccess, countryI
       }}
       title="Upload Photos"
       icon={FaCloudUploadAlt}
-      size="xl"
+      size={{ base: "xl", lg: "2xl", xl: "4xl" }}
     >
       <VStack spacing={6} align="stretch">
         {/* Progress bar for flow perception */}

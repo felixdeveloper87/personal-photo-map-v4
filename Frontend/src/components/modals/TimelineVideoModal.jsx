@@ -175,7 +175,7 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
     <Modal 
       isOpen={isOpen} 
       onClose={onClose} 
-      size={{ base: "full", md: "6xl" }} 
+      size={{ base: "full", md: "6xl", xl: "7xl" }} 
       scrollBehavior="inside"
       closeOnOverlayClick={false}
     >
