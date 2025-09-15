@@ -53,6 +53,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
     fps: 30,
     showYearText: true,
     showPhotoCount: true,
+    showCountryName: true, // Exibir nome do país
     musicEnabled: false,
     musicSource: 'none', // 'none', 'upload', 'preset'
     musicVolume: 0.5,
@@ -99,7 +100,9 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
 
   return (
     <Box 
-      p={{ base: 6, md: 8 }} 
+      display="flex"
+      flexDirection="column"
+      h="100%"
       bg={bgColor} 
       borderRadius="xl" 
       border={`1px solid ${borderColor}`}
@@ -108,7 +111,13 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
         "0 4px 6px -1px rgba(0, 0, 0, 0.3)"
       )}
     >
-      <VStack spacing={{ base: 4, md: 6 }} align="stretch">
+      {/* Conteúdo principal com scroll */}
+      <Box 
+        flex="1"
+        overflowY="auto"
+        p={{ base: 6, md: 8 }}
+      >
+        <VStack spacing={{ base: 4, md: 6 }} align="stretch">
         <Text fontSize="xl" fontWeight="bold" color={textColor}>
           Timeline Video Generator
         </Text>
@@ -196,7 +205,23 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
           </VStack>
         )}
 
-        {/* Buttons */}
+        </VStack>
+      </Box>
+
+      {/* Botões fixos no bottom */}
+      <Box
+        borderTop={`1px solid ${borderColor}`}
+        bg={bgColor}
+        p={{ base: 4, md: 6 }}
+        borderBottomRadius="xl"
+      >
+        {/* Aviso se música está habilitada mas arquivo não foi carregado */}
+        {settings.musicEnabled && settings.musicSource === 'upload' && !audioFile && (
+          <Text fontSize="sm" color="orange.500" textAlign="center" mb={4}>
+            ⚠️ Select an audio file or switch to "Preset music" to generate the video
+          </Text>
+        )}
+
         <Stack 
           direction={{ base: "column", sm: "row" }} 
           spacing={{ base: 3, sm: 4 }} 
@@ -235,23 +260,28 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
               Generate Video ({images?.length || 0} photos)
             </Button>
           )}
-          
-          {/* Aviso se música está habilitada mas arquivo não foi carregado */}
-          {settings.musicEnabled && settings.musicSource === 'upload' && !audioFile && (
-            <Text fontSize="sm" color="orange.500" textAlign="center">
-              ⚠️ Select an audio file or switch to "Preset music" to generate the video
-            </Text>
-          )}
 
           {(isGenerating || isConverting) && (
             <Button
               leftIcon={<FaStop />}
-              colorScheme="red"
-              size={{ base: "md", md: "lg" }}
+              bg="red.500"
+              color="white"
+              size={{ base: "lg", md: "lg" }}
               onClick={stopGeneration}
               w={{ base: "100%", sm: "auto" }}
               minW="200px"
-              isDisabled={isConverting} // Disable during conversion as it can't be safely stopped
+              borderRadius="xl"
+              fontSize="md"
+              fontWeight="semibold"
+              py={6}
+              isDisabled={isConverting}
+              _hover={{
+                bg: "red.600",
+                transform: "translateY(-1px)",
+                boxShadow: "0 10px 15px -3px rgba(239, 68, 68, 0.4)"
+              }}
+              _active={{ transform: "translateY(0)" }}
+              transition="all 0.2s"
             >
               {isConverting ? 'Converting...' : 'Stop Generation'}
             </Button>
@@ -301,7 +331,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
             Close
           </Button>
         </Stack>
-      </VStack>
+      </Box>
     </Box>
   );
 };

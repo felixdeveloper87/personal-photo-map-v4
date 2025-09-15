@@ -241,7 +241,7 @@ const VideoSettings = ({
           </FormLabel>
           <Switch
             id="show-country"
-            isChecked={settings.showCountryName !== false}
+            isChecked={settings.showCountryName}
             onChange={(e) => handleSettingChange('showCountryName', e.target.checked)}
             colorScheme="blue"
           />
