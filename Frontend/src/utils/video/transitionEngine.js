@@ -55,7 +55,7 @@ const drawStoriesStyle = (ctx, img, canvas, progress, smartCrop = 'center') => {
 };
 
 /**
- * Desenha imagem no estilo Stories (sem transições complexas)
+ * Desenha imagem com transição fade
  * @param {CanvasRenderingContext2D} ctx - Contexto do canvas
  * @param {HTMLImageElement} img - Imagem a ser desenhada
  * @param {HTMLCanvasElement} canvas - Canvas de destino
@@ -64,8 +64,9 @@ const drawStoriesStyle = (ctx, img, canvas, progress, smartCrop = 'center') => {
 const drawFadeTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
   ctx.save();
   
-  // Para Stories, mostrar a imagem completa sem transições
-  ctx.globalAlpha = 1;
+  // Easing suave para fade mais natural
+  const easedProgress = easeInOutCubic(progress);
+  ctx.globalAlpha = easedProgress;
   
   const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
   ctx.drawImage(img, x, y, width, height);
@@ -74,7 +75,7 @@ const drawFadeTransition = (ctx, img, canvas, progress, smartCrop = 'center') =>
 };
 
 /**
- * Desenha imagem no estilo Stories (simples)
+ * Desenha imagem com transição slide
  * @param {CanvasRenderingContext2D} ctx - Contexto do canvas
  * @param {HTMLImageElement} img - Imagem a ser desenhada
  * @param {HTMLCanvasElement} canvas - Canvas de destino
@@ -83,8 +84,12 @@ const drawFadeTransition = (ctx, img, canvas, progress, smartCrop = 'center') =>
 const drawSlideTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
   ctx.save();
   
-  // Para Stories, mostrar a imagem completa
-  ctx.globalAlpha = 1;
+  // Easing suave para slide mais natural
+  const easedProgress = easeOutQuart(progress);
+  
+  // Slide da direita para a esquerda
+  const slideOffset = (1 - easedProgress) * canvas.width;
+  ctx.translate(slideOffset, 0);
   
   const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
   ctx.drawImage(img, x, y, width, height);

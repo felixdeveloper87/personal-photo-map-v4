@@ -288,14 +288,19 @@ export const useVideoGenerator = () => {
           try {
             const img = await loadImage(image.url);
             
-            // Selecionar transição dinâmica para esta imagem
-            const selectedTransition = getDynamicTransition(
-              globalImageIndex, 
-              images.length, 
-              parseInt(year), 
-              previousYear,
-              settings.dynamicMode
-            );
+            // Selecionar transição baseada nas configurações
+            let selectedTransition;
+            if (settings.transition === 'dynamic') {
+              selectedTransition = getDynamicTransition(
+                globalImageIndex, 
+                images.length, 
+                parseInt(year), 
+                previousYear,
+                settings.dynamicMode
+              );
+            } else {
+              selectedTransition = settings.transition;
+            }
             
             // Animar a imagem com timing preciso usando requestAnimationFrame
             await new Promise((resolve) => {
