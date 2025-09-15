@@ -108,10 +108,14 @@ export const useVideoGenerator = () => {
       url: img.url,
       year: img.year,
       countryId: img.countryId,
+      fileName: img.fileName,
       hasCountryId: !!img.countryId,
       countryIdType: typeof img.countryId,
       countryIdValue: img.countryId,
-      allProps: Object.keys(img)
+      hasFileName: !!img.fileName,
+      fileNameValue: img.fileName,
+      allProps: Object.keys(img),
+      fullObject: img
     })));
     console.log('🔍 Configurações do vídeo:', settings);
     if (!images || images.length === 0) {
