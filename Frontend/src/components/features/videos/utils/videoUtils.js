@@ -397,13 +397,10 @@ export const addTextOverlay = (ctx, canvas, year, imageIndex, totalImages, setti
   
   // Desenhar sigla do país (canto inferior esquerdo)
   if (showCountryName && countryId) {
-    // Debug log
-    console.log('🌍 Country ID:', countryId, 'Show Country:', showCountryName);
-    
     // Usar apenas a sigla do país (mais simples)
     const countryCode = countryId ? countryId.toUpperCase() : null;
     
-    if (countryCode) {
+    if (countryCode && countryCode !== 'UNKNOWN') {
       // Posicionar no canto inferior esquerdo
       ctx.textAlign = 'left';
       const countryX = margin;
@@ -420,13 +417,7 @@ export const addTextOverlay = (ctx, canvas, year, imageIndex, totalImages, setti
       ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
       ctx.shadowBlur = 4;
       ctx.fillText(countryCode, countryX, countryY);
-      
-      console.log('🌍 Rendered country code:', countryCode);
-    } else {
-      console.log('🌍 No country code to render');
     }
-  } else {
-    console.log('🌍 Country display disabled or no countryId:', { showCountryName, countryId });
   }
   
   // Desenhar contador de fotos (canto superior esquerdo)

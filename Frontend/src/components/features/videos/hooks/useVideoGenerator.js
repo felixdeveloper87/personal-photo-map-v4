@@ -355,13 +355,15 @@ export const useVideoGenerator = () => {
                   settings.smartCrop || 'center'
                 );
                 
-                // Debug: verificar dados da imagem
-                console.log('📷 Image data:', {
-                  fileName: img.fileName,
-                  year: img.year,
-                  countryId: img.countryId,
-                  showCountryName: settings.showCountryName || true
-                });
+                // Debug: verificar dados da imagem (apenas primeira vez)
+                if (globalImageIndex === 0 && frame === 0) {
+                  console.log('📷 Image data (first image only):', {
+                    fileName: img.fileName,
+                    year: img.year,
+                    countryId: img.countryId,
+                    showCountryName: settings.showCountryName || true
+                  });
+                }
                 
                 // Adicionar texto overlay
                 addTextOverlay(ctx, canvas, year, globalImageIndex, images.length, {

@@ -50,13 +50,29 @@ const fetchAllPictures = async () => {
   // Debug: verificar dados brutos da API
   console.log('🔍 Dados brutos da API (primeiras 3):', data.slice(0, 3));
 
-  const mappedImages = data.map((image) => ({
-    url: image.filePath.includes('s3.') ? image.filePath : `${import.meta.env.VITE_BACKEND_URL}${image.filePath}`,
-    id: image.id,
-    year: image.year,
-    countryId: image.countryId,
-    fileName: image.fileName,
-  }));
+  const mappedImages = data.map((image, index) => {
+    // Extrair ano do filePath se year estiver undefined
+    const fallbackYear = !image.year && image.filePath ? 
+      (() => {
+        const yearMatch = image.filePath.match(/\/(\d{4})\//);
+        return yearMatch ? parseInt(yearMatch[1]) : new Date().getFullYear();
+      })() : image.year;
+
+    // Usar index como fallback para fileName se estiver undefined  
+    const fallbackFileName = image.fileName || `image_${index + 1}`;
+    
+    return {
+      url: image.filePath && image.filePath.includes('s3.') ? 
+        image.filePath : 
+        `${import.meta.env.VITE_BACKEND_URL}${image.filePath || ''}`,
+      id: image.id || index,
+      year: fallbackYear || new Date().getFullYear(),
+      countryId: image.countryId || 'unknown',
+      fileName: fallbackFileName,
+      // Manter dados originais para debug
+      _original: image
+    };
+  });
 
   // Debug: verificar dados mapeados
   console.log('🔍 Dados mapeados (primeiras 3):', mappedImages.slice(0, 3));
@@ -85,12 +101,14 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
   const secondaryButtonBorder = useColorModeValue('#d0d0d0', '#404040');
   const secondaryButtonText = useColorModeValue('#1a1a1a', '#f0f0f0');
 
-  // Fetch photos
+  // Fetch photos - forçar refetch sempre que o modal abrir
   const { data: images = [], isLoading, error } = useQuery({
-    queryKey: ['allPicturesForVideo'],
+    queryKey: ['allPicturesForVideo', isOpen], // Incluir isOpen na key para forçar refetch
     queryFn: fetchAllPictures,
     enabled: isLoggedIn && isOpen,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0, // Remover cache para debug
+    cacheTime: 0, // Remover cache persistente
+    refetchOnMount: true, // Sempre refetch ao montar
   });
 
   // Filtrar imagens excluídas
@@ -233,16 +251,10 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
               </AlertDescription>
             </Alert>
           ) : showGenerator ? (
-            // Debug: verificar dados antes de passar para o gerador
-            (() => {
-              console.log('🔍 Dados das imagens filtradas:', filteredImages.slice(0, 3));
-              return (
-                <TimelineVideoGenerator 
-                  images={filteredImages} 
-                  onClose={() => setShowGenerator(false)} 
-                />
-              );
-            })()
+            <TimelineVideoGenerator 
+              images={filteredImages} 
+              onClose={() => setShowGenerator(false)} 
+            />
           ) : (
             <VStack spacing={6} align="stretch" flex="1">
               {/* Estatísticas */}
