@@ -103,6 +103,7 @@ export const useVideoGenerator = () => {
     // Debug completo dos dados das imagens antes de gerar o vídeo
     console.log('🔍 DADOS COMPLETOS DAS IMAGENS PARA O VÍDEO:');
     console.log('🔍 Total de imagens:', images.length);
+    console.log('🔍 Primeiras 3 imagens RAW no hook:', images.slice(0, 3));
     console.log('🔍 Primeiras 5 imagens detalhadas:', images.slice(0, 5).map((img, idx) => ({
       index: idx,
       url: img.url,
@@ -325,7 +326,7 @@ export const useVideoGenerator = () => {
               const startTime = performance.now();
               const targetDuration = (framesPerImage / settings.fps) * 1000; // Duração total em ms
               const frameInterval = 1000 / settings.fps; // Intervalo entre frames em ms
-              const maxDuration = targetDuration * 2; // Timeout de segurança
+              const maxDuration = targetDuration + 500; // Timeout de segurança mais restrito (+500ms)
               
               let animationId;
               let isResolved = false;
@@ -376,11 +377,11 @@ export const useVideoGenerator = () => {
                 // Debug: verificar dados da imagem (apenas primeira vez de cada imagem)
                 if (frame === 0) {
                   console.log(`📷 Image ${globalImageIndex + 1} data:`, {
-                    fileName: img.fileName,
-                    year: img.year,
-                    countryId: img.countryId,
-                    hasCountryId: !!img.countryId,
-                    countryIdType: typeof img.countryId,
+                    fileName: image.fileName, // Usar 'image' original, não 'img' HTMLImageElement
+                    year: image.year,
+                    countryId: image.countryId,
+                    hasCountryId: !!image.countryId,
+                    countryIdType: typeof image.countryId,
                     showCountryName: settings.showCountryName || true
                   });
                 }
@@ -390,7 +391,7 @@ export const useVideoGenerator = () => {
                   showYearText: settings.showYearText,
                   showPhotoCount: settings.showPhotoCount,
                   showCountryName: settings.showCountryName || true,
-                  countryId: img.countryId
+                  countryId: image.countryId // Usar 'image' original, não 'img' HTMLImageElement
                 });
                 
                 // Atualizar progresso apenas quando necessário
