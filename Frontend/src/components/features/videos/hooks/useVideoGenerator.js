@@ -100,25 +100,8 @@ export const useVideoGenerator = () => {
    * Função principal para gerar o vídeo
    */
   const generateVideo = useCallback(async (images, settings, audioFile) => {
-    // Debug completo dos dados das imagens antes de gerar o vídeo
-    console.log('🔍 DADOS COMPLETOS DAS IMAGENS PARA O VÍDEO:');
-    console.log('🔍 Total de imagens:', images.length);
-    console.log('🔍 Primeiras 3 imagens RAW no hook:', images.slice(0, 3));
-    console.log('🔍 Primeiras 5 imagens detalhadas:', images.slice(0, 5).map((img, idx) => ({
-      index: idx,
-      url: img.url,
-      year: img.year,
-      countryId: img.countryId,
-      fileName: img.fileName,
-      hasCountryId: !!img.countryId,
-      countryIdType: typeof img.countryId,
-      countryIdValue: img.countryId,
-      hasFileName: !!img.fileName,
-      fileNameValue: img.fileName,
-      allProps: Object.keys(img),
-      fullObject: img
-    })));
-    console.log('🔍 Configurações do vídeo:', settings);
+    // Log básico apenas
+    console.log('🎬 Gerando vídeo:', `${images.length} imagens`, `${images.length * settings.duration}s de duração`);
     if (!images || images.length === 0) {
       toast({
         title: 'Erro',
@@ -346,8 +329,6 @@ export const useVideoGenerator = () => {
                 }
                 
                 if (frame >= framesPerImage) {
-                  const totalElapsed = performance.now() - startTime;
-                  console.log(`🕐 Imagem ${globalImageIndex + 1}: ${totalElapsed.toFixed(2)}ms (esperado: ${targetDuration.toFixed(2)}ms)`);
                   if (!isResolved) {
                     isResolved = true;
                     resolve();
@@ -374,14 +355,12 @@ export const useVideoGenerator = () => {
                   settings.smartCrop || 'center'
                 );
                 
-                // Debug: verificar dados da imagem (apenas primeira vez de cada imagem)
-                if (frame === 0) {
-                  console.log(`📷 Image ${globalImageIndex + 1} data:`, {
-                    fileName: image.fileName, // Usar 'image' original, não 'img' HTMLImageElement
+                // Log apenas da primeira imagem para confirmar que dados estão chegando
+                if (frame === 0 && globalImageIndex === 0) {
+                  console.log(`📷 Primeira imagem confirmada:`, {
+                    fileName: image.fileName,
                     year: image.year,
                     countryId: image.countryId,
-                    hasCountryId: !!image.countryId,
-                    countryIdType: typeof image.countryId,
                     showCountryName: settings.showCountryName || true
                   });
                 }
@@ -394,9 +373,10 @@ export const useVideoGenerator = () => {
                   countryId: image.countryId // Usar 'image' original, não 'img' HTMLImageElement
                 });
                 
-                // Atualizar progresso apenas quando necessário
-                if (frame !== Math.floor(((currentTime - startTime) / frameInterval) - 1)) {
-                  currentFrame++;
+                // Atualizar progresso apenas quando mudamos para um novo frame
+                const expectedFrameCount = globalImageIndex * framesPerImage + frame + 1;
+                if (currentFrame < expectedFrameCount) {
+                  currentFrame = expectedFrameCount;
                   const progressPercent = Math.min(Math.round((currentFrame / totalFrames) * 100), 100);
                   setProgress(progressPercent);
                 }
@@ -445,7 +425,8 @@ export const useVideoGenerator = () => {
         expectedDuration: totalVideoDuration,
         processedImages: globalImageIndex,
         totalFrames: totalFrames,
-        processedFrames: currentFrame
+        processedFrames: currentFrame,
+        frameRatio: `${currentFrame}/${totalFrames} (${(currentFrame/totalFrames*100).toFixed(1)}%)`
       });
       
       // Aguardar finalização

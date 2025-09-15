@@ -47,17 +47,8 @@ const fetchAllPictures = async () => {
   const data = await response.json();
   if (!Array.isArray(data)) return [];
 
-  // Debug: verificar dados brutos da API
-  console.log('🔍 Dados brutos da API (primeiras 3):', data.slice(0, 3));
-  
-  // Debug: verificar se alguma imagem tem countryId
-  const hasCountryId = data.some(img => img.countryId);
-  const countryIds = data.slice(0, 10).map(img => img.countryId);
-  console.log('🔍 Backend countryId check:', {
-    hasCountryId,
-    firstTenCountryIds: countryIds,
-    sampleImage: data[0]
-  });
+  // Log básico apenas
+  console.log('📸 Fotos carregadas do backend:', data.length);
 
   const mappedImages = data.map((image, index) => {
     // Extrair ano do filePath se year estiver undefined
@@ -83,8 +74,8 @@ const fetchAllPictures = async () => {
     };
   });
 
-  // Debug: verificar dados mapeados
-  console.log('🔍 Dados mapeados (primeiras 3):', mappedImages.slice(0, 3));
+  // Log confirmação do mapeamento
+  console.log('✅ Imagens processadas para vídeo:', mappedImages.length);
 
   return mappedImages;
 };
