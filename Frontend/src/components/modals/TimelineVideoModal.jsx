@@ -47,13 +47,21 @@ const fetchAllPictures = async () => {
   const data = await response.json();
   if (!Array.isArray(data)) return [];
 
-  return data.map((image) => ({
+  // Debug: verificar dados brutos da API
+  console.log('🔍 Dados brutos da API (primeiras 3):', data.slice(0, 3));
+
+  const mappedImages = data.map((image) => ({
     url: image.filePath.includes('s3.') ? image.filePath : `${import.meta.env.VITE_BACKEND_URL}${image.filePath}`,
     id: image.id,
     year: image.year,
     countryId: image.countryId,
     fileName: image.fileName,
   }));
+
+  // Debug: verificar dados mapeados
+  console.log('🔍 Dados mapeados (primeiras 3):', mappedImages.slice(0, 3));
+
+  return mappedImages;
 };
 
 const TimelineVideoModal = ({ isOpen, onClose }) => {
@@ -225,10 +233,16 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
               </AlertDescription>
             </Alert>
           ) : showGenerator ? (
-            <TimelineVideoGenerator 
-              images={filteredImages} 
-              onClose={() => setShowGenerator(false)} 
-            />
+            // Debug: verificar dados antes de passar para o gerador
+            (() => {
+              console.log('🔍 Dados das imagens filtradas:', filteredImages.slice(0, 3));
+              return (
+                <TimelineVideoGenerator 
+                  images={filteredImages} 
+                  onClose={() => setShowGenerator(false)} 
+                />
+              );
+            })()
           ) : (
             <VStack spacing={6} align="stretch" flex="1">
               {/* Estatísticas */}
