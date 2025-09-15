@@ -6,16 +6,65 @@ import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile, toBlobURL } from '@ffmpeg/util';
 
 /**
- * Carrega uma imagem com CORS habilitado
+ * Carrega uma imagem com fallback para CORS e timeout
  * @param {string} src - URL da imagem
+ * @param {number} timeout - Timeout em ms (padrão: 5000)
  * @returns {Promise<HTMLImageElement>}
  */
-export const loadImage = (src) => {
+export const loadImage = (src, timeout = 5000) => {
   return new Promise((resolve, reject) => {
+    let isResolved = false;
+    
+    const cleanup = () => {
+      isResolved = true;
+    };
+    
+    const timeoutId = setTimeout(() => {
+      if (!isResolved) {
+        console.warn(`Timeout na imagem após ${timeout}ms:`, src);
+        reject(new Error(`Timeout loading image: ${src}`));
+      }
+    }, timeout);
+    
+    // Primeiro, tentar com CORS
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.onload = () => resolve(img);
-    img.onerror = reject;
+    
+    img.onload = () => {
+      if (!isResolved) {
+        cleanup();
+        clearTimeout(timeoutId);
+        resolve(img);
+      }
+    };
+    
+    img.onerror = () => {
+      if (isResolved) return;
+      
+      // Se CORS falhar, tentar sem CORS
+      console.warn('CORS falhou, tentando sem CORS para:', src);
+      const imgNoCors = new Image();
+      
+      imgNoCors.onload = () => {
+        if (!isResolved) {
+          cleanup();
+          clearTimeout(timeoutId);
+          resolve(imgNoCors);
+        }
+      };
+      
+      imgNoCors.onerror = (error) => {
+        if (!isResolved) {
+          cleanup();
+          clearTimeout(timeoutId);
+          console.error('Falha ao carregar imagem:', src, error);
+          reject(error);
+        }
+      };
+      
+      imgNoCors.src = src;
+    };
+    
     img.src = src;
   });
 };
