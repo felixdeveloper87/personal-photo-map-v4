@@ -41,14 +41,13 @@ const easeInQuart = (t) => t * t * t * t;
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawStoriesStyle = (ctx, img, canvas, progress, smartCrop = 'center') => {
+const drawStoriesStyle = (ctx, img, canvas, progress, fitMode = 'fill', smartCrop = 'center') => {
   ctx.save();
   
   // Estilo Stories: imagem limpa e simples
   ctx.globalAlpha = 1;
   
-  // Aplicar smart crop para Stories
-  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, fitMode, smartCrop);
   ctx.drawImage(img, x, y, width, height);
   
   ctx.restore();
@@ -61,14 +60,14 @@ const drawStoriesStyle = (ctx, img, canvas, progress, smartCrop = 'center') => {
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawFadeTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
+const drawFadeTransition = (ctx, img, canvas, progress, fitMode = 'fill', smartCrop = 'center') => {
   ctx.save();
   
   // Easing suave para fade mais natural
   const easedProgress = easeInOutCubic(progress);
   ctx.globalAlpha = easedProgress;
   
-  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, fitMode, smartCrop);
   ctx.drawImage(img, x, y, width, height);
   
   ctx.restore();
@@ -81,7 +80,7 @@ const drawFadeTransition = (ctx, img, canvas, progress, smartCrop = 'center') =>
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawSlideTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
+const drawSlideTransition = (ctx, img, canvas, progress, fitMode = 'fill', smartCrop = 'center') => {
   ctx.save();
   
   // Easing suave para slide mais natural
@@ -91,7 +90,7 @@ const drawSlideTransition = (ctx, img, canvas, progress, smartCrop = 'center') =
   const slideOffset = (1 - easedProgress) * canvas.width;
   ctx.translate(slideOffset, 0);
   
-  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, fitMode, smartCrop);
   ctx.drawImage(img, x, y, width, height);
   
   ctx.restore();
@@ -104,7 +103,7 @@ const drawSlideTransition = (ctx, img, canvas, progress, smartCrop = 'center') =
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawZoomTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
+const drawZoomTransition = (ctx, img, canvas, progress, fitMode = 'fill', smartCrop = 'center') => {
   // Easing suave para zoom mais natural
   const easedProgress = easeInOutCubic(progress);
   
@@ -121,7 +120,7 @@ const drawZoomTransition = (ctx, img, canvas, progress, smartCrop = 'center') =>
   
   ctx.translate(-canvas.width / 2, -canvas.height / 2);
   
-  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, fitMode, smartCrop);
   ctx.drawImage(img, x, y, width, height);
   
   ctx.restore();
@@ -134,7 +133,7 @@ const drawZoomTransition = (ctx, img, canvas, progress, smartCrop = 'center') =>
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawKenBurnsTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
+const drawKenBurnsTransition = (ctx, img, canvas, progress, fitMode = 'fill', smartCrop = 'center') => {
   // Easing suave para movimento mais natural
   const easedProgress = easeInOutCubic(progress);
   
@@ -153,7 +152,7 @@ const drawKenBurnsTransition = (ctx, img, canvas, progress, smartCrop = 'center'
   
   ctx.translate(-canvas.width / 2, -canvas.height / 2);
   
-  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, fitMode, smartCrop);
   ctx.drawImage(img, x, y, width, height);
   
   ctx.restore();
@@ -166,7 +165,7 @@ const drawKenBurnsTransition = (ctx, img, canvas, progress, smartCrop = 'center'
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawWipeTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
+const drawWipeTransition = (ctx, img, canvas, progress, fitMode = 'fill', smartCrop = 'center') => {
   const wipeProgress = Math.min(progress * 1.3, 1);
   const wipeWidth = wipeProgress * canvas.width;
   
@@ -175,7 +174,7 @@ const drawWipeTransition = (ctx, img, canvas, progress, smartCrop = 'center') =>
   ctx.rect(0, 0, wipeWidth, canvas.height);
   ctx.clip();
   
-  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, fitMode, smartCrop);
   ctx.drawImage(img, x, y, width, height);
   
   ctx.restore();
@@ -188,7 +187,7 @@ const drawWipeTransition = (ctx, img, canvas, progress, smartCrop = 'center') =>
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawSpiralTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
+const drawSpiralTransition = (ctx, img, canvas, progress, fitMode = 'fill', smartCrop = 'center') => {
   const spiralProgress = Math.min(progress * 1.2, 1);
   const rotation = spiralProgress * Math.PI * 0.5;
   const scale = 0.7 + (spiralProgress * 0.3);
@@ -199,7 +198,7 @@ const drawSpiralTransition = (ctx, img, canvas, progress, smartCrop = 'center') 
   ctx.scale(scale, scale);
   ctx.translate(-canvas.width / 2, -canvas.height / 2);
   
-  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, fitMode, smartCrop);
   ctx.drawImage(img, x, y, width, height);
   
   ctx.restore();
@@ -212,7 +211,7 @@ const drawSpiralTransition = (ctx, img, canvas, progress, smartCrop = 'center') 
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawBounceTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
+const drawBounceTransition = (ctx, img, canvas, progress, fitMode = 'fill', smartCrop = 'center') => {
   const bounceProgress = Math.min(progress * 1.1, 1);
   const bounce = Math.sin(bounceProgress * Math.PI) * 0.1;
   const scale = 0.9 + bounce;
@@ -222,7 +221,7 @@ const drawBounceTransition = (ctx, img, canvas, progress, smartCrop = 'center') 
   ctx.scale(scale, scale);
   ctx.translate(-canvas.width / 2, -canvas.height / 2);
   
-  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, fitMode, smartCrop);
   ctx.drawImage(img, x, y, width, height);
   
   ctx.restore();
@@ -235,7 +234,7 @@ const drawBounceTransition = (ctx, img, canvas, progress, smartCrop = 'center') 
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawFlip3DTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
+const drawFlip3DTransition = (ctx, img, canvas, progress, fitMode = 'fill', smartCrop = 'center') => {
   const flipProgress = Math.min(progress * 1.3, 1);
   const perspective = Math.cos(flipProgress * Math.PI * 0.5);
   
@@ -245,7 +244,7 @@ const drawFlip3DTransition = (ctx, img, canvas, progress, smartCrop = 'center') 
   ctx.translate(-canvas.width / 2, -canvas.height / 2);
   
   if (perspective > 0) {
-    const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
+    const { x, y, width, height } = calculateImageDimensions(img, canvas, fitMode, smartCrop);
     ctx.drawImage(img, x, y, width, height);
   }
   
@@ -253,38 +252,51 @@ const drawFlip3DTransition = (ctx, img, canvas, progress, smartCrop = 'center') 
 };
 
 /**
- * Calcula dimensões da imagem para ajustar ao canvas mantendo aspect ratio
+ * Calcula dimensões da imagem baseado no modo de ajuste
  * @param {HTMLImageElement} img - Imagem
  * @param {HTMLCanvasElement} canvas - Canvas
- * @param {string} smartCrop - Tipo de crop inteligente
+ * @param {string} fitMode - Modo de ajuste ('fill', 'fit', 'stretch')
+ * @param {string} smartCrop - Tipo de crop inteligente (para fill mode)
  * @returns {Object} Coordenadas e dimensões
  */
-const calculateImageDimensions = (img, canvas, smartCrop = 'center') => {
+const calculateImageDimensions = (img, canvas, fitMode = 'fill', smartCrop = 'center') => {
   const imgAspect = img.width / img.height;
   const canvasAspect = canvas.width / canvas.height;
   
   let width, height, x, y;
   
-  // Para Stories (vertical), usar crop inteligente para imagens landscape
-  if (canvasAspect < 1 && imgAspect > 1.5) { // Canvas vertical e imagem landscape
-    return calculateSmartCrop(img, canvas, smartCrop);
+  switch (fitMode) {
+    case 'stretch':
+      // Esticar para preencher exatamente (pode distorcer)
+      return {
+        x: 0,
+        y: 0,
+        width: canvas.width,
+        height: canvas.height
+      };
+      
+    case 'fit':
+      // Ajustar mantendo aspect ratio (pode ter barras pretas)
+      if (imgAspect > canvasAspect) {
+        // Imagem mais larga - ajustar pela largura
+        width = canvas.width;
+        height = width / imgAspect;
+        x = 0;
+        y = (canvas.height - height) / 2;
+      } else {
+        // Imagem mais alta - ajustar pela altura
+        height = canvas.height;
+        width = height * imgAspect;
+        x = (canvas.width - width) / 2;
+        y = 0;
+      }
+      return { x, y, width, height };
+      
+    case 'fill':
+    default:
+      // Preencher cortando se necessário (sem barras pretas)
+      return calculateSmartCrop(img, canvas, smartCrop);
   }
-  
-  if (imgAspect > canvasAspect) {
-    // Imagem mais larga - ajustar pela altura
-    height = canvas.height;
-    width = height * imgAspect;
-    x = (canvas.width - width) / 2;
-    y = 0;
-  } else {
-    // Imagem mais alta - ajustar pela largura
-    width = canvas.width;
-    height = width / imgAspect;
-    x = 0;
-    y = (canvas.height - height) / 2;
-  }
-  
-  return { x, y, width, height };
 };
 
 /**
@@ -323,6 +335,26 @@ const calculateSmartCrop = (img, canvas, cropType) => {
     case 'rule-of-thirds':
       // Regra dos terços - focar no terço superior
       y = Math.max(0, y - height * 0.15);
+      break;
+      
+    case 'top':
+      // Focar na parte superior
+      y = Math.max(-height * 0.3, -height + canvas.height);
+      break;
+      
+    case 'bottom':
+      // Focar na parte inferior
+      y = Math.min(height * 0.3, 0);
+      break;
+      
+    case 'left':
+      // Focar na parte esquerda
+      x = Math.max(-width * 0.3, -width + canvas.width);
+      break;
+      
+    case 'right':
+      // Focar na parte direita
+      x = Math.min(width * 0.3, 0);
       break;
       
     case 'center':
@@ -395,57 +427,59 @@ export const getDynamicTransition = (imageIndex, totalImages, currentYear, previ
  * @param {string} transition - Tipo de transição
  * @param {number} progress - Progresso da transição (0-1)
  * @param {boolean} enableParticles - Se deve aplicar efeito de partículas
+ * @param {string} fitMode - Modo de ajuste da imagem ('fill', 'fit', 'stretch')
+ * @param {string} smartCrop - Posicionamento do crop para fill mode
  */
-export const drawImageWithTransition = (ctx, img, canvas, transition, progress, enableParticles = false, smartCrop = 'center') => {
+export const drawImageWithTransition = (ctx, img, canvas, transition, progress, enableParticles = false, fitMode = 'fill', smartCrop = 'center') => {
   // Aplicar transição baseada no tipo
   switch (transition) {
     case 'stories':
       // Estilo Stories: imagem simples sem transições
-      drawStoriesStyle(ctx, img, canvas, progress, smartCrop);
+      drawStoriesStyle(ctx, img, canvas, progress, fitMode, smartCrop);
       break;
     case 'fade':
-      drawFadeTransition(ctx, img, canvas, progress, smartCrop);
+      drawFadeTransition(ctx, img, canvas, progress, fitMode, smartCrop);
       break;
     case 'slide':
-      drawSlideTransition(ctx, img, canvas, progress, smartCrop);
+      drawSlideTransition(ctx, img, canvas, progress, fitMode, smartCrop);
       break;
     case 'zoom':
-      drawZoomTransition(ctx, img, canvas, progress, smartCrop);
+      drawZoomTransition(ctx, img, canvas, progress, fitMode, smartCrop);
       break;
     case 'kenBurns':
-      drawKenBurnsTransition(ctx, img, canvas, progress, smartCrop);
+      drawKenBurnsTransition(ctx, img, canvas, progress, fitMode, smartCrop);
       break;
     case 'wipe':
-      drawWipeTransition(ctx, img, canvas, progress, smartCrop);
+      drawWipeTransition(ctx, img, canvas, progress, fitMode, smartCrop);
       break;
     case 'spiral':
-      drawSpiralTransition(ctx, img, canvas, progress, smartCrop);
+      drawSpiralTransition(ctx, img, canvas, progress, fitMode, smartCrop);
       break;
     case 'bounce':
-      drawBounceTransition(ctx, img, canvas, progress, smartCrop);
+      drawBounceTransition(ctx, img, canvas, progress, fitMode, smartCrop);
       break;
     case 'flip3d':
-      drawFlip3DTransition(ctx, img, canvas, progress, smartCrop);
+      drawFlip3DTransition(ctx, img, canvas, progress, fitMode, smartCrop);
       break;
     // Novas transições cinematográficas
     case 'dissolve':
-      drawDissolveTransition(ctx, img, canvas, progress, smartCrop);
+      drawDissolveTransition(ctx, img, canvas, progress, fitMode, smartCrop);
       break;
     case 'push':
-      drawPushTransition(ctx, img, canvas, progress, smartCrop);
+      drawPushTransition(ctx, img, canvas, progress, fitMode, smartCrop);
       break;
     case 'reveal':
-      drawRevealTransition(ctx, img, canvas, progress, smartCrop);
+      drawRevealTransition(ctx, img, canvas, progress, fitMode, smartCrop);
       break;
     case 'scale':
-      drawScaleTransition(ctx, img, canvas, progress, smartCrop);
+      drawScaleTransition(ctx, img, canvas, progress, fitMode, smartCrop);
       break;
     case 'rotate':
-      drawRotateTransition(ctx, img, canvas, progress, smartCrop);
+      drawRotateTransition(ctx, img, canvas, progress, fitMode, smartCrop);
       break;
     default:
       // Fallback para Stories
-      drawStoriesStyle(ctx, img, canvas, progress, smartCrop);
+      drawStoriesStyle(ctx, img, canvas, progress, fitMode, smartCrop);
   }
   
   // Aplicar efeito de partículas se habilitado
@@ -461,7 +495,7 @@ export const drawImageWithTransition = (ctx, img, canvas, transition, progress, 
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawDissolveTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
+const drawDissolveTransition = (ctx, img, canvas, progress, fitMode = 'fill', smartCrop = 'center') => {
   ctx.save();
   
   // Easing suave para dissolve mais natural
@@ -473,7 +507,7 @@ const drawDissolveTransition = (ctx, img, canvas, progress, smartCrop = 'center'
     ctx.filter = `blur(${(0.5 - easedProgress) * 1}px)`;
   }
   
-  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, fitMode, smartCrop);
   ctx.drawImage(img, x, y, width, height);
   
   ctx.restore();
@@ -486,7 +520,7 @@ const drawDissolveTransition = (ctx, img, canvas, progress, smartCrop = 'center'
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawPushTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
+const drawPushTransition = (ctx, img, canvas, progress, fitMode = 'fill', smartCrop = 'center') => {
   // Easing suave para movimento mais natural
   const easedProgress = easeOutQuart(progress);
   const pushOffset = (1 - easedProgress) * canvas.width;
@@ -498,7 +532,7 @@ const drawPushTransition = (ctx, img, canvas, progress, smartCrop = 'center') =>
   ctx.scale(scale, scale);
   ctx.translate(pushOffset, 0);
   
-  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, fitMode, smartCrop);
   ctx.drawImage(img, x, y, width, height);
   
   ctx.restore();
@@ -511,7 +545,7 @@ const drawPushTransition = (ctx, img, canvas, progress, smartCrop = 'center') =>
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawRevealTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
+const drawRevealTransition = (ctx, img, canvas, progress, fitMode = 'fill', smartCrop = 'center') => {
   ctx.save();
   
   // Easing suave para reveal mais natural
@@ -522,7 +556,7 @@ const drawRevealTransition = (ctx, img, canvas, progress, smartCrop = 'center') 
   ctx.rect(0, 0, canvas.width * easedProgress, canvas.height);
   ctx.clip();
   
-  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, fitMode, smartCrop);
   ctx.drawImage(img, x, y, width, height);
   
   ctx.restore();
@@ -535,7 +569,7 @@ const drawRevealTransition = (ctx, img, canvas, progress, smartCrop = 'center') 
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawScaleTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
+const drawScaleTransition = (ctx, img, canvas, progress, fitMode = 'fill', smartCrop = 'center') => {
   // Easing suave para scale mais natural
   const easedProgress = easeInOutCubic(progress);
   
@@ -552,7 +586,7 @@ const drawScaleTransition = (ctx, img, canvas, progress, smartCrop = 'center') =
   
   ctx.translate(-canvas.width / 2, -canvas.height / 2);
   
-  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, fitMode, smartCrop);
   ctx.drawImage(img, x, y, width, height);
   
   ctx.restore();
@@ -565,7 +599,7 @@ const drawScaleTransition = (ctx, img, canvas, progress, smartCrop = 'center') =
  * @param {HTMLCanvasElement} canvas - Canvas de destino
  * @param {number} progress - Progresso da transição (0-1)
  */
-const drawRotateTransition = (ctx, img, canvas, progress, smartCrop = 'center') => {
+const drawRotateTransition = (ctx, img, canvas, progress, fitMode = 'fill', smartCrop = 'center') => {
   // Easing suave para rotação mais natural
   const easedProgress = easeInOutCubic(progress);
   
@@ -579,7 +613,7 @@ const drawRotateTransition = (ctx, img, canvas, progress, smartCrop = 'center') 
   ctx.scale(scale, scale);
   ctx.translate(-canvas.width / 2, -canvas.height / 2);
   
-  const { x, y, width, height } = calculateImageDimensions(img, canvas, smartCrop);
+  const { x, y, width, height } = calculateImageDimensions(img, canvas, fitMode, smartCrop);
   ctx.drawImage(img, x, y, width, height);
   
   ctx.restore();

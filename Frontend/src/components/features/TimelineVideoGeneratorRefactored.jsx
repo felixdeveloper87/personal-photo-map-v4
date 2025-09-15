@@ -58,6 +58,8 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
     transitionDuration: 0.8, // Duração da transição em segundos
     enableParticles: false, // Efeitos de partículas
     dynamicMode: 'smart', // 'smart', 'random', 'sequential'
+    imageFitMode: 'fill', // 'fill', 'fit', 'stretch'
+    smartCrop: 'center', // Para fill mode
   });
 
   // Audio settings

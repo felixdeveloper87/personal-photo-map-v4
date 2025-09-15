@@ -351,6 +351,7 @@ export const useVideoGenerator = () => {
                   selectedTransition, 
                   transitionProgress, 
                   settings.enableParticles,
+                  settings.imageFitMode || 'fill',
                   settings.smartCrop || 'center'
                 );
                 

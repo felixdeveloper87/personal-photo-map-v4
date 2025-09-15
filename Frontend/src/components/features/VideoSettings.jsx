@@ -166,10 +166,27 @@ const VideoSettings = ({
         </Text>
       </FormControl>
 
-      {/* Smart Crop para Stories */}
-      {settings.resolution.includes('stories') && (
+      {/* Modo de ajuste de imagem */}
+      <FormControl>
+        <FormLabel color={textColor}>Image Fit Mode</FormLabel>
+        <Select
+          value={settings.imageFitMode || 'fill'}
+          onChange={(e) => handleSettingChange('imageFitMode', e.target.value)}
+          bg={inputBg}
+        >
+          <option value="fill">🖼️ Fill (Crop to fit, no black bars)</option>
+          <option value="fit">📏 Fit (Show entire image, may add black bars)</option>
+          <option value="stretch">🔄 Stretch (Distort to fit exactly)</option>
+        </Select>
+        <Text fontSize="xs" color={mutedTextColor} mt={1}>
+          How to handle images with different aspect ratios than the video
+        </Text>
+      </FormControl>
+
+      {/* Smart Crop para Fill mode */}
+      {settings.imageFitMode === 'fill' && (
         <FormControl>
-          <FormLabel color={textColor}>Smart Crop for Landscape Photos</FormLabel>
+          <FormLabel color={textColor}>Smart Crop Position</FormLabel>
           <Select
             value={settings.smartCrop || 'center'}
             onChange={(e) => handleSettingChange('smartCrop', e.target.value)}
@@ -179,9 +196,13 @@ const VideoSettings = ({
             <option value="face-detection">👤 Face Detection (Best for portraits)</option>
             <option value="object-detection">🔍 Object Detection (Best for landscapes)</option>
             <option value="rule-of-thirds">📐 Rule of Thirds (Artistic composition)</option>
+            <option value="top">⬆️ Top Focus</option>
+            <option value="bottom">⬇️ Bottom Focus</option>
+            <option value="left">⬅️ Left Focus</option>
+            <option value="right">➡️ Right Focus</option>
           </Select>
           <Text fontSize="xs" color={mutedTextColor} mt={1}>
-            Choose how to crop landscape photos for vertical Stories format
+            Choose which part of the image to focus on when cropping
           </Text>
         </FormControl>
       )}
