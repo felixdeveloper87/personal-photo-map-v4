@@ -20,9 +20,11 @@ import {
   SimpleGrid,
   Image,
   Box,
+  Collapse,
+  IconButton,
 } from '@chakra-ui/react';
 import { FaVideo, FaImages, FaCalendar } from 'react-icons/fa';
-import { MdClose, MdUndo } from 'react-icons/md';
+import { MdClose, MdUndo, MdExpandMore, MdExpandLess } from 'react-icons/md';
 import { useQuery } from '@tanstack/react-query';
 import { AuthContext } from '../../context/AuthContext';
 import { buildApiUrl } from '../../utils/apiConfig';
@@ -58,6 +60,7 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
   const { isLoggedIn } = useContext(AuthContext);
   const [showGenerator, setShowGenerator] = useState(false);
   const [excludedImageIds, setExcludedImageIds] = useState(new Set());
+  const [isPhotoPreviewOpen, setIsPhotoPreviewOpen] = useState(false);
 
   // Cores do tema - Estilo OpenAI
   const bgColor = useColorModeValue('white', '#0f0f0f');
@@ -118,6 +121,7 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
     if (!isOpen) {
       setShowGenerator(false);
       setExcludedImageIds(new Set());
+      setIsPhotoPreviewOpen(false);
     }
   }, [isOpen]);
 
@@ -386,18 +390,44 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                 </HStack>
               </Box>
 
-              {/* Preview de algumas fotos */}
+              {/* Preview de algumas fotos - Colapsável */}
               <Box>
-                <HStack justify="space-between" align="center" mb={4}>
-                  <Text fontSize="md" fontWeight="medium" color={textColor}>
-                    Photo Preview
-                  </Text>
+                {/* Header clicável para expandir/colapsar */}
+                <HStack 
+                  justify="space-between" 
+                  align="center" 
+                  mb={4}
+                  cursor="pointer"
+                  onClick={() => setIsPhotoPreviewOpen(!isPhotoPreviewOpen)}
+                  p={3}
+                  borderRadius="lg"
+                  transition="all 0.2s"
+                  _hover={{
+                    bg: useColorModeValue("rgba(0,0,0,0.02)", "rgba(255,255,255,0.02)")
+                  }}
+                >
+                  <HStack spacing={3}>
+                    <IconButton
+                      aria-label={isPhotoPreviewOpen ? "Collapse photo preview" : "Expand photo preview"}
+                      icon={isPhotoPreviewOpen ? <MdExpandLess /> : <MdExpandMore />}
+                      size="sm"
+                      variant="ghost"
+                      color={textColor}
+                    />
+                    <Text fontSize="md" fontWeight="medium" color={textColor}>
+                      Photo Preview ({totalPhotos} photos{excludedCount > 0 ? `, ${excludedCount} removed` : ''})
+                    </Text>
+                  </HStack>
+                  
                   {excludedCount > 0 && (
                     <Button
                       size="sm"
                       leftIcon={<MdUndo />}
                       variant="ghost"
-                      onClick={restoreAllImages}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        restoreAllImages();
+                      }}
                       borderRadius="lg"
                       color={useColorModeValue("#F59E0B", "#FBBF24")}
                       fontSize="xs"
@@ -410,67 +440,71 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                   )}
                 </HStack>
                 
-                <SimpleGrid columns={{ base: 3, sm: 4, md: 6, lg: 8 }} spacing={{ base: 2, md: 3 }}>
-                  {images.map((img, index) => {
-                    const isExcluded = excludedImageIds.has(img.id);
-                    return (
-                      <Box 
-                        key={img.id} 
-                        position="relative"
-                        opacity={isExcluded ? 0.4 : 1}
-                        transform={isExcluded ? "scale(0.95)" : "scale(1)"}
-                        transition="all 0.2s"
-                      >
-                        <Image
-                          src={img.url}
-                          alt={`Photo ${index + 1}`}
-                          w={{ base: "50px", md: "60px" }}
-                          h={{ base: "50px", md: "60px" }}
-                          objectFit="cover"
-                          borderRadius="lg"
-                          border="2px solid"
-                          borderColor={isExcluded ? "red.300" : borderColor}
-                          filter={isExcluded ? "grayscale(100%)" : "none"}
-                        />
-                        
-                        {/* Botão de remoção/restauração */}
-                        <Box
-                          position="absolute"
-                          top="-1"
-                          left="-1"
-                          onClick={() => isExcluded ? restoreImage(img.id) : removeImage(img.id)}
-                          cursor="pointer"
-                          bg={isExcluded ? "orange.500" : "red.500"}
-                          borderRadius="full"
-                          w="20px"
-                          h="20px"
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="center"
-                          _hover={{ 
-                            transform: "scale(1.1)",
-                            bg: isExcluded ? "orange.600" : "red.600"
-                          }}
-                          transition="all 0.2s"
-                          boxShadow="0 2px 4px rgba(0,0,0,0.2)"
-                        >
-                          {isExcluded ? (
-                            <MdUndo size={12} color="white" />
-                          ) : (
-                            <MdClose size={12} color="white" />
-                          )}
-                        </Box>
-
-                      </Box>
-                    );
-                  })}
-                </SimpleGrid>
-                
-                {excludedCount > 0 && (
-                  <Text fontSize="sm" color="orange.500" mt={3} textAlign="center">
-                    {excludedCount} photo{excludedCount > 1 ? 's' : ''} removed from video
-                  </Text>
-                )}
+                {/* Conteúdo colapsável */}
+                <Collapse in={isPhotoPreviewOpen} animateOpacity>
+                  <VStack spacing={4} align="stretch">
+                    <SimpleGrid columns={{ base: 3, sm: 4, md: 6, lg: 8 }} spacing={{ base: 2, md: 3 }}>
+                      {images.map((img, index) => {
+                        const isExcluded = excludedImageIds.has(img.id);
+                        return (
+                          <Box 
+                            key={img.id} 
+                            position="relative"
+                            opacity={isExcluded ? 0.4 : 1}
+                            transform={isExcluded ? "scale(0.95)" : "scale(1)"}
+                            transition="all 0.2s"
+                          >
+                            <Image
+                              src={img.url}
+                              alt={`Photo ${index + 1}`}
+                              w={{ base: "50px", md: "60px" }}
+                              h={{ base: "50px", md: "60px" }}
+                              objectFit="cover"
+                              borderRadius="lg"
+                              border="2px solid"
+                              borderColor={isExcluded ? "red.300" : borderColor}
+                              filter={isExcluded ? "grayscale(100%)" : "none"}
+                            />
+                            
+                            {/* Botão de remoção/restauração */}
+                            <Box
+                              position="absolute"
+                              top="-1"
+                              left="-1"
+                              onClick={() => isExcluded ? restoreImage(img.id) : removeImage(img.id)}
+                              cursor="pointer"
+                              bg={isExcluded ? "orange.500" : "red.500"}
+                              borderRadius="full"
+                              w="20px"
+                              h="20px"
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="center"
+                              _hover={{ 
+                                transform: "scale(1.1)",
+                                bg: isExcluded ? "orange.600" : "red.600"
+                              }}
+                              transition="all 0.2s"
+                              boxShadow="0 2px 4px rgba(0,0,0,0.2)"
+                            >
+                              {isExcluded ? (
+                                <MdUndo size={12} color="white" />
+                              ) : (
+                                <MdClose size={12} color="white" />
+                              )}
+                            </Box>
+                          </Box>
+                        );
+                      })}
+                    </SimpleGrid>
+                    
+                    {excludedCount > 0 && (
+                      <Text fontSize="sm" color="orange.500" textAlign="center">
+                        {excludedCount} photo{excludedCount > 1 ? 's' : ''} removed from video
+                      </Text>
+                    )}
+                  </VStack>
+                </Collapse>
               </Box>
 
               {/* Informações sobre o gerador */}
