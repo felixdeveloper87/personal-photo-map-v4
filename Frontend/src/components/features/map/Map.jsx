@@ -1,6 +1,6 @@
 import React, { useContext, useCallback, useState, useEffect, useMemo } from 'react';
 import { MapContainer, GeoJSON, Rectangle } from 'react-leaflet';
-import { Box, useColorMode, useColorModeValue, useToast } from '@chakra-ui/react';
+import { Box, useColorMode, useColorModeValue } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import 'leaflet/dist/leaflet.css';
 
@@ -83,12 +83,10 @@ const Map = () => {
   // Estado para modal de conversão
   const [conversionModal, setConversionModal] = useState({ isOpen: false, countryId: null });
   const navigate = useNavigate();
-  const toast = useToast();
 
   // Função para interações com países
   const onEachCountry = useCallback((feature, layer) => {
     const countryId = feature.properties.iso2?.toLowerCase();
-    const countryName = feature.properties.name_en;
     const isCountryWithPhotos = countriesWithPhotos?.includes(countryId);
 
     layer.on({
@@ -98,17 +96,8 @@ const Map = () => {
           return;
         }
 
-        if (isCountryWithPhotos) {
-          navigate(`/countries/${countryId}`);
-        } else {
-          toast({
-            title: `${countryName}`,
-            description: 'No photos uploaded yet for this country.',
-            status: 'info',
-            duration: 3000,
-            isClosable: true,
-          });
-        }
+        // Navegar sempre, mesmo se não há fotos
+        navigate(`/countries/${countryId}`);
       },
       mouseover: () => {
         if (isCountryWithPhotos || !isLoggedIn) {
@@ -119,7 +108,7 @@ const Map = () => {
         layer.getElement().style.cursor = '';
       }
     });
-  }, [countriesWithPhotos, isLoggedIn, navigate, toast]);
+  }, [countriesWithPhotos, isLoggedIn, navigate]);
 
   // Update GeoJSON when countries change OR when highlighted countries change
   useEffect(() => {
