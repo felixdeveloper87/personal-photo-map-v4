@@ -49,6 +49,15 @@ const fetchAllPictures = async () => {
 
   // Debug: verificar dados brutos da API
   console.log('🔍 Dados brutos da API (primeiras 3):', data.slice(0, 3));
+  
+  // Debug: verificar se alguma imagem tem countryId
+  const hasCountryId = data.some(img => img.countryId);
+  const countryIds = data.slice(0, 10).map(img => img.countryId);
+  console.log('🔍 Backend countryId check:', {
+    hasCountryId,
+    firstTenCountryIds: countryIds,
+    sampleImage: data[0]
+  });
 
   const mappedImages = data.map((image, index) => {
     // Extrair ano do filePath se year estiver undefined
@@ -67,7 +76,7 @@ const fetchAllPictures = async () => {
         `${import.meta.env.VITE_BACKEND_URL}${image.filePath || ''}`,
       id: image.id || index,
       year: fallbackYear || new Date().getFullYear(),
-      countryId: image.countryId || 'unknown',
+      countryId: image.countryId || null, // Não forçar 'unknown', deixar null para debug
       fileName: fallbackFileName,
       // Manter dados originais para debug
       _original: image

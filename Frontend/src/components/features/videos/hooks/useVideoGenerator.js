@@ -373,16 +373,15 @@ export const useVideoGenerator = () => {
                   settings.smartCrop || 'center'
                 );
                 
-                // Debug: verificar dados da imagem (primeiras 5 imagens para debug detalhado)
-                if (globalImageIndex < 5 && frame === 0) {
-                  console.log(`📷 Image data (${globalImageIndex + 1}/5):`, {
+                // Debug: verificar dados da imagem (apenas primeira vez de cada imagem)
+                if (frame === 0) {
+                  console.log(`📷 Image ${globalImageIndex + 1} data:`, {
                     fileName: img.fileName,
                     year: img.year,
                     countryId: img.countryId,
                     hasCountryId: !!img.countryId,
                     countryIdType: typeof img.countryId,
-                    showCountryName: settings.showCountryName || true,
-                    fullImageObj: img
+                    showCountryName: settings.showCountryName || true
                   });
                 }
                 
