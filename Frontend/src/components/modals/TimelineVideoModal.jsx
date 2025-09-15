@@ -228,72 +228,114 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
           ) : (
             <VStack spacing={6} align="stretch" flex="1">
               {/* Estatísticas */}
-              <Box 
-                p={6} 
-                bg={cardBg} 
-                borderRadius="xl" 
-                border={`1px solid ${borderColor}`}
-                boxShadow={useColorModeValue(
-                  "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                  "0 4px 6px -1px rgba(0, 0, 0, 0.3)"
-                )}
-              >
-                <VStack spacing={6}>
-                  <Text fontSize="xl" fontWeight="semibold" color={textColor}>
-                    Your Timeline Summary
-                  </Text>
-                  
-                  <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={{ base: 4, md: 6 }} w="100%">
-                    <VStack p={4} bg={useColorModeValue("blue.50", "blue.900")} borderRadius="md" border="1px solid" borderColor={useColorModeValue("blue.200", "blue.600")}>
-                      <FaImages size={24} color={useColorModeValue("#3182CE", "#63B3ED")} />
-                      <Text fontSize="2xl" fontWeight="bold" color={useColorModeValue("blue.600", "blue.300")}>
-                        {totalPhotos}
-                      </Text>
-                      <Text fontSize="sm" color={useColorModeValue("blue.600", "blue.300")}>
-                        Total Photos
-                      </Text>
-                    </VStack>
+              <Box>
+                <Text fontSize="lg" fontWeight="medium" color={textColor} mb={4}>
+                  Timeline Summary
+                </Text>
+                
+                <HStack spacing={{ base: 4, md: 6 }} justify="space-between" w="100%">
+                  <VStack 
+                    spacing={1} 
+                    align="center"
+                    flex="1"
+                    p={3}
+                    bg={useColorModeValue("rgba(0,0,0,0.02)", "rgba(255,255,255,0.02)")}
+                    borderRadius="lg"
+                    border={`1px solid ${borderColor}`}
+                    transition="all 0.2s"
+                    _hover={{
+                      bg: useColorModeValue("rgba(0,0,0,0.04)", "rgba(255,255,255,0.04)"),
+                      transform: "translateY(-1px)"
+                    }}
+                  >
+                    <Box mb={1}>
+                      <FaImages size={16} color={useColorModeValue("#6B7280", "#9CA3AF")} />
+                    </Box>
+                    <Text fontSize="xl" fontWeight="semibold" color={textColor} lineHeight="1">
+                      {totalPhotos}
+                    </Text>
+                    <Text fontSize="xs" color={mutedTextColor} textAlign="center" lineHeight="1.2">
+                      Photos
+                    </Text>
+                  </VStack>
 
-                    <VStack p={4} bg={useColorModeValue("green.50", "green.900")} borderRadius="md" border="1px solid" borderColor={useColorModeValue("green.200", "green.600")}>
-                      <FaCalendar size={24} color={useColorModeValue("#38A169", "#68D391")} />
-                      <Text fontSize="2xl" fontWeight="bold" color={useColorModeValue("green.600", "green.300")}>
-                        {years.length}
-                      </Text>
-                      <Text fontSize="sm" color={useColorModeValue("green.600", "green.300")}>
-                        Different Years
-                      </Text>
-                    </VStack>
+                  <VStack 
+                    spacing={1} 
+                    align="center"
+                    flex="1"
+                    p={3}
+                    bg={useColorModeValue("rgba(0,0,0,0.02)", "rgba(255,255,255,0.02)")}
+                    borderRadius="lg"
+                    border={`1px solid ${borderColor}`}
+                    transition="all 0.2s"
+                    _hover={{
+                      bg: useColorModeValue("rgba(0,0,0,0.04)", "rgba(255,255,255,0.04)"),
+                      transform: "translateY(-1px)"
+                    }}
+                  >
+                    <Box mb={1}>
+                      <FaCalendar size={16} color={useColorModeValue("#6B7280", "#9CA3AF")} />
+                    </Box>
+                    <Text fontSize="xl" fontWeight="semibold" color={textColor} lineHeight="1">
+                      {years.length}
+                    </Text>
+                    <Text fontSize="xs" color={mutedTextColor} textAlign="center" lineHeight="1.2">
+                      Years
+                    </Text>
+                  </VStack>
 
-                    <VStack p={4} bg={useColorModeValue("purple.50", "purple.900")} borderRadius="md" border="1px solid" borderColor={useColorModeValue("purple.200", "purple.600")}>
-                      <FaVideo size={24} color={useColorModeValue("#805AD5", "#B794F6")} />
-                      <Text fontSize="2xl" fontWeight="bold" color={useColorModeValue("purple.600", "purple.300")}>
-                        {Math.round((totalPhotos * 1.5) / 60)}min
-                      </Text>
-                      <Text fontSize="sm" color={useColorModeValue("purple.600", "purple.300")}>
-                        Estimated Duration
-                      </Text>
-                    </VStack>
-                  </SimpleGrid>
-                </VStack>
+                  <VStack 
+                    spacing={1} 
+                    align="center"
+                    flex="1"
+                    p={3}
+                    bg={useColorModeValue("rgba(0,0,0,0.02)", "rgba(255,255,255,0.02)")}
+                    borderRadius="lg"
+                    border={`1px solid ${borderColor}`}
+                    transition="all 0.2s"
+                    _hover={{
+                      bg: useColorModeValue("rgba(0,0,0,0.04)", "rgba(255,255,255,0.04)"),
+                      transform: "translateY(-1px)"
+                    }}
+                  >
+                    <Box mb={1}>
+                      <FaVideo size={16} color={useColorModeValue("#6B7280", "#9CA3AF")} />
+                    </Box>
+                    <Text fontSize="xl" fontWeight="semibold" color={textColor} lineHeight="1">
+                      {Math.round((totalPhotos * 1.5) / 60)}min
+                    </Text>
+                    <Text fontSize="xs" color={mutedTextColor} textAlign="center" lineHeight="1.2">
+                      Duration
+                    </Text>
+                  </VStack>
+                </HStack>
               </Box>
 
               {/* Anos com fotos */}
               <Box>
-                <Text fontSize="md" fontWeight="semibold" mb={3} color={textColor}>
-                  Years available in your timeline:
+                <Text fontSize="md" fontWeight="medium" mb={3} color={textColor}>
+                  Available Years
                 </Text>
                 <HStack wrap="wrap" spacing={2}>
                   {years.map(year => (
-                    <Badge
+                    <Box
                       key={year}
-                      colorScheme="blue"
-                      variant="solid"
                       px={3}
-                      py={1}
-                      borderRadius="full"
+                      py={1.5}
+                      bg={useColorModeValue("rgba(0,0,0,0.04)", "rgba(255,255,255,0.06)")}
+                      borderRadius="md"
+                      border={`1px solid ${borderColor}`}
+                      fontSize="sm"
+                      color={textColor}
+                      fontWeight="medium"
+                      transition="all 0.2s"
+                      _hover={{
+                        bg: useColorModeValue("rgba(0,0,0,0.08)", "rgba(255,255,255,0.12)"),
+                        transform: "translateY(-1px)"
+                      }}
                     >
-                      {year} ({imagesByYear[year].length} photos)
-                    </Badge>
+                      {year} ({imagesByYear[year].length})
+                    </Box>
                   ))}
                 </HStack>
               </Box>
@@ -301,19 +343,23 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
               {/* Preview de algumas fotos */}
               <Box>
                 <HStack justify="space-between" align="center" mb={4}>
-                  <Text fontSize="md" fontWeight="semibold" color={textColor}>
-                    Preview of your photos:
+                  <Text fontSize="md" fontWeight="medium" color={textColor}>
+                    Photo Preview
                   </Text>
                   {excludedCount > 0 && (
                     <Button
                       size="sm"
                       leftIcon={<MdUndo />}
-                      colorScheme="orange"
-                      variant="outline"
+                      variant="ghost"
                       onClick={restoreAllImages}
                       borderRadius="lg"
+                      color={useColorModeValue("#F59E0B", "#FBBF24")}
+                      fontSize="xs"
+                      _hover={{
+                        bg: useColorModeValue("rgba(245, 158, 11, 0.1)", "rgba(251, 191, 36, 0.1)")
+                      }}
                     >
-                      Restore {excludedCount} removed
+                      Restore {excludedCount}
                     </Button>
                   )}
                 </HStack>
@@ -394,38 +440,65 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
               </Box>
 
               {/* Informações sobre o gerador */}
-              <Alert status="info">
-                <AlertIcon />
-                <AlertDescription>
-                  <strong>100% Free and Private:</strong> The video will be generated entirely in your browser
-                  using modern web technologies. No photos will be sent to external servers.
-                  The process uses HTML5 Canvas and Media Recording API.
-                </AlertDescription>
-              </Alert>
+              <Box 
+                p={4} 
+                bg={useColorModeValue("rgba(59, 130, 246, 0.05)", "rgba(59, 130, 246, 0.1)")}
+                borderRadius="lg" 
+                border={`1px solid ${useColorModeValue("rgba(59, 130, 246, 0.2)", "rgba(59, 130, 246, 0.3)")}`}
+              >
+                <HStack spacing={3} align="start">
+                  <Box mt={0.5}>
+                    <Box w={2} h={2} borderRadius="full" bg={useColorModeValue("#3B82F6", "#60A5FA")} />
+                  </Box>
+                  <VStack align="start" spacing={1}>
+                    <Text fontSize="sm" fontWeight="medium" color={textColor}>
+                      100% Private & Secure
+                    </Text>
+                    <Text fontSize="xs" color={mutedTextColor} lineHeight="1.4">
+                      Video generation happens entirely in your browser. No photos are uploaded to external servers.
+                    </Text>
+                  </VStack>
+                </HStack>
+              </Box>
 
               {/* Funcionalidades */}
-              <Box p={4} bg={cardBg} borderRadius="lg" border={`1px solid ${borderColor}`}>
-                <Text fontSize="md" fontWeight="semibold" mb={2} color={textColor}>
-                  Generator Features:
+              <Box>
+                <Text fontSize="md" fontWeight="medium" mb={3} color={textColor}>
+                  Features
                 </Text>
-                <VStack align="start" spacing={1}>
-                  <Text fontSize="sm" color={mutedTextColor}>• Automatic transitions between photos (fade, slide, zoom)</Text>
-                  <Text fontSize="sm" color={mutedTextColor}>• Chronological organization by year</Text>
-                  <Text fontSize="sm" color={mutedTextColor}>• Multiple resolutions including Stories/Reels format</Text>
-                  <Text fontSize="sm" color={mutedTextColor}>• Text overlay with year and counter</Text>
-                  <Text fontSize="sm" color={mutedTextColor}>• Background music support (upload or presets)</Text>
-                  <Text fontSize="sm" color={mutedTextColor}>• 📱 Automatic MP4 conversion for iPhone compatibility</Text>
-                  <Text fontSize="sm" color={mutedTextColor}>• Direct download of final video</Text>
+                <VStack spacing={2} align="stretch">
+                  <HStack spacing={3} align="start">
+                    <Box mt={1.5} w={1.5} h={1.5} borderRadius="full" bg={mutedTextColor} />
+                    <Text fontSize="sm" color={mutedTextColor}>Automatic transitions and effects</Text>
+                  </HStack>
+                  <HStack spacing={3} align="start">
+                    <Box mt={1.5} w={1.5} h={1.5} borderRadius="full" bg={mutedTextColor} />
+                    <Text fontSize="sm" color={mutedTextColor}>Chronological organization by year</Text>
+                  </HStack>
+                  <HStack spacing={3} align="start">
+                    <Box mt={1.5} w={1.5} h={1.5} borderRadius="full" bg={mutedTextColor} />
+                    <Text fontSize="sm" color={mutedTextColor}>Multiple resolutions (HD, Stories, Reels)</Text>
+                  </HStack>
+                  <HStack spacing={3} align="start">
+                    <Box mt={1.5} w={1.5} h={1.5} borderRadius="full" bg={mutedTextColor} />
+                    <Text fontSize="sm" color={mutedTextColor}>Background music support</Text>
+                  </HStack>
+                  <HStack spacing={3} align="start">
+                    <Box mt={1.5} w={1.5} h={1.5} borderRadius="full" bg={mutedTextColor} />
+                    <Text fontSize="sm" color={mutedTextColor}>📱 iPhone compatible MP4 export</Text>
+                  </HStack>
                 </VStack>
                 
                 {/* iPhone Instructions */}
-                <Box mt={3} p={3} bg="blue.50" border="1px solid" borderColor="blue.200" borderRadius="md">
-                  <Text fontSize="sm" fontWeight="medium" color="blue.800" mb={1}>
-                    📱 iPhone Users:
-                  </Text>
-                  <Text fontSize="xs" color="blue.700">
-                    After download, videos go to <strong>Files</strong> folder. 
-                    To save to <strong>Photos</strong>: Open video → Share button → "Save to Photos"
+                <Box 
+                  mt={4} 
+                  p={3} 
+                  bg={useColorModeValue("rgba(0,0,0,0.02)", "rgba(255,255,255,0.02)")}
+                  borderRadius="md"
+                  border={`1px solid ${borderColor}`}
+                >
+                  <Text fontSize="xs" color={mutedTextColor} lineHeight="1.4">
+                    <strong>📱 iPhone:</strong> Videos download to Files app. To save to Photos: open video → share → "Save to Photos"
                   </Text>
                 </Box>
               </Box>
