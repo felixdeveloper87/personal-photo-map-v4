@@ -12,17 +12,12 @@ import { AuthContext } from '../../context/AuthContext';
 function ProtectedRoute({ children, ...props }) {
   const { isLoggedIn } = useContext(AuthContext);
 
-  console.log('ProtectedRoute - isLoggedIn:', isLoggedIn);
-  console.log('ProtectedRoute - current path:', window.location.pathname);
-
   // Se não estiver logado, redireciona para a landing page
   if (!isLoggedIn) {
-    console.log('ProtectedRoute - User not logged in, redirecting to /');
     return <Navigate to="/" replace />;
   }
 
   // Se estiver logado, renderiza o componente protegido
-  console.log('ProtectedRoute - User logged in, rendering children');
   return children;
 }
 

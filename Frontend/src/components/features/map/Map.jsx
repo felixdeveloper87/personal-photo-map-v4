@@ -88,21 +88,15 @@ const Map = () => {
   const onEachCountry = useCallback((feature, layer) => {
     const countryId = feature.properties.iso_a2?.toLowerCase();
     const isCountryWithPhotos = countriesWithPhotos?.includes(countryId);
-    
-    // Debug logging
-    console.log('Map - countryId extracted:', countryId, 'from properties:', feature.properties.iso_a2);
 
     layer.on({
       click: () => {
-        console.log('Map - Country clicked:', countryId, 'isLoggedIn:', isLoggedIn);
-        
         if (!isLoggedIn) {
           setConversionModal({ isOpen: true, countryId });
           return;
         }
 
         // Navegar sempre, mesmo se não há fotos
-        console.log('Map - Navigating to:', `/countries/${countryId}`);
         navigate(`/countries/${countryId}`);
       },
       mouseover: () => {
