@@ -59,8 +59,15 @@ const fetchAllPictures = async (year) => {
 const Timeline = ({ selectedYear }) => {
   const navigate = useNavigate();
   const { refreshCountriesWithPhotos } = useContext(CountriesContext);
-  const { isLoggedIn } = useContext(AuthContext);
+  const { isLoggedIn, fullname } = useContext(AuthContext);
   const [collapsedYears, setCollapsedYears] = useState({});
+  
+  // Extrair o primeiro nome do usuário
+  const getFirstName = () => {
+    if (!fullname) return 'Your';
+    const firstName = fullname.trim().split(' ')[0];
+    return firstName || 'Your';
+  };
   const conversionModal = useDisclosure();
   const videoModal = useDisclosure();
 
@@ -156,7 +163,7 @@ const Timeline = ({ selectedYear }) => {
             letterSpacing="tight"
             mb={4}
           >
-            Your Photo Timeline
+{getFirstName()}'s Photo Timeline
           </Heading>
           <Text color={textColor} fontSize="lg" textAlign="center" mt={8}>
             Please log in to view your photo timeline and organize your travel memories.
@@ -204,7 +211,7 @@ const Timeline = ({ selectedYear }) => {
             fontWeight="bold"
             letterSpacing="tight"
           >
-            {selectedYear ? `Timeline for ${selectedYear}` : 'Your Photo Timeline'}
+{selectedYear ? `Timeline for ${selectedYear}` : `${getFirstName()}'s Photo Timeline`}
           </Heading>
           
           {/* Botão para gerar vídeo timeline */}

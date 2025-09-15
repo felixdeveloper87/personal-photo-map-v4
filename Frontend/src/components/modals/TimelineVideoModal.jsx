@@ -319,7 +319,7 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                 </HStack>
                 
                 <SimpleGrid columns={{ base: 3, sm: 4, md: 6, lg: 8 }} spacing={{ base: 2, md: 3 }}>
-                  {images.slice(0, 12).map((img, index) => {
+                  {images.map((img, index) => {
                     const isExcluded = excludedImageIds.has(img.id);
                     return (
                       <Box 
@@ -384,21 +384,6 @@ const TimelineVideoModal = ({ isOpen, onClose }) => {
                       </Box>
                     );
                   })}
-                  {images.length > 12 && (
-                    <VStack
-                      w={{ base: "50px", md: "60px" }}
-                      h={{ base: "50px", md: "60px" }}
-                      justify="center"
-                      bg={useColorModeValue("gray.100", "gray.700")}
-                      borderRadius="lg"
-                      border="2px dashed"
-                      borderColor={borderColor}
-                    >
-                      <Text fontSize="xs" color={mutedTextColor}>
-                        +{images.length - 12}
-                      </Text>
-                    </VStack>
-                  )}
                 </SimpleGrid>
                 
                 {excludedCount > 0 && (
