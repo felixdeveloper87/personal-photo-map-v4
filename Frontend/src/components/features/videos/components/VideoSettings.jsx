@@ -24,7 +24,7 @@ import {
   Text,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { presetMusics } from '../../services/video/audioProcessor';
+import { presetMusics } from '../../../../services/video/audioProcessor';
 
 const VideoSettings = ({ 
   settings, 

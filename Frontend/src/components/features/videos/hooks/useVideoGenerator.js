@@ -4,7 +4,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { useToast } from '@chakra-ui/react';
-import { setupAudioForRecording } from '../../services/video/audioProcessor';
+import { setupAudioForRecording } from '../../../../services/video/audioProcessor';
 import { 
   loadImage, 
   getMediaRecorderOptions, 
@@ -14,8 +14,8 @@ import {
   getResolutionSettings,
   generateFileName,
   downloadBlob
-} from '../../utils/video/videoUtils';
-import { drawImageWithTransition, getDynamicTransition } from '../../utils/video/transitionEngine';
+} from '../utils/videoUtils';
+import { drawImageWithTransition, getDynamicTransition } from '../utils/transitionEngine';
 
 export const useVideoGenerator = () => {
   const toast = useToast();

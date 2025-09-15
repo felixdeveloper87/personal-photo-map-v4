@@ -26,7 +26,7 @@ import { MdClose, MdUndo } from 'react-icons/md';
 import { useQuery } from '@tanstack/react-query';
 import { AuthContext } from '../../context/AuthContext';
 import { buildApiUrl } from '../../utils/apiConfig';
-import TimelineVideoGenerator from '../features/TimelineVideoGeneratorRefactored';
+import TimelineVideoGenerator from '../features/videos/components/TimelineVideoGeneratorRefactored';
 
 // Fetch photos for video generation
 const fetchAllPictures = async () => {

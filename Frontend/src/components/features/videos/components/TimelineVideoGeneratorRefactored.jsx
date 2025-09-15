@@ -17,8 +17,8 @@ import {
   AlertDescription,
 } from '@chakra-ui/react';
 import { FaVideo, FaDownload, FaStop } from 'react-icons/fa';
-import { AuthContext } from '../../context/AuthContext';
-import { useVideoGenerator } from '../../hooks/video/useVideoGenerator';
+import { AuthContext } from '../../../../context/AuthContext';
+import { useVideoGenerator } from '../hooks/useVideoGenerator';
 import VideoSettings from './VideoSettings';
 
 const TimelineVideoGenerator = ({ images, onClose }) => {
