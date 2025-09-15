@@ -37,11 +37,13 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
     stopGeneration,
   } = useVideoGenerator();
 
-  // Cores do tema
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const textColor = useColorModeValue('gray.800', 'white');
-  const borderColor = useColorModeValue('gray.200', 'gray.600');
-  const mutedTextColor = useColorModeValue('gray.600', 'gray.300');
+  // Cores do tema - Estilo OpenAI
+  const bgColor = useColorModeValue('#f8f9fa', '#262626');
+  const textColor = useColorModeValue('#1a1a1a', '#f0f0f0');
+  const borderColor = useColorModeValue('rgba(0, 0, 0, 0.1)', 'rgba(255, 255, 255, 0.1)');
+  const mutedTextColor = useColorModeValue('#666666', '#a0a0a0');
+  const buttonBg = useColorModeValue('#000000', '#ffffff');
+  const buttonText = useColorModeValue('#ffffff', '#000000');
 
   // State para configurações
   const [settings, setSettings] = useState({
@@ -97,10 +99,14 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
 
   return (
     <Box 
-      p={{ base: 4, md: 6 }} 
+      p={{ base: 6, md: 8 }} 
       bg={bgColor} 
-      borderRadius="lg" 
+      borderRadius="xl" 
       border={`1px solid ${borderColor}`}
+      boxShadow={useColorModeValue(
+        "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+        "0 4px 6px -1px rgba(0, 0, 0, 0.3)"
+      )}
     >
       <VStack spacing={{ base: 4, md: 6 }} align="stretch">
         <Text fontSize="xl" fontWeight="bold" color={textColor}>
@@ -200,8 +206,9 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
           {!isGenerating && !isConverting && !videoUrl && (
             <Button
               leftIcon={<FaVideo />}
-              colorScheme="blue"
-              size={{ base: "md", md: "lg" }}
+              bg={buttonBg}
+              color={buttonText}
+              size={{ base: "lg", md: "lg" }}
               onClick={handleGenerateVideo}
               isDisabled={
                 !images || 
@@ -209,7 +216,21 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
                 (settings.musicEnabled && settings.musicSource === 'upload' && !audioFile)
               }
               w={{ base: "100%", sm: "auto" }}
-              minW="200px"
+              minW="250px"
+              borderRadius="xl"
+              fontSize="md"
+              fontWeight="semibold"
+              py={6}
+              _hover={{ 
+                transform: "translateY(-1px)",
+                boxShadow: useColorModeValue(
+                  "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                  "0 10px 15px -3px rgba(0, 0, 0, 0.4)"
+                )
+              }}
+              _active={{ transform: "translateY(0)" }}
+              transition="all 0.2s"
+              border={`1px solid ${useColorModeValue("transparent", "#404040")}`}
             >
               Generate Video ({images?.length || 0} photos)
             </Button>
@@ -239,11 +260,23 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
           {videoUrl && !isConverting && (
             <Button
               leftIcon={<FaDownload />}
-              colorScheme="green"
-              size={{ base: "md", md: "lg" }}
+              bg="green.500"
+              color="white"
+              size={{ base: "lg", md: "lg" }}
               onClick={downloadVideo}
               w={{ base: "100%", sm: "auto" }}
               minW="200px"
+              borderRadius="xl"
+              fontSize="md"
+              fontWeight="semibold"
+              py={6}
+              _hover={{ 
+                bg: "green.600",
+                transform: "translateY(-1px)",
+                boxShadow: "0 10px 15px -3px rgba(34, 197, 94, 0.4)"
+              }}
+              _active={{ transform: "translateY(0)" }}
+              transition="all 0.2s"
             >
               Download {mp4VideoUrl ? 'MP4' : 'WebM'}
             </Button>
@@ -254,10 +287,16 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
             onClick={onClose}
             borderColor={borderColor}
             color={textColor}
-            _hover={{ bg: useColorModeValue("gray.50", "gray.700") }}
-            size={{ base: "md", md: "lg" }}
+            _hover={{ 
+              bg: useColorModeValue("gray.50", "gray.700"),
+              borderColor: useColorModeValue("gray.300", "gray.500")
+            }}
+            size={{ base: "lg", md: "lg" }}
             w={{ base: "100%", sm: "auto" }}
             minW="120px"
+            borderRadius="xl"
+            py={6}
+            transition="all 0.2s"
           >
             Close
           </Button>
