@@ -28,7 +28,9 @@ const CountryDetails = () => {
   const toast = useToast();
 
   // Debug logging (can be removed in production)
+  console.log('CountryDetails - Component mounted');
   console.log('CountryDetails - countryId from useParams:', countryId);
+  console.log('CountryDetails - window.location.pathname:', window.location.pathname);
 
   // Early return if countryId is invalid
   if (!countryId || countryId === 'undefined') {
