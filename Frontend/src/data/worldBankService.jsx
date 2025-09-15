@@ -1,4 +1,9 @@
 export const fetchWorldBankIndicators = async (isoCode) => {
+    if (!isoCode || isoCode === 'undefined') {
+        console.error('fetchWorldBankIndicators: isoCode is undefined or invalid');
+        return {};
+    }
+    
     const indicators = {
         gdp: "NY.GDP.MKTP.CD",
         lifeExpectancy: "SP.DYN.LE00.IN",

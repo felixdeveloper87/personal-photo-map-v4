@@ -5,6 +5,11 @@ import en from 'i18n-iso-countries/langs/en.json';
 countries.registerLocale(en);
 
 export const fetchCountryData = async (countryId) => {
+  if (!countryId || countryId === 'undefined') {
+    console.error('fetchCountryData: countryId is undefined or invalid');
+    throw new Error('Invalid country ID provided');
+  }
+  
   try {
     const response = await fetch(`https://restcountries.com/v3.1/alpha/${countryId}`);
     if (!response.ok) throw new Error('Primary API failed');
