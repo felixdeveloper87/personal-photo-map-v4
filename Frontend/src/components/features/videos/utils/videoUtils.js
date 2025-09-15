@@ -139,52 +139,6 @@ export const convertWebMToMP4 = async (webmBlob, ffmpeg, onProgress) => {
   }
 };
 
-// Cache para logo do PhotoMap
-let photoMapLogo = null;
-
-/**
- * Carrega o logo do PhotoMap
- */
-const loadPhotoMapLogo = async () => {
-  if (photoMapLogo) return photoMapLogo;
-  
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      photoMapLogo = img;
-      resolve(img);
-    };
-    img.onerror = () => {
-      console.warn('Não foi possível carregar o logo do PhotoMap');
-      resolve(null);
-    };
-    // Tentar diferentes caminhos para o logo
-    const logoPaths = [
-      new URL('../../../assets/logo2.png', import.meta.url).href,
-      '/src/assets/logo2.png',
-      './src/assets/logo2.png',
-      '/assets/logo2.png',
-      new URL('../../../assets/logo.png', import.meta.url).href,
-      '/src/assets/logo.png'
-    ];
-    
-    let currentPathIndex = 0;
-    
-    const tryNextPath = () => {
-      if (currentPathIndex < logoPaths.length) {
-        img.src = logoPaths[currentPathIndex];
-        currentPathIndex++;
-      } else {
-        console.warn('Não foi possível carregar o logo do PhotoMap em nenhum caminho');
-        resolve(null);
-      }
-    };
-    
-    img.onerror = tryNextPath;
-    tryNextPath(); // Iniciar com o primeiro caminho
-  });
-};
-
 /**
  * Adiciona overlay de texto ao canvas
  * @param {CanvasRenderingContext2D} ctx - Contexto do canvas
@@ -207,8 +161,7 @@ export const addTextOverlay = async (ctx, canvas, year, imageIndex, totalImages,
   
   ctx.save();
   
-  // Carregar logo do PhotoMap
-  const logo = await loadPhotoMapLogo();
+  // Logo removido - não é mais necessário
   
   // Determinar tamanho da fonte baseado no canvas - mais destaque
   const baseFontSize = fontSize === 'auto' ? Math.max(28, canvas.width / 45) : fontSize;
@@ -222,70 +175,6 @@ export const addTextOverlay = async (ctx, canvas, year, imageIndex, totalImages,
   ctx.shadowOffsetX = 2;
   ctx.shadowOffsetY = 2;
   
-  // Desenhar logo/marca do PhotoMap no topo centro
-  const logoHeight = Math.min(50, canvas.height * 0.06);
-  const logoY = 20;
-  
-  if (logo) {
-    // Se o logo carregou, desenhar logo + texto
-    const logoWidth = (logo.width / logo.height) * logoHeight;
-    const totalWidth = logoWidth + 10 + (logoHeight * 0.4 * 8); // logo + gap + texto "PhotoMap"
-    const logoX = (canvas.width - totalWidth) / 2;
-    
-    // Fundo semi-transparente
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-    ctx.fillRect(logoX - 15, logoY - 5, totalWidth + 30, logoHeight + 10);
-    
-    // Desenhar logo
-    ctx.shadowColor = 'transparent';
-    ctx.drawImage(logo, logoX, logoY, logoWidth, logoHeight);
-    
-    // Texto "PhotoMap" ao lado
-    ctx.font = `bold ${logoHeight * 0.4}px Arial`;
-    ctx.fillStyle = '#ffffff';
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-    ctx.shadowBlur = 6;
-    ctx.textAlign = 'left';
-    ctx.fillText('PhotoMap', logoX + logoWidth + 10, logoY + logoHeight * 0.7);
-  } else {
-    // Se o logo não carregou, desenhar apenas texto estilizado
-    const textSize = logoHeight * 0.8;
-    ctx.font = `bold ${textSize}px Arial`;
-    ctx.textAlign = 'center';
-    
-    // Medir o texto para centralizar
-    const text = 'PhotoMap';
-    const textWidth = ctx.measureText(text).width;
-    const textX = canvas.width / 2;
-    const textY = logoY + textSize;
-    
-    // Fundo com gradiente
-    const textGradient = ctx.createLinearGradient(textX - textWidth/2 - 20, logoY - 5, textX + textWidth/2 + 20, logoY + textSize + 5);
-    textGradient.addColorStop(0, 'rgba(30, 144, 255, 0.8)');
-    textGradient.addColorStop(1, 'rgba(0, 191, 255, 0.8)');
-    
-    ctx.fillStyle = textGradient;
-    ctx.fillRect(textX - textWidth/2 - 20, logoY - 5, textWidth + 40, textSize + 10);
-    
-    // Borda
-    ctx.strokeStyle = '#00BFFF';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(textX - textWidth/2 - 20, logoY - 5, textWidth + 40, textSize + 10);
-    
-    // Texto com sombra
-    ctx.fillStyle = '#ffffff';
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-    ctx.shadowBlur = 8;
-    ctx.shadowOffsetX = 2;
-    ctx.shadowOffsetY = 2;
-    ctx.fillText(text, textX, textY);
-  }
-  
-  // Restaurar configurações de sombra
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-  ctx.shadowBlur = 4;
-  ctx.shadowOffsetX = 2;
-  ctx.shadowOffsetY = 2;
   
   // Determinar posição base
   const margin = 20;
