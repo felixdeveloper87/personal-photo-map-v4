@@ -314,7 +314,7 @@ export const useVideoGenerator = () => {
               let animationId;
               let isResolved = false;
               
-              const renderFrame = (currentTime) => {
+              const renderFrame = async (currentTime) => {
                 const elapsed = currentTime - startTime;
                 const frame = Math.floor((elapsed / frameInterval));
                 
@@ -365,8 +365,8 @@ export const useVideoGenerator = () => {
                   });
                 }
                 
-                // Adicionar texto overlay
-                addTextOverlay(ctx, canvas, year, globalImageIndex, images.length, {
+                // Adicionar texto overlay (agora async por causa do logo)
+                await addTextOverlay(ctx, canvas, year, globalImageIndex, images.length, {
                   showYearText: settings.showYearText,
                   showPhotoCount: settings.showPhotoCount,
                   showCountryName: settings.showCountryName || true,

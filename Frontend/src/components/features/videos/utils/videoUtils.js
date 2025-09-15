@@ -139,6 +139,30 @@ export const convertWebMToMP4 = async (webmBlob, ffmpeg, onProgress) => {
   }
 };
 
+// Cache para logo do PhotoMap
+let photoMapLogo = null;
+
+/**
+ * Carrega o logo do PhotoMap
+ */
+const loadPhotoMapLogo = async () => {
+  if (photoMapLogo) return photoMapLogo;
+  
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      photoMapLogo = img;
+      resolve(img);
+    };
+    img.onerror = () => {
+      console.warn('Não foi possível carregar o logo do PhotoMap');
+      resolve(null);
+    };
+    // Usar logo2.png que é mais adequado para vídeos
+    img.src = new URL('../../../assets/logo2.png', import.meta.url).href;
+  });
+};
+
 /**
  * Adiciona overlay de texto ao canvas
  * @param {CanvasRenderingContext2D} ctx - Contexto do canvas
@@ -148,7 +172,7 @@ export const convertWebMToMP4 = async (webmBlob, ffmpeg, onProgress) => {
  * @param {number} totalImages - Total de imagens
  * @param {Object} settings - Configurações do texto
  */
-export const addTextOverlay = (ctx, canvas, year, imageIndex, totalImages, settings = {}) => {
+export const addTextOverlay = async (ctx, canvas, year, imageIndex, totalImages, settings = {}) => {
   const {
     showYearText = true,
     showPhotoCount = true,
@@ -161,17 +185,52 @@ export const addTextOverlay = (ctx, canvas, year, imageIndex, totalImages, setti
   
   ctx.save();
   
-  // Determinar tamanho da fonte baseado no canvas
-  const baseFontSize = fontSize === 'auto' ? Math.max(24, canvas.width / 50) : fontSize;
-  const yearFontSize = baseFontSize * 2.0; // Destacar muito mais o ano
-  const countryFontSize = baseFontSize * 1.2; // País em destaque
-  const countFontSize = baseFontSize * 0.8;
+  // Carregar logo do PhotoMap
+  const logo = await loadPhotoMapLogo();
+  
+  // Determinar tamanho da fonte baseado no canvas - mais destaque
+  const baseFontSize = fontSize === 'auto' ? Math.max(28, canvas.width / 45) : fontSize;
+  const yearFontSize = baseFontSize * 3.0; // Ano com muito mais destaque
+  const countryFontSize = baseFontSize * 2.0; // País com muito mais destaque
+  const countFontSize = baseFontSize * 0.9; // Contador um pouco maior também
   
   // Configurar sombra para melhor legibilidade
   ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
   ctx.shadowBlur = 4;
   ctx.shadowOffsetX = 2;
   ctx.shadowOffsetY = 2;
+  
+  // Desenhar logo do PhotoMap no topo centro
+  if (logo) {
+    const logoHeight = Math.min(60, canvas.height * 0.08); // 8% da altura do canvas, máximo 60px
+    const logoWidth = (logo.width / logo.height) * logoHeight; // Manter proporção
+    const logoX = (canvas.width - logoWidth) / 2; // Centro horizontal
+    const logoY = 20; // 20px do topo
+    
+    // Fundo semi-transparente para o logo
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.fillRect(logoX - 10, logoY - 5, logoWidth + 20, logoHeight + 10);
+    
+    // Resetar sombra temporariamente para o logo
+    ctx.shadowColor = 'transparent';
+    ctx.drawImage(logo, logoX, logoY, logoWidth, logoHeight);
+    
+    // Adicionar texto "PhotoMap" ao lado do logo
+    ctx.font = `bold ${logoHeight * 0.4}px Arial`;
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+    ctx.shadowBlur = 6;
+    ctx.textAlign = 'left';
+    const textX = logoX + logoWidth + 10;
+    const textY = logoY + logoHeight * 0.7;
+    ctx.fillText('PhotoMap', textX, textY);
+    
+    // Restaurar configurações de sombra
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+  }
   
   // Determinar posição base
   const margin = 20;
@@ -374,24 +433,36 @@ export const addTextOverlay = (ctx, canvas, year, imageIndex, totalImages, setti
     return countryMap[countryId.toLowerCase()] || countryId.toUpperCase();
   };
 
-  // Desenhar ano no canto superior direito
-  if (showYearText) {
-    // Posicionar no canto superior direito
+  // Desenhar ano no canto superior direito com MUITO mais destaque
+  if (showYearText && year) {
     ctx.textAlign = 'right';
     const yearX = canvas.width - margin;
     const yearY = margin + yearFontSize;
     
-    // Fundo destacado para o ano
-    const yearWidth = yearFontSize * 0.6;
-    const yearHeight = yearFontSize;
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillRect(yearX - yearWidth - 15, yearY - yearHeight - 5, yearWidth + 20, yearHeight + 10);
+    // Fundo com gradiente para o ano
+    const yearWidth = year.toString().length * yearFontSize * 0.7;
+    const yearHeight = yearFontSize + 20;
     
-    // Ano em destaque
+    // Gradiente de fundo
+    const gradient = ctx.createLinearGradient(yearX - yearWidth - 15, yearY - yearFontSize - 10, yearX + 15, yearY + 10);
+    gradient.addColorStop(0, 'rgba(255, 215, 0, 0.9)'); // Dourado
+    gradient.addColorStop(1, 'rgba(255, 140, 0, 0.9)'); // Laranja
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(yearX - yearWidth - 15, yearY - yearFontSize - 10, yearWidth + 30, yearHeight);
+    
+    // Borda destacada
+    ctx.strokeStyle = '#FFD700';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(yearX - yearWidth - 15, yearY - yearFontSize - 10, yearWidth + 30, yearHeight);
+    
+    // Ano com sombra forte
     ctx.font = `bold ${yearFontSize}px Arial`;
-    ctx.fillStyle = '#FFD700'; // Dourado para destaque
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-    ctx.shadowBlur = 8;
+    ctx.fillStyle = '#000000'; // Texto preto para contrastar com fundo dourado
+    ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetX = 3;
+    ctx.shadowOffsetY = 3;
     ctx.fillText(year, yearX, yearY);
   }
   
@@ -416,16 +487,30 @@ export const addTextOverlay = (ctx, canvas, year, imageIndex, totalImages, setti
       const countryX = margin;
       const countryY = canvas.height - margin;
       
-      // Fundo para a sigla
-      const codeWidth = countryCode.length * countryFontSize * 0.7;
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      ctx.fillRect(countryX - 8, countryY - countryFontSize - 3, codeWidth + 16, countryFontSize + 6);
+      // Fundo com gradiente para a sigla do país
+      const codeWidth = countryCode.length * countryFontSize * 0.8;
+      const codeHeight = countryFontSize + 16;
       
-      // Sigla do país
+      // Gradiente de fundo para o país
+      const countryGradient = ctx.createLinearGradient(countryX - 12, countryY - countryFontSize - 8, countryX + codeWidth + 12, countryY + 8);
+      countryGradient.addColorStop(0, 'rgba(30, 144, 255, 0.9)'); // Azul vibrante
+      countryGradient.addColorStop(1, 'rgba(0, 191, 255, 0.9)'); // Azul céu
+      
+      ctx.fillStyle = countryGradient;
+      ctx.fillRect(countryX - 12, countryY - countryFontSize - 8, codeWidth + 24, codeHeight);
+      
+      // Borda destacada para o país
+      ctx.strokeStyle = '#00BFFF';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(countryX - 12, countryY - countryFontSize - 8, codeWidth + 24, codeHeight);
+      
+      // Sigla do país com sombra forte
       ctx.font = `bold ${countryFontSize}px Arial`;
-      ctx.fillStyle = '#87CEEB'; // Azul claro para o país
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-      ctx.shadowBlur = 4;
+      ctx.fillStyle = '#FFFFFF'; // Texto branco para contrastar
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
       ctx.fillText(countryCode, countryX, countryY);
     }
   }
