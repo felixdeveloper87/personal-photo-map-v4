@@ -367,6 +367,28 @@ const VideoSettings = ({
               <SliderThumb />
             </Slider>
           </FormControl>
+
+          {/* Tempo de início da música */}
+          <FormControl>
+            <FormLabel color={textColor}>Music start time (seconds)</FormLabel>
+            <NumberInput
+              value={settings.musicStartTime}
+              onChange={(valueString) => handleSettingChange('musicStartTime', parseFloat(valueString) || 0)}
+              min={0}
+              max={300}
+              step={1}
+              bg={inputBg}
+            >
+              <NumberInputField />
+              <NumberInputStepper>
+                <NumberIncrementStepper />
+                <NumberDecrementStepper />
+              </NumberInputStepper>
+            </NumberInput>
+            <Text fontSize="xs" color={mutedTextColor} mt={1}>
+              💡 Set when the music should start playing (e.g., 55 for 55 seconds)
+            </Text>
+          </FormControl>
         </VStack>
       )}
 

@@ -121,13 +121,19 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
         audioContext.sampleRate
       );
       
+      // Calcular offset de início da música
+      const musicStartTime = settings.musicStartTime || 0;
+      const startOffset = Math.floor(musicStartTime * audioContext.sampleRate);
+      
       console.log('🎵 Sincronização de áudio:', {
         duracaoVideoTeorica: `${videoDuration}s`,
         margemSeguranca: `${safetyMargin.toFixed(1)}s`,
         duracaoAudioOriginal: `${originalAudioBuffer.duration.toFixed(2)}s`,
         duracaoAudioAjustada: `${targetDuration}s`,
         diferenca: `${(originalAudioBuffer.duration - targetDuration).toFixed(2)}s`,
-        acao: originalAudioBuffer.duration >= targetDuration ? 'CORTAR' : 'REPETIR'
+        acao: originalAudioBuffer.duration >= targetDuration ? 'CORTAR' : 'REPETIR',
+        musicStartTime: `${musicStartTime}s`,
+        startOffset: `${startOffset} samples`
       });
       
       for (let channel = 0; channel < originalAudioBuffer.numberOfChannels; channel++) {
@@ -141,7 +147,13 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
           const fadeOutStart = targetLength - (fadeOutDuration * audioContext.sampleRate);
           
           for (let i = 0; i < targetLength; i++) {
-            let sample = originalData[i] || 0;
+            let sample = 0;
+            
+            // Aplicar offset de início da música
+            if (i >= startOffset) {
+              const sourceIndex = i - startOffset;
+              sample = originalData[sourceIndex] || 0;
+            }
             
             // Aplicar fade out nos últimos 2 segundos
             if (i >= fadeOutStart) {
@@ -155,20 +167,28 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
           // Áudio mais curto que necessário - repetir com fade suave
           console.log('Áudio mais curto que necessário - repetindo com fade suave...');
           for (let i = 0; i < targetLength; i++) {
-            const sourceIndex = i % originalData.length;
-            const cyclePosition = (i % originalData.length) / originalData.length;
+            let sample = 0;
             
-            // Aplicar fade suave no início e fim de cada repetição
-            let fadeMultiplier = 1;
-            if (cyclePosition < 0.1) {
-              // Fade in no início de cada repetição
-              fadeMultiplier = cyclePosition / 0.1;
-            } else if (cyclePosition > 0.9) {
-              // Fade out no fim de cada repetição
-              fadeMultiplier = (1 - cyclePosition) / 0.1;
+            // Aplicar offset de início da música
+            if (i >= startOffset) {
+              const adjustedIndex = i - startOffset;
+              const sourceIndex = adjustedIndex % originalData.length;
+              const cyclePosition = (adjustedIndex % originalData.length) / originalData.length;
+              
+              // Aplicar fade suave no início e fim de cada repetição
+              let fadeMultiplier = 1;
+              if (cyclePosition < 0.1) {
+                // Fade in no início de cada repetição
+                fadeMultiplier = cyclePosition / 0.1;
+              } else if (cyclePosition > 0.9) {
+                // Fade out no fim de cada repetição
+                fadeMultiplier = (1 - cyclePosition) / 0.1;
+              }
+              
+              sample = originalData[sourceIndex] * fadeMultiplier;
             }
             
-            adjustedData[i] = originalData[sourceIndex] * fadeMultiplier;
+            adjustedData[i] = sample;
           }
         }
       }
@@ -180,7 +200,32 @@ export const setupAudioForRecording = async (audioFile, videoDuration, settings)
       console.log('Gerando música preset:', settings.selectedPresetMusic);
       const safetyMargin = Math.max(5, videoDuration * 0.2); // Pelo menos 5s ou 20% da duração do vídeo
       const targetDuration = videoDuration + safetyMargin;
-      audioBuffer = await generatePresetMusic(settings.selectedPresetMusic, targetDuration);
+      const musicStartTime = settings.musicStartTime || 0;
+      
+      // Gerar música com duração total incluindo o offset
+      const totalDuration = targetDuration + musicStartTime;
+      const generatedBuffer = await generatePresetMusic(settings.selectedPresetMusic, totalDuration);
+      
+      // Criar buffer final com offset aplicado
+      const targetLength = audioContext.sampleRate * targetDuration;
+      const startOffset = Math.floor(musicStartTime * audioContext.sampleRate);
+      
+      audioBuffer = audioContext.createBuffer(
+        generatedBuffer.numberOfChannels,
+        targetLength,
+        audioContext.sampleRate
+      );
+      
+      // Copiar dados com offset
+      for (let channel = 0; channel < generatedBuffer.numberOfChannels; channel++) {
+        const sourceData = generatedBuffer.getChannelData(channel);
+        const targetData = audioBuffer.getChannelData(channel);
+        
+        for (let i = 0; i < targetLength; i++) {
+          const sourceIndex = i + startOffset;
+          targetData[i] = sourceData[sourceIndex] || 0;
+        }
+      }
     } else {
       console.log('Nenhuma fonte de áudio configurada');
       return null;

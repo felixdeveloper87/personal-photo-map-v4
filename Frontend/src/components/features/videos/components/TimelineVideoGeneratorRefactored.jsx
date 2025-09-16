@@ -64,6 +64,7 @@ const TimelineVideoGenerator = ({ images, onClose }) => {
     musicEnabled: false,
     musicSource: 'none', // 'none', 'upload', 'preset'
     musicVolume: 0.5,
+    musicStartTime: 0, // Tempo de início da música em segundos
     selectedPresetMusic: 'ambient1',
     transitionDuration: 0.8, // Duração da transição em segundos
     enableParticles: false, // Efeitos de partículas
