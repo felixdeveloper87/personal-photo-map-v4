@@ -255,14 +255,40 @@ export const useVideoGenerator = () => {
         setIsGenerating(false);
       };
 
-      // Agrupar imagens por ano
+      // Agrupar imagens por ano e ordenar cronologicamente
       const imagesByYear = images.reduce((acc, img) => {
         if (!acc[img.year]) acc[img.year] = [];
         acc[img.year].push(img);
         return acc;
       }, {});
 
+      // Ordenar anos do mais antigo para o mais novo
       const years = Object.keys(imagesByYear).sort((a, b) => Number(a) - Number(b));
+      
+      // Ordenar imagens dentro de cada ano por nome do arquivo (assumindo que contém data)
+      years.forEach(year => {
+        imagesByYear[year].sort((a, b) => {
+          // Tentar extrair data do nome do arquivo se disponível
+          const dateA = a.fileName ? a.fileName.match(/(\d{4})[_-](\d{2})[_-](\d{2})/) : null;
+          const dateB = b.fileName ? b.fileName.match(/(\d{4})[_-](\d{2})[_-](\d{2})/) : null;
+          
+          if (dateA && dateB) {
+            // Comparar por data completa
+            const dateAStr = `${dateA[1]}-${dateA[2]}-${dateA[3]}`;
+            const dateBStr = `${dateB[1]}-${dateB[2]}-${dateB[3]}`;
+            return dateAStr.localeCompare(dateBStr);
+          }
+          
+          // Fallback: ordenar por nome do arquivo
+          return (a.fileName || '').localeCompare(b.fileName || '');
+        });
+      });
+      
+      // Log da ordem cronológica das imagens
+      console.log('📅 Ordem cronológica do vídeo:');
+      years.forEach(year => {
+        console.log(`  ${year}:`, imagesByYear[year].map(img => img.fileName || 'sem-nome').join(', '));
+      });
       
       // Marcar tempo de início da geração
       const generationStartTime = Date.now();
