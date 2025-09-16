@@ -386,7 +386,7 @@ const VideoSettings = ({
               </NumberInputStepper>
             </NumberInput>
             <Text fontSize="xs" color={mutedTextColor} mt={1}>
-              💡 Cut the beginning of the music to start at this time (e.g., 55 to start from 55 seconds)
+              💡 Cut the music to start from this time (e.g., 55 to start from the chorus at 55 seconds)
             </Text>
           </FormControl>
         </VStack>
