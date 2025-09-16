@@ -138,6 +138,25 @@ export const useVideoGenerator = () => {
         fps: settings.fps
       });
       
+      // Pré-carregar todas as imagens para evitar timeouts
+      console.log('🖼️ Pré-carregando imagens...');
+      const preloadedImages = [];
+      for (let i = 0; i < images.length; i++) {
+        try {
+          const img = await loadImage(images[i].url, 3000); // Timeout de 3s para pré-carregamento
+          preloadedImages.push(img);
+          console.log(`✅ Imagem ${i + 1}/${images.length} carregada`);
+        } catch (error) {
+          console.warn(`⚠️ Falha ao carregar imagem ${i + 1}:`, error);
+          // Criar imagem placeholder se falhar
+          const placeholder = new Image();
+          placeholder.width = canvas.width;
+          placeholder.height = canvas.height;
+          preloadedImages.push(placeholder);
+        }
+      }
+      console.log('✅ Pré-carregamento concluído:', preloadedImages.length, 'imagens');
+
       // Configurar áudio se habilitado
       let audioSetup = null;
       if (settings.musicEnabled && settings.musicSource !== 'none') {
@@ -288,7 +307,8 @@ export const useVideoGenerator = () => {
           const image = yearImages[imgIndex];
           
           try {
-            const img = await loadImage(image.url);
+            // Usar imagem pré-carregada
+            const img = preloadedImages[globalImageIndex];
             
             // Selecionar transição baseada nas configurações
             let selectedTransition;
@@ -309,7 +329,7 @@ export const useVideoGenerator = () => {
               const startTime = performance.now();
               const targetDuration = (framesPerImage / settings.fps) * 1000; // Duração total em ms
               const frameInterval = 1000 / settings.fps; // Intervalo entre frames em ms
-              const maxDuration = targetDuration + 500; // Timeout de segurança mais restrito (+500ms)
+              const maxDuration = targetDuration + 200; // Timeout de segurança mais restrito (+200ms)
               
               let animationId;
               let isResolved = false;

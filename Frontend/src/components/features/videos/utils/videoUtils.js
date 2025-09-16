@@ -11,7 +11,7 @@ import { fetchFile, toBlobURL } from '@ffmpeg/util';
  * @param {number} timeout - Timeout em ms (padrão: 5000)
  * @returns {Promise<HTMLImageElement>}
  */
-export const loadImage = (src, timeout = 5000) => {
+export const loadImage = (src, timeout = 2000) => {
   return new Promise((resolve, reject) => {
     let isResolved = false;
     
